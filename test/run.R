@@ -1,13 +1,15 @@
 ###
-filestem <- "/home/marjob/Dropbox/PhD"
-direcPictures <- paste0(filestem,"/Pictures/Daphnia/Movies/04-05-2015/00365/")
+
+setwd("/mnt/disk/Dropbox/TrackDem")
+filestem <- "."
+direcPictures <- paste0(filestem,"/00365/")
 
 require(png)
 require(SDMTools)
 require(raster)
 
 # Load all functions
-source(paste0(filestem,'/Manuscripts/TrackDem/trackSequences.R'))
+require(trackdem)
 
 # get filenames
 allFiles <- list.files(path=paste(direcPictures,sep='')) 
