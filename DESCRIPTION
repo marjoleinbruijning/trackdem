@@ -12,3 +12,7 @@ Description: Describe me
 License: GPL-2
 URL: https://github.com/marjoleinbruijning/trackdem
 BugReports: https://github.com/marjoleinbruijning/trackdem/issues
+Depends:
+    png
+Imports:
+    compiler
