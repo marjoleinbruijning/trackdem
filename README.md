@@ -4,7 +4,12 @@
 Partical tracking and demography
 ---
 
+![](images/animation.gif)
+
 This package is currently being developed and tested.
+
+## Abstract
+
 
 ## Dependencies
 

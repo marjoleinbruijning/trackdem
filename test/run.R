@@ -7,9 +7,8 @@ direcPictures <- paste0(filestem,"/00365/")
 require(png)
 require(SDMTools)
 require(raster)
-
-# Load all functions
 require(trackdem)
+
 
 # get filenames
 allFiles <- list.files(path=paste(direcPictures,sep='')) 
