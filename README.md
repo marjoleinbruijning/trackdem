@@ -34,7 +34,7 @@ install_github("marjoleinbruijning/trackdem")
 ```
 ## Examples of output
 Screenshots to come
-![no image]()
+![](images/manuallySelect.png)
 
 
 
