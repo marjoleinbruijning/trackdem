@@ -1,102 +1,91 @@
-##' Informative title
+##' Load .png images
 ##'
-##' \code{loadImages} is a function that (description)
-##' The objects created through the function ...
-##' @param direcPictures DESCRIPTION
-##' @param filenames DESCRIPTION
-##' @param nImages DESCRIPTION
-##' @param xranges DESCRIPTION
-##' @param yranges DESCRIPTION
-##' @param channel DESCRIPTION
+##' \code{loadImages} is a function to load png images as a three dimensional array.
+##' The objects created through the function can be used for image analysis.
+##' @param direcPictures The path of the folder where the images can be found.
+##' @param filenames Default is null. If not all files should be loaded, here specify
+##' which files to use.
+##' @param nImages The total number of images to load.
+##' @param xranges Default all pixels are loaded; specify to subset the number of columns.
+##' @param yranges Default all pixels are loaded; specify to subset the number of rows.
 ##' @author Marjolein Bruining & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'
-##'  rnorm(1) # give a example code here
+##' loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
+##'	nImages=1:30,yranges=1:1080,xranges=600:1440)
 ##'
+##'	}
+##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
+##' @return List two elements: first contains array with all images,
+##' subset when relevant. Second element contains all original color images as array.
+##' @concept What is the broad searchable concept?
+##' @export
+
+loadImages <- function (direcPictures,filenames=NULL,nImages=1:50,xranges=NULL,yranges=NULL) {
+  if (is.null(filenames)) {
+    allFiles <- list.files(path=direcPictures) # List all files in folder
+    allFiles <- allFiles[nImages]
+  }
+  else {filenames=filenames[nImages]}	
+                                        # Load all images
+  allFullImagesRGB <- sapply(nImages,
+                             function(x) readPNG(paste0(direcPictures,allFiles[x])),simplify='array')
+
+  if (!is.null(xranges) | !is.null(yranges)) {
+    allFullImages <- sapply(nImages,function(x) allFullImagesRGB[[x]][yranges,xranges,],simplify='array')	
+  } else {allFullImages <- allFullImagesRGB}
+  allFullImagesRGB <- lapply(nImages,function(x) brick(allFullImagesRGB[,,,x]))
+  return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
+}
+
+##' Background detection
 ##'
+##' \code{createBackground} is a function to create a still background,
+##' exluding movies objects, using loaded image sequences as input.
+##' @param allFullImages Array containing all images (and three color layers)
+##' @param func Function to be performed over each pixel. Default is mean.
+##' @author Marjolein Bruining & Marco D. Visser
+##' @examples
+##' \dontrun{
 ##'
-##'
+##'  stillBack <- createBackground (allFullImages,func=mean)
 ##'	}
 ##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
 ##' @return what does it return?
 ##' @concept What is the broad searchable concept?
 ##' @export
-loadImages <- function (direcPictures,filenames=NULL,nImages=1:50,xranges=NULL,yranges=NULL,channel=1) {
-	if (is.null(filenames)) {
-		allFiles <- list.files(path=direcPictures) # List all files in folder
-		allFiles <- allFiles[nImages]
-	}
-	else {filenames=filenames[nImages]}	
-	# Load all images
-	allFullImagesRGB <- lapply(nImages,
-		function(x) readPNG(paste0(direcPictures,allFiles[x])))
-	if (is.null(xranges)) xranges <- 1:ncol(allFullImagesRGB[[1]][,,1])
-	if (is.null(yranges)) yranges <- 1:nrow(allFullImagesRGB[[1]][,,1])	
-	allFullImages <- sapply(nImages,function(x) allFullImagesRGB[[x]][yranges,xranges,channel],simplify='array')	
-	allFullImagesRGB <- lapply(nImages,function (x) brick(allFullImagesRGB[[x]]))
-	return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
+createBackground <- function (allFullImages,func=mean) {
+  apply(allFullImages,c(1,2,3),func)
 }
 
-##' Informative title
+##' Background subtraction
 ##'
-##' \code{loadImages} is a function that (description)
-##' The objects created through the function ...
-##' @param direcPictures DESCRIPTION
-##' @param filenames DESCRIPTION
-##' @param nImages DESCRIPTION
-##' @param xranges DESCRIPTION
-##' @param yranges DESCRIPTION
-##' @param channel DESCRIPTION
+##' \code{subtractBackground} is a function to subtract each
+##' image from the created still background.
+##' The objects created through the function contain all moving
+##' pixels.
+##' @param background Array containing still background.
+##' @param images Array containing all images.
 ##' @author Marjolein Bruining & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'
-##'  rnorm(1) # give a example code here
-##'
-##'
-##'
-##'
-##'	}
-##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return what does it return?
-##' @concept What is the broad searchable concept?
-##' @export
-createBackground <- function (allFullImages) {
-	stillBack <- matrix(NA,nrow=dim(allFullImages)[1],ncol=dim(allFullImages)[2])
-	for (i in 1:nrow(stillBack)) {
-		stillBack[i,] <- apply(allFullImages[i,,],1,median)
-	}
-	return(stillBack)
-}
+##'  allImages <- subtractBackground(background=stillBack,allFullImages)
 
-##' Informative title
-##'
-##' \code{loadImages} is a function that (description)
-##' The objects created through the function ...
-##' @param direcPictures DESCRIPTION
-##' @param filenames DESCRIPTION
-##' @param nImages DESCRIPTION
-##' @param xranges DESCRIPTION
-##' @param yranges DESCRIPTION
-##' @param channel DESCRIPTION
-##' @author Marjolein Bruining & Marco D. Visser
-##' @examples
-##' \dontrun{
-##'
-##'  rnorm(1) # give a example code here
-##'
-##'
-##'
-##'
 ##'	}
 ##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
 ##' @return what does it return?
 ##' @concept What is the broad searchable concept?
 ##' @export
 substractBackground <- function (background,images) {
-	images <- sapply(1:dim(images)[3], function(x) images[,,x]-background, simplify='array')
-	return(images)
+    #a <- apply(images,c(1,2,3),function(x) x - background)
+    im <- array(NA,dim=dim(images))
+    for (i in 1:3) {
+          im[,,i,] <- sapply(1:dim(images)[4], function(x)
+                             images[,,i,x]-background[,,i], simplify='array')
+    }
+    return(im)
 }
 
 ##' Informative title
