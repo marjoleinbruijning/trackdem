@@ -52,7 +52,7 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:50,xranges=NULL,y
 ##'  stillBack <- createBackground (allFullImages,func=mean)
 ##'	}
 ##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return what does it return?
+##' @return Returns array with still background.
 ##' @concept What is the broad searchable concept?
 ##' @export
 createBackground <- function (allFullImages,func=mean) {
@@ -75,7 +75,7 @@ createBackground <- function (allFullImages,func=mean) {
 
 ##'	}
 ##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return what does it return?
+##' @return Returns array with same size as images, subtracted from background.
 ##' @concept What is the broad searchable concept?
 ##' @export
 substractBackground <- function (background,images) {
@@ -90,154 +90,95 @@ substractBackground <- function (background,images) {
 
 ##' Informative title
 ##'
-##' \code{loadImages} is a function that (description)
-##' The objects created through the function ...
-##' @param direcPictures DESCRIPTION
-##' @param filenames DESCRIPTION
-##' @param nImages DESCRIPTION
-##' @param xranges DESCRIPTION
-##' @param yranges DESCRIPTION
-##' @param channel DESCRIPTION
+##' \code{identifyParticles} is a function to identify particles using subtracted
+##' background images.
+##' @param images Array containing images.
+##' @param threshold Threshold for including particles. For a threshold for each
+##' frame, use pthreshold.
+##' @param pixelRange Default is zero. Vector with minimum and maximum particle size, used as a
+##' first filter to identify particles.
+##' @param pthreshold Default is zero. If zero, treshold is used for filter. If
+##' not zero, a threshold based on pthreshold quantile is calculated for each
+##' frame.
 ##' @author Marjolein Bruining & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'
-##'  rnorm(1) # give a example code here
-##'
-##'
-##'
-##'
+##'   trackObject <- identifyParticles(allImages,pthreshold=0.001,pixelRange=c(3,400))
 ##'	}
 ##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return what does it return?
+##' @return This function returns a list with two elements: (1) a list with
+##' particle statistics with identified particles for each frame. (2) an array
+##' containing all binary images.
 ##' @concept What is the broad searchable concept?
 ##' @export
-identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL) {
-	nImages <- 1:dim(images)[3]
-	allImages <- sapply(nImages, function(x) ifelse(images[,,x] > threshold,0,1), simplify='array') # binary images
-	allImages <- sapply(nImages, function (x) ConnCompLabel(allImages[,,x]),simplify='array') # label particles
-	particleStats <- lapply(nImages,function(x) PatchStat(allImages[,,x])) # calculate patch statistics																																					
-	if (!is.null(pixelRange)) {
-		particleStats <- lapply(nImages,function(x) particleStats[[x]] [
-			particleStats[[x]]$n.cell>pixelRange[1] & particleStats[[x]]$n.cell<pixelRange[2],]) # select particles based on size settings
-		# save only particles from patch statistics
-		for (i in nImages) {
-			allImages[,,i] [(allImages[,,i] %in% particleStats[[i]]$patchID) == F] <- 0
-		}
-	}
-	for (i in nImages) {
-		coords <- getCoords(allImages[,,i])
-		particleStats[[i]]$x <- coords$x
-		particleStats[[i]]$y <- coords$y		
-	}
-	meanPart <- mean(sapply(nImages,function(X) length(particleStats[[X]]$patchID)))
-	coeffVar <- sd(sapply(nImages,function(X) length(particleStats[[X]]$patchID))) / meanPart
-	print(paste0('Mean number of identified particles equals ',round(meanPart,2),
-		'; Coefficient of variation is ',round(coeffVar,3)))
-	
-	return(list(allImages=allImages,particleStats=particleStats))
-}
+identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
+                               pthreshold=NULL) {
+  nImages <- 1:dim(images)[4]
+  if(!is.null(pthreshold)){
+    allImages <- array(NA,dim=dim(images))
+    for (i in 1:3) {
+          allImages[,,i,] <- sapply(1:dim(images)[4], function(x)
+                                    images[,,i,x]<quantile(images[,,i,x],
+                                                           pthreshold),
+                                    simplify='array')
+    }
+   
+  } else {
+    allImages <- images < threshold
+  }
+  sumRGB <- apply(allImages,c(2,4),rowSums)
+  sumRGB <- sumRGB > 0
+  print('Labeling particles')
+  allImagesRGB <- sapply(nImages, function (x) ConnCompLabel(sumRGB[,,x]),simplify='array') # label particles
+  
+  print('Particle statistics')
+  particleStatsRGB <- lapply(nImages,function(x) PatchStat(allImagesRGB[,,x])) # calculate patch statistics
+  particleStats <- particleStatsRGB
+  print('Size filtering')
+  if (!is.null(pixelRange)) {
+                                        #	for (i in 1:4) {
+    particleStats <- lapply(nImages, 
+                            function (x) subset(particleStats[[x]],n.cell>pixelRange[1] & n.cell<=pixelRange[2]))
+                                        #		particleStats[[i]] <- lapply(nImages, 
+                                        #			function (x) subset(particleStats[[i]][[x]],n.cell>pixelRange[1] & n.cell<=pixelRange[2]))
+                                        #	}
+  }
+  
+  print('Coordinates calculation')
+  tmp <- allImagesRGB
+  for (i in nImages) {
+    tmp[,,i][(tmp[,,i] %in% particleStats[[i]]$patchID)==F] <- 0
+  }
+  coords <- lapply(nImages,function (x) getCoords(tmp[,,x]))
+                                        #coords <- lapply(nImages, function(x) coords[[x]][coords[[x]]$ID %in% particleStats[[x]]$patchID,])
+  particleStats <- lapply(nImages, function(x) merge(particleStats[[x]],coords[[x]],by.x='patchID',by.y='ID'))
 
-##' Informative title
-##'
-##' \code{loadImages} is a function that (description)
-##' The objects created through the function ...
-##' @param direcPictures DESCRIPTION
-##' @param filenames DESCRIPTION
-##' @param nImages DESCRIPTION
-##' @param xranges DESCRIPTION
-##' @param yranges DESCRIPTION
-##' @param channel DESCRIPTION
-##' @author Marjolein Bruining & Marco D. Visser
-##' @examples
-##' \dontrun{
-##'
-##'  rnorm(1) # give a example code here
-##'
-##'
-##'
-##'
-##'	}
-##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return what does it return?
-##' @concept What is the broad searchable concept?
-##' @export
-manuallySelect <- function (particleStats,colorimages=allFullImagesRGB) {
-	nImages <- 1:length(particleStats)
-	n <- which(sapply(nImages,function(X) length(particleStats[[X]]$patchID))==
-		max(sapply(nImages,function(X) length(particleStats[[X]]$patchID))))
-	
-	layout(matrix(c(1,2,2,2,2), 1, 5, byrow = TRUE))
-	par(mar=c(0,0,0,0))
-	plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),ylim=c(0,1))
-	polygon(x=c(0,1,1,0,0),y=c(0.5,0.5,0.6,0.6,0.5),col='red')
-	text(x=0.5,y=0.55,label='Done',cex=4)
-	plotRGB(colorimages[[n]],scale=1,bty='n')
-	points(particleStats[[n]]$x/1024,1-particleStats[[n]]$y/576,col='green',cex=1.5)
-	title("Click on al wrongly identified particles", outer = TRUE, line = -2,cex=3)
-	continue <- TRUE
-	wrong <- as.numeric()
-	while (continue == TRUE) {
-		pick<-locator(1)
-		if (pick$x < 0) {continue <- FALSE}
-		if (pick$x > 0) {
-			tmp <- (1-particleStats[[n]]$y/576 - pick$y)^2 + (particleStats[[n]]$x/1024 - pick$x)^2
-			patches <- particleStats[[n]]$patchID[which(tmp == min(tmp))]
-			
-			tmp <- particleStats[[n]][particleStats[[n]]$patchID %in% patches,]
-			points(tmp$x/1024,1-tmp$y/576,col='red',cex=2,pch=4)
-			wrong <- c(wrong, tmp$patchID)
-		}
-	}
-	dev.off()
-	return(wrong)
-}
-getCoords <- function (mat) {
-	x <- rep(NA,length(unique(as.vector(mat))))[-1]
-	y <- rep(NA,length(unique(as.vector(mat))))[-1]
-	dims <- dim(mat)
+  ## Calculate difference between each frame
+  print('Movement detection')
+  detectMovements <- abs(diffFrame(allFullImages))
+  detectMovements <- detectMovements > 0.07
+  detectMovements <- sapply(1:dim(detectMovements)[3], function (x) 
+	ConnCompLabel(detectMovements[,,x]),simplify='array') # label particles
+  tmp <- detectMovements
+  coordsMovements <- lapply(1:dim(detectMovements)[3],function (x) getCoords(tmp[,,x]))
+  
+  a <- lapply(1:length(coordsMovements), function (X) 
+	calcDist (particleStats[[X]],coordsMovements[[X]],cn=c('x','y')))
+  a[[30]] <- matrix(1,ncol=2,nrow=length(particleStats[[30]]$patchID))
+  particleStats <- lapply(1:length(a),function(X) 
+	cbind(particleStats[[X]],data.frame(movementDist=apply(a[[X]],1,min))))
 
-	for (i in 1:length(x)) {
-		tmp <- mat == unique(as.vector(mat))[-1][i]
-		coords <- colMeans(t(t(which(tmp,TRUE))))
-		y[i] <- coords[1]
-		x[i] <- coords[2]
-	}
-	return(data.frame(x=x,y=y))
+  # Results
+  meanPart <- mean(sapply(nImages,function(X) length(particleStats[[X]]$patchID)))
+  coeffVar <- sd(sapply(nImages,function(X) length(particleStats[[X]]$patchID)) / meanPart)
+
+  print(paste0('Mean number of identified particles equals ',round(meanPart,2),
+               '; Coefficient of variation is ',round(coeffVar,3)))
+  
+  return(list(allImages=tmp,particleStats=particleStats))
 }
 
 
-##### Functions not in use ##########
-overig <- function () {
-updateParticles <- function (particleStats,images,repeats=NULL,colorimages=allFullImagesRGB) {
-	n <- which(sapply(nImages,function(X) length(particleStats[[X]]$patchID))==
-		max(sapply(nImages,function(X) length(particleStats[[X]]$patchID))))
-    y<-ids<-unique(particleStats[[n]]$patchID)[-1]
-    if(!is.null(repeats)) {y<-ids<-sample(y,repeats,FALSE)}
-    dims <- dim(allImages[,,1])
-    for(i in 1:length(ids)){
-		tmp <- allImages[,,n] == ids[i]
-		coords <- colMeans(t(t(which(tmp,TRUE)) / dims))
-		plotRGB(allFullImagesRGB[[n]],scale=1)
-        points(coords[2],1-coords[1],col='red',cex=1.5)
-        y[i]<-scan(n=1)
-     }
-    names(y) <- ids
-    return(y)	
-}
-
-trainCreate<-function(number,repeats){
-    y<-ids<-unique(particleStats[[number]]$patchID)[-1]
-    dims <- dim(allImages[,,1])
-    for(i in 1:length(ids)){
-		tmp <- allImages[,,number] == ids[i]
-		coords <- colMeans(t(t(which(tmp,TRUE)) / dims))
-		plotRGB(allFullImagesRGB[[number]],scale=1)
-        points(coords[2],1-coords[1],col='red',cex=1.5)
-        y[i]<-scan(n=1)
-     }
-    y
-}
-}
 
 
