@@ -24,7 +24,7 @@ however to install the developmental version from github use the **devtools** pa
 ```r
 ## devtools is required
 require(devtools)
-install_github("marjoleinbruijing/trackdem")
+install_github("marjoleinbruijning/trackdem")
 ```
 
 ## Examples
