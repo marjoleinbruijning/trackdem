@@ -4,36 +4,35 @@
 \alias{identifyParticles}
 \title{Informative title}
 \usage{
-identifyParticles(images, threshold = -0.1, pixelRange = NULL)
+identifyParticles(images, threshold = -0.1, pixelRange = NULL,
+  pthreshold = NULL)
 }
 \arguments{
-\item{direcPictures}{DESCRIPTION}
+\item{images}{Array containing images.}
 
-\item{filenames}{DESCRIPTION}
+\item{threshold}{Threshold for including particles. For a threshold for each
+frame, use pthreshold.}
 
-\item{nImages}{DESCRIPTION}
+\item{pixelRange}{Default is zero. Vector with minimum and maximum particle size, used as a
+first filter to identify particles.}
 
-\item{xranges}{DESCRIPTION}
-
-\item{yranges}{DESCRIPTION}
-
-\item{channel}{DESCRIPTION}
+\item{pthreshold}{Default is zero. If zero, treshold is used for filter. If
+not zero, a threshold based on pthreshold quantile is calculated for each
+frame.}
 }
 \value{
-what does it return?
+This function returns a list with two elements: (1) a list with
+particle statistics with identified particles for each frame. (2) an array
+containing all binary images.
 }
 \description{
-\code{loadImages} is a function that (description)
-The objects created through the function ...
+\code{identifyParticles} is a function to identify particles using subtracted
+background images.
 }
 \examples{
 \dontrun{
 
- rnorm(1) # give a example code here
-
-
-
-
+  trackObject <- identifyParticles(allImages,pthreshold=0.001,pixelRange=c(3,400))
 	}
 }
 \author{

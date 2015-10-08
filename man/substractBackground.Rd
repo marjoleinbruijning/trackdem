@@ -12,7 +12,7 @@ substractBackground(background, images)
 \item{images}{Array containing all images.}
 }
 \value{
-what does it return?
+Returns array with same size as images, subtracted from background.
 }
 \description{
 \code{subtractBackground} is a function to subtract each

@@ -3,5 +3,4 @@
 export(createBackground)
 export(identifyParticles)
 export(loadImages)
-export(manuallySelect)
 export(substractBackground)

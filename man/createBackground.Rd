@@ -12,7 +12,7 @@ createBackground(allFullImages, func = mean)
 \item{func}{Function to be performed over each pixel. Default is mean.}
 }
 \value{
-what does it return?
+Returns array with still background.
 }
 \description{
 \code{createBackground} is a function to create a still background,
