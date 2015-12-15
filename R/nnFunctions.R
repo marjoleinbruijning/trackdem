@@ -25,8 +25,6 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
                             frame=NULL) {
   
   nImages <- 1:length(particleStats)
-  totx <- nrow(colorimages[[n]])
-  toty <- ncol(colorimages[[n]])
   
   if(is.null(frame)){
     n <- which(sapply(nImages,function(X) 
@@ -34,6 +32,9 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
                max(sapply(nImages,function(X) 
                length(particleStats[[X]]$patchID))))[1]
   } else{n <- frame}
+
+  totx <- ncol(colorimages[[n]])
+  toty <- nrow(colorimages[[n]])
   
   layout(matrix(c(1,2,2,2,2), 1, 5, byrow = TRUE))
   par(mar=c(0,0,0,0))
@@ -140,12 +141,13 @@ createTrainingData <- function (particleStats,
 
   testI <- lapply(1:length(temp),function(X)
                   extractRGB(temp[[X]]$x,temp[[X]]$y,images=allImages,
-                             frame=X))
+                             frame=frames[X]))
   sapply(1:length(testI),function(X) 
 	colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
   
   testNeighbor <- lapply(1:length(temp),function(X)
-	extractNeighbors(temp[[X]]$x,temp[[X]]$y,image=allFullImagesRGB,frame=X))
+	extractNeighbors(temp[[X]]$x,temp[[X]]$y,images=allFullImagesRGB,frame=frames[X]))
+	
   testNeighbor <- lapply(1:length(temp),function(X) 
 	t(sapply(1:length(testNeighbor[[X]]),function(i) 
 		as.vector(testNeighbor[[X]][[i]])))) 

@@ -138,7 +138,7 @@ linkTrajec <- function (G,trackRecord=records$trackRecord,
 	                sizes2=sizes2,
 	                L=L,r=1)   
       gstart <- gMat(Phi)
-      A[1:nrow(Phi),1:ncol(Phi),i] <- track3(Phi=Phi, g=gstart, L=L) * Phi
+      A[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L) * Phi
       
       tmp <- data.frame(which(A[,,i] > 0,TRUE))
       tmp <- tmp[tmp[,1] != 1,]
@@ -166,7 +166,6 @@ linkTrajec <- function (G,trackRecord=records$trackRecord,
         }
       }                
     } 
-    print(dim(trackRecord))
   }
  }
  

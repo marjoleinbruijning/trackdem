@@ -1,4 +1,6 @@
 #### Functions in C++
+require(Rcpp)
+require(inline)
 
 src <- '
   NumericVector mat1(m1);
