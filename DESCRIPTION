@@ -6,9 +6,9 @@ Date: 2015-06-02
 Author: Marjolein Bruijning, Marco D. Visser
 Maintainer: Marjolein Bruijning <marjoleinbruijning@gmail.com>
 Description: Describe me
-	     but use tabs to stay
-	     within this
-	     box
+    but use tabs to stay
+    within this
+    box
 License: GPL-2
 URL: https://github.com/marjoleinbruijning/trackdem
 BugReports: https://github.com/marjoleinbruijning/trackdem/issues
@@ -16,3 +16,4 @@ Depends:
     png
 Imports:
     compiler
+RoxygenNote: 5.0.1
