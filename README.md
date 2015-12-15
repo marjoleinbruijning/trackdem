@@ -1,7 +1,7 @@
 # trackdem
 
 ---
-Partical tracking and demography
+Particle tracking and demography
 ---
 
 ![](images/animation.gif)
