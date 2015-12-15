@@ -1,48 +1,104 @@
-##' Load .png images
+##' Manually selection false positives and true positives to create
+##' training data. A plot appears, and the user first click on all true
+##' positives, and second on all false positives.
 ##'
-##' \code{loadImages} is a function to load png images as a three dimensional array.
-##' The objects created through the function can be used for image analysis.
-##' @param direcPictures The path of the folder where the images can be found.
-##' @param filenames Default is null. If not all files should be loaded, here specify
-##' which files to use.
-##' @param nImages The total number of images to load.
-##' @param xranges Default all pixels are loaded; specify to subset the number of columns.
-##' @param yranges Default all pixels are loaded; specify to subset the number of rows.
+##' \code{manuallySelect} is a function to to create training data that
+##' by manually selecting false and true positives. The created training
+##' data can be implemented in a neural net.
+##' @param particleStats A list with particle statistics for each frame.
+##' @param colorimages A list with the original full color images, in order to plot
+##' on the original images.
+##' @param frame A number defining the frame that should be used. Default
+##' is NULL; the frame with the maximum number of identified particles is used.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'
-##' loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
-##'	nImages=1:30,yranges=1:1080,xranges=1:1915)
+##' manuallySelect(particleStats=trackObject$particleStats,frame=1)
 ##'
 ##'	}
-##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
-##' @return List two elements: first contains array with all images,
-##' subset when relevant. Second element contains all original color images as array.
+##' @seealso \code{\link{identifyParticles}},
+##' @return List containing three elements: true positives, false positives,
+##' and the evaluated frame.
 ##' @concept What is the broad searchable concept?
 ##' @export
 
-loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
-                        xranges=NULL,yranges=NULL) {
-  if (is.null(filenames)) {
-    allFiles <- list.files(path=direcPictures) # List all files in folder
-    allFiles <- allFiles[nImages]
-  }
-  else {filenames=filenames[nImages]}	
-  # Load all images
-  allFullImagesRGB <- sapply(nImages,
-		function(x) readPNG(paste0(direcPictures,allFiles[x])),
-                            simplify='array')
-
-  if (!is.null(xranges) | !is.null(yranges)) {
-    allFullImages <- sapply(nImages,function(x) 
-		allFullImagesRGB[[x]][yranges,xranges,],simplify='array')	
-  } else {allFullImages <- allFullImagesRGB}
- 
-  allFullImagesRGB <- lapply(nImages,function(x) brick(allFullImagesRGB[,,,x]))
+manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
+                            frame=NULL) {
   
-  return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
+  nImages <- 1:length(particleStats)
+  totx <- nrow(colorimages[[n]])
+  toty <- ncol(colorimages[[n]])
+  
+  if(is.null(frame)){
+    n <- which(sapply(nImages,function(X) 
+               length(particleStats[[X]]$patchID))==
+               max(sapply(nImages,function(X) 
+               length(particleStats[[X]]$patchID))))[1]
+  } else{n <- frame}
+  
+  layout(matrix(c(1,2,2,2,2), 1, 5, byrow = TRUE))
+  par(mar=c(0,0,0,0))
+  plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
+       ylim=c(0,1))
+  polygon(x=c(0,1,1,0,0),y=c(0.7,0.7,0.8,0.8,0.7),col='green')
+  text(x=0.5,y=0.75,label='Done',cex=4)
+  text(0.5,0.83,label='Correctly identified',cex=1.5)
+  polygon(x=c(0,1,1,0,0),y=c(0.5,0.5,0.6,0.6,0.5),col='red')
+  text(x=0.5,y=0.55,label='Done',cex=4)
+  text(0.5,0.63,label='Wrongly identified',cex=1.5)
+  tmp1 <- par('usr') 
+
+  plotRGB(colorimages[[n]],scale=1,bty='n',
+	asp=toty/totx)
+  points(particleStats[[n]]$x/totx,
+       1-particleStats[[n]]$y/toty,col='blue',cex=1.5)
+  title("First click on all (or a subset of) correctly identified particles, and press the green button.\n
+	Then click on all (or a subset of) wrongly identified particles. Finish by pressing the red button.", 
+	line=-4.5,outer = TRUE, cex=1)
+  tmp2 <- par('usr') 
+
+  continueCorrect <- TRUE
+  correct <- as.numeric()
+  while (continueCorrect == TRUE) {
+    pick<-locator(1)
+    if (pick$x < 0 & pick$y > 0.9 & pick$y < 1.1) {continueCorrect <- FALSE}
+    if (pick$x > 0) {
+      tmp <- (1-particleStats[[n]]$y/toty - pick$y)^2 + 
+             (particleStats[[n]]$x/totx - pick$x)^2
+      patches <- particleStats[[n]]$patchID[which(tmp == min(tmp))]
+      
+      tmp <- particleStats[[n]][particleStats[[n]]$patchID %in% patches,]
+      points(tmp$x/totx,1-tmp$y/toty,col='green',cex=2,pch=5)
+      correct <- c(correct, tmp$patchID)
+    }
+  }
+  par(mfg=c(1,1)) 
+  par(usr=tmp1) 	
+  polygon(x=c(-100,1,1,-1,-1),y=c(0.7,0.7,0.8,0.8,0.7),col='grey')
+  text(x=0.5,y=0.75,label='Done',cex=4)
+
+  par(mfg=c(1,2)) 
+  par(usr=tmp2) 	
+  continueWrong <- TRUE
+  wrong <- as.numeric()
+  while (continueWrong == TRUE) {
+    pick<-locator(1)
+    if (pick$x < 0 & pick$y > 0.5 & pick$y < 0.7) {continueWrong <- FALSE}
+    if (pick$x > 0) {
+      tmp <- (1-particleStats[[n]]$y/toty - pick$y)^2 + 
+             (particleStats[[n]]$x/totx - pick$x)^2
+      patches <- particleStats[[n]]$patchID[which(tmp == min(tmp))]
+      
+      tmp <- particleStats[[n]][particleStats[[n]]$patchID %in% patches,]
+      points(tmp$x/totx,1-tmp$y/toty,col='red',cex=2,pch=4)
+      wrong <- c(wrong, tmp$patchID)
+    }
+  }
+  dev.off()
+  return(list(wrong=wrong,correct=correct,frame=n))
 }
+
 
 
 ##' Background detection
