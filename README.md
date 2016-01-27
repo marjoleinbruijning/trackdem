@@ -30,25 +30,26 @@ install_github("marjoleinbruijning/trackdem")
 ## Examples
 
 ```r
-# Dependencies: png, SDMTools, raster, animation, adimpro,inline
-# Rcpp, neuralnet, RccpArmadillo
 
-## Load 
-direcPictures <- 'trackdem/Test/images/'
+## Load package
+require(trackdem)
+
+## Load images
+direcPictures <- '~/Dropbox/Github/trackdem/Test/images/'
 loadAll <- loadImages (direcPictures=direcPictures,nImages=1:30)
 allFullImages <- loadAll$allFullImages
 allFullImagesRGB <- loadAll$allFullImagesRGB
 rm(loadAll)
 
 ## Create background and subtract
-stillBack <- createBackground3(
+stillBack <- createBackground(
                              allFullImages[,,1,],
                              allFullImages[,,2,],
                              allFullImages[,,3,],
                              dim(allFullImages[,,1,]))
 allImages <- sapply(1:3, 
                    function(x) 
-	                  subtractBackground2(allFullImages[,,x,],
+	                  subtractBackground(allFullImages[,,x,],
 	                  stillBack[,,x],dim(allFullImages[,,x,])),
 	               simplify='array')
 	  
@@ -59,7 +60,19 @@ pthres <- seqq[which(diff(quantile(
 trackObject <- identifyParticles(allImages,
                pthreshold=pthres,
                pixelRange=c(10,500))
-               
+
+## Track (without machine learning steps)
+particleStats <- trackObject$particleStats
+records <- doTrack(particleStats=particleStats,
+                   plot=FALSE,backward=FALSE,L=100)
+pdf('results.pdf')
+records2 <- linkTrajec (G=records$G,trackRecord=records$trackRecord,
+                        sizeRecord=records$sizeRecord,label=records$label,
+                         R=1,plot=TRUE,L=100)
+dev.off()
+
+
+####### TO BE UPDATED ######               
 ## Prepare data for neural net
 nnData <- createNNdata(particleStats=trackObject$particleStats,
                        allFullImagesRGB=allFullImagesRGB,allImages=allImages,
@@ -89,14 +102,6 @@ confusion <- table(data.frame(D=trainingData$D,P=plogis(n1com$net.result)>Thr))
 particleStats <- updateParticles(n1,testData=nnData$testData,
                                  predictors=predictz,Thr=Thr)
                                  
-## Track
-records <- doTrack(particleStats=particleStats,
-                   plot=FALSE,backward=FALSE,L=100)
-pdf('test.pdf')
-records2 <- linkTrajec (G=records$G,trackRecord=records$trackRecord,
-                        sizeRecord=records$sizeRecord,label=records$label,
-                         R=1,plot=TRUE,L=100)
-dev.off()
 ```
 ## Examples of output
 Screenshots to come
