@@ -38,9 +38,6 @@ nImages=1:30,yranges=1:1080,xranges=1:1915)
 \author{
 Marjolein Bruijning & Marco D. Visser
 }
-\seealso{
-\code{\link{createBackground}}, \code{\link{summary}},
-}
 \concept{
 What is the broad searchable concept?
 }

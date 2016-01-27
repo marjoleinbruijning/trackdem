@@ -2,39 +2,32 @@
 % Please edit documentation in R/trackFunctions.R
 \name{doTrack}
 \alias{doTrack}
-\title{Track particles
-\code{doTrack} is a function to track particles over subsequent frames.
-Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).}
+\title{Track particles}
 \usage{
 doTrack(particleStats = particleStats, L = 50, plot = FALSE,
   images = allFullImagesRGB[[1]], backward = FALSE)
 }
 \arguments{
-\item{particleStats}{blabla}
+\item{particleStats}{Output from \code{\link{identifyParticles}}}
 
-\item{L}{Cost to link to dummy particle.}
+\item{L}{Cost for linking to dummy.}
 
 \item{plot}{Default is FALSE. Plot results?}
 
-\item{images}{Original color image (first frame).}
+\item{images}{Default is FALSE. Plot results?}
 
-\item{backward}{Default is FALSE. Perform tracking backward?}
+\item{backward}{Default is FALSE.}
 }
 \value{
 Bla
 }
 \description{
-Track particles
-\code{doTrack} is a function to track particles over subsequent frames.
-Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).
+\code{doTrack} is a function link particles using \code{\link{track}}
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
 }
 \seealso{
 \code{\link{doTrack}}, \code{\link{linkTrajec}},
-}
-\concept{
-What is the broad searchable concept?
 }
 

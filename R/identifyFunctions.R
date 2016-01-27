@@ -16,7 +16,6 @@
 ##'	nImages=1:30,yranges=1:1080,xranges=1:1915)
 ##'
 ##'	}
-##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
 ##' @return List two elements: first contains array with all images,
 ##' subset when relevant. Second element contains all original color images as array.
 ##' @concept What is the broad searchable concept?
@@ -44,61 +43,6 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
   return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
 }
 
-
-##' Background detection
-##'
-##' \code{createBackground} is a function to create a still background,
-##' exluding movies objects, using loaded image sequences as input.
-##' @param allFullImages Array containing all images (and three color layers)
-##' @param func Function to be performed over each pixel. Default is NULL,
-##' taking mean pixel values.
-##' @author Marjolein Bruining & Marco D. Visser
-##' @examples
-##' \dontrun{
-##'
-##' stillBack <- createBackground (allFullImages)
-##'	}
-##' @seealso \code{\link{createBackground}},
-##' @return Returns array with still background.
-##' @concept What is the broad searchable concept?
-##' @export
-createBackground <- function (allFullImages,func=NULL) {
-  if (is.null(func)) {
-	apply(allFullImages,c(1,2,3),function (x) sum(x)/length(x))
-  } else {apply(allFullImages,c(1,2,3),func)}
-}
-
-##' Background subtraction
-##'
-##' \code{subtractBackground} is a function to subtract each
-##' image from the created still background.
-##' The objects created through the function contain all moving
-##' pixels.
-##' @param background Array containing still background.
-##' @param images Array containing all images.
-##' @author Marjolein Bruining & Marco D. Visser
-##' @examples
-##' \dontrun{
-##'
-##'  allImages <- subtractBackground(background=stillBack,allFullImages)
-
-##'	}
-##' @seealso \code{\link{createBackground}},
-##' @return Returns array with same size as images, subtracted from background.
-##' @concept What is the broad searchable concept?
-##' @export
-
-subtractBackground <- function (background,images) {
-    #a <- apply(images,c(1,2,3),function(x) x - background)
-    im <- array(NA,dim=dim(images))
-    
-    for (i in 1:3) {
-          im[,,i,] <- sapply(1:dim(images)[4], function(x)
-			images[,,i,x]-background[,,i], simplify='array')
-    }
-    return(im)
-}
-
 ##' Identify moving particles
 ##'
 ##' \code{identifyParticles} is a function to identify particles using subtracted
@@ -117,7 +61,6 @@ subtractBackground <- function (background,images) {
 ##'
 ##'   trackObject <- identifyParticles(allImages,pthreshold=0.001,pixelRange=c(3,400))
 ##'	}
-##' @seealso \code{\link{createBackground}}, \code{\link{summary}},
 ##' @return This function returns a list with two elements: (1) a list with
 ##' particle statistics with identified particles for each frame. (2) an array
 ##' containing all binary images.
@@ -163,7 +106,7 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
   
   print('Coordinates calculation')
   coords <- lapply(1:dim(allImages)[3],function(x) 
-    getCoords2(m=allImages[,,x],d=dim(allImages[,,x])))
+    getCoords(m=allImages[,,x],d=dim(allImages[,,x])))
 
   particleStats <- lapply(nImages,function(x) {
     rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],mean)

@@ -38,9 +38,6 @@ background images.
 \author{
 Marjolein Bruining & Marco D. Visser
 }
-\seealso{
-\code{\link{createBackground}}, \code{\link{summary}},
-}
 \concept{
 What is the broad searchable concept?
 }

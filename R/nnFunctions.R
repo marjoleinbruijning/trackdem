@@ -98,19 +98,6 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
   return(list(wrong=wrong,correct=correct,frame=n))
 }
 
-getCoords <- function (mat) {
-  ID <- unique(as.vector(mat))[-1]
-  x <- y <- rep(NA,length(ID))
-
-  for (i in 1:length(x)) {
-    tmp <- mat == ID[i]
-    coords <- colMeans(t(t(which(tmp,TRUE))))
-    y[i] <- coords[1]
-    x[i] <- coords[2]
-  }
-  return(data.frame(x=x,y=y,ID=ID))
-}
-
 ##' Create trainingdata
 ##'
 ##' \code{createTrainingData} is a function to to create training data that
@@ -171,7 +158,7 @@ createTrainingData <- function (particleStats,
   return(trainingData)
 }
 
-##' Create trainingdata
+##' Create createNNData
 ##'
 ##' \code{createNNdata} is a function to to create training data that
 ##' by manually selecting false and true positives. The created training
@@ -228,6 +215,9 @@ createNNdata <- function(particleStats,allFullImagesRGB=allFullImagesRGB,
   }
 }
 
+##' optThr
+##'
+##' @export
 optThr <- function(trD=trainingData$D,nnP=plogis(n1com$net.result),
                    stat="accuracy"){
 
@@ -248,6 +238,9 @@ optThr <- function(trD=trainingData$D,nnP=plogis(n1com$net.result),
   optimize(ln,c(0,1),maximum = flipper)
 }
 
+##' Create createNNData
+##'
+##' @export
 confuStats <- function(confusion){
   accuracy <- sum(diag(confusion))/sum(confusion) ## correct predictions
   recall <-  diag(confusion)[2]/sum(confusion[,2])# true positive rate
@@ -258,6 +251,9 @@ confuStats <- function(confusion){
   data.frame(accuracy,recall,TN,FN,precision,F)
 }
 
+##' Create createNNData
+##'
+##' @export
 runNN <- function(predictors,trainingData,hiddenLayers=3,Thr=0.6) {
   
   n1<-neuralnet(as.formula(paste("D ~ ", paste(predictors, collapse= "+"))),
@@ -272,6 +268,9 @@ runNN <- function(predictors,trainingData,hiddenLayers=3,Thr=0.6) {
   return(list(confusion=confusion,n1=n1))
 }
 
+##' Create createNNData
+##'
+##' @export
 updateParticles <- function(nn,testData,predictors,Thr) {
   newParticleStats <- idDaphnia(nn,testData,predictors=predictors,FnTr=Thr)
   tmp <- lapply(newParticleStats,function(x) x > Thr)
@@ -288,13 +287,21 @@ updateParticles <- function(nn,testData,predictors,Thr) {
    return(particleStats)
 }
 
+##' Create createNNData
+##'
+##' @export
 idDaphnia <- function(nn,testData,FnTr=0.6,predictors) {
   lapply(testData,function(X) plogis(compute(nn,X[,predictors])$net.result[,1]))
 }
 
+##' Create createNNData
+##'
+##' @export
 resample <- function(x, ...) x[sample.int(length(x), ...)] 
 
-## Find original R, G, B values
+##' Find original R, G, B values
+##'
+##' @export
 extractRGB <- function(x,y,images,frame){
   if(class(images)=="list"){
     IM <- as.array(images[[frame]])
@@ -307,7 +314,9 @@ extractRGB <- function(x,y,images,frame){
   return(RGBmat)
 }
 
-# Get RGB values for neighbor pixels
+##' Get RGB values for neighbor pixels
+##'
+##' @export
 extractNeighbors <- function(x,y,images,frame){
   IM <- as.array(images[[frame]])
   x<-round(x)
@@ -322,9 +331,6 @@ extractNeighbors <- function(x,y,images,frame){
   Ymin[Ymin < 1] <- 1
   return(lapply(1:length(x),function(i) IM[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
-
-jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "red", "#7F0000")) 
-
 
 
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/nnFunctions.R
 \name{createNNdata}
 \alias{createNNdata}
-\title{Create trainingdata}
+\title{Create createNNData}
 \usage{
 createNNdata(particleStats, allFullImagesRGB = allFullImagesRGB,
   allImages = allImages, frames = frames, mId = mId, training = TRUE)
