@@ -5,7 +5,7 @@
 \title{Create trainingdata}
 \usage{
 createTrainingData(particleStats, allFullImagesRGB = allFullImagesRGB,
-  allImages = allImages, frames = frames, mId = mId)
+  allImages = allImages, frames = NULL, mId = mId, training = FALSE)
 }
 \arguments{
 \item{particleStats}{A list with particle statistics for each frame.}

@@ -120,11 +120,12 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
 ##' @export
 createTrainingData <- function (particleStats,
     allFullImagesRGB=allFullImagesRGB,
-	allImages=allImages,frames=frames,mId=mId) {
+	allImages=allImages,frames=NULL,mId=mId,training=FALSE) {
 
- temp <- particleStats[frames]
+  if (is.null(frames)) frames <- 1:length(particleStats)
+  temp <- particleStats[frames]
 
- print('Extract color and neighbor info')
+  print('Extract color and neighbor info')
 
   testI <- lapply(1:length(temp),function(X)
                   extractRGB(temp[[X]]$x,temp[[X]]$y,images=allImages,
@@ -133,7 +134,9 @@ createTrainingData <- function (particleStats,
 	colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
   
   testNeighbor <- lapply(1:length(temp),function(X)
-	extractNeighbors(temp[[X]]$x,temp[[X]]$y,images=allFullImagesRGB,frame=frames[X]))
+	extractNeighbors(temp[[X]]$x,temp[[X]]$y,
+	                images=allFullImagesRGB[[frames[X]]],
+	                frame=frames[X]))
 	
   testNeighbor <- lapply(1:length(temp),function(X) 
 	t(sapply(1:length(testNeighbor[[X]]),function(i) 
@@ -147,72 +150,16 @@ createTrainingData <- function (particleStats,
                      cbind(temp[[X]],testI[[X]],testNeighbor[[X]])
                      )
   ## make training data based on test data and manually identified objects
-  print('Create training data')
-  trainingData <- testData
-  for(i in 1:length(frames)){
-	trainingData[[i]]$D <- NA
-	trainingData[[i]]$D[trainingData[[i]]$patchID%in%mId$correct] <- 1
-	trainingData[[i]]$D[trainingData[[i]]$patchID%in%mId$wrong] <- 0
-  }
-  trainingData <- do.call(rbind,trainingData)
-  return(trainingData)
-}
-
-##' Create createNNData
-##'
-##' \code{createNNdata} is a function to to create training data that
-##' by manually selecting false and true positives. The created training
-##' data can be implemented in a neural net.
-##' @param particleStats A list with particle statistics for each frame.
-##' @param colorimages A list with the original full color images, in order to plot
-##' on the original images.
-##' @param frame A number defining the frame that should be used. Default
-##' is NULL; the frame with the maximum number of identified particles is used.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @examples
-##' \dontrun{
-##' manuallySelect(particleStats=trackObject$particleStats,frame=1)
-##'	}
-##' @seealso \code{\link{manuallySelect}},
-##' @return List containing three elements: true positives, false positives,
-##' and the evaluated frame.
-##' @concept What is the broad searchable concept?
-##' @export
-createNNdata <- function(particleStats,allFullImagesRGB=allFullImagesRGB,
-	allImages=allImages,frames=frames,mId=mId,training=TRUE) {
-  
-  temp <- particleStats
-  # Extract RGB values and intensities (from substracted background) for different colors.
-  print('Extract color and neighbor info')
-  #testRGB <- lapply(1:length(temp),function(X)
-  #	   extractRGB(temp[[X]]$x,temp[[X]]$y,images=allFullImagesRGB,
-  #				  frame=X))
-  testI <- lapply(1:length(temp),function(X)
-                  extractRGB(temp[[X]]$x,temp[[X]]$y,images=allImages,
-                             frame=X))
-  sapply(1:length(testI),function(X) 
-	colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
- 
-  # Test data
-  print('Create test data')
-  testData <- lapply(1:length(temp),function(X)
-                     cbind(temp[[X]],testI[[X]])
-                     )
-  ## make training data based on test data and manually identified objects
   if (training == TRUE) {
-	  print('Create training data')
-	  trainingData<-testData[frames]
-
-	  for(i in 1:length(frames)){
-		trainingData[[i]]$D <- NA
-		trainingData[[i]]$D[trainingData[[i]]$patchID%in%mId[[i]]$correct] <- 1
-		trainingData[[i]]$D[trainingData[[i]]$patchID%in%mId[[i]]$wrong] <- 0
-	  }
-	  trainingData <- do.call(rbind,trainingData)
-    return(list(trainingData=trainingData,testData=testData))
-  } else {
-  return(list(testData=testData))
+    print('Create training data')
+    for(i in 1:length(frames)){
+	  testData[[i]]$D <- NA
+	  testData[[i]]$D[testData[[i]]$patchID%in%mId$correct] <- 1
+	  testData[[i]]$D[testData[[i]]$patchID%in%mId$wrong] <- 0
+    }
+    testData <- do.call(rbind,testData)
   }
+  return(testData)
 }
 
 ##' optThr
@@ -318,7 +265,7 @@ extractRGB <- function(x,y,images,frame){
 ##'
 ##' @export
 extractNeighbors <- function(x,y,images,frame){
-  IM <- as.array(images[[frame]])
+  IM <- as.array(images)
   x<-round(x)
   y<-round(y)
   Xmin<-x-1
@@ -329,7 +276,8 @@ extractNeighbors <- function(x,y,images,frame){
   Ymax[Ymax > dim(IM)[1]] <- dim(IM)[1]
   Xmin[Xmin < 1] <- 1
   Ymin[Ymin < 1] <- 1
-  return(lapply(1:length(x),function(i) IM[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
+  return(lapply(1:length(x),function(i) 
+         IM[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
 
 

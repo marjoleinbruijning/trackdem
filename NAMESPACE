@@ -3,7 +3,6 @@
 export(calcCost)
 export(confuStats)
 export(createBackground)
-export(createNNdata)
 export(createTrainingData)
 export(doTrack)
 export(extractNeighbors)
