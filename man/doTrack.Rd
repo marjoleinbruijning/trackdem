@@ -5,7 +5,8 @@
 \title{Track particles}
 \usage{
 doTrack(particleStats = particleStats, L = 50, plot = FALSE,
-  images = allFullImagesRGB[[1]], backward = FALSE)
+  images = allFullImagesRGB[[1]], backward = FALSE,
+  sizeMeasure = "n.cell")
 }
 \arguments{
 \item{particleStats}{Output from \code{\link{identifyParticles}}}

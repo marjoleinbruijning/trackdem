@@ -133,9 +133,9 @@ createTrainingData <- function (particleStats,
   sapply(1:length(testI),function(X) 
 	colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
   
-  testNeighbor <- lapply(1:length(temp),function(X)
+  testNeighbor <- lapply(1:length(frames),function(X)
 	extractNeighbors(temp[[X]]$x,temp[[X]]$y,
-	                images=allFullImagesRGB[[frames[X]]],
+	                images=as.array(allFullImagesRGB[[frames[X]]]),
 	                frame=frames[X]))
 	
   testNeighbor <- lapply(1:length(temp),function(X) 

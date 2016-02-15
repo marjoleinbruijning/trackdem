@@ -296,7 +296,8 @@ linkTrajec <- function (G,trackRecord=records$trackRecord,
 ##' @export
 ## 
 doTrack <- function(particleStats=particleStats,L=50,plot=FALSE,
-                    images=allFullImagesRGB[[1]],backward=FALSE) {
+                    images=allFullImagesRGB[[1]],backward=FALSE,
+                    sizeMeasure='n.cell') {
 
 G <- array(NA,dim=c(500,500,length(particleStats)-1))
 links <- list()
@@ -356,7 +357,7 @@ for (i in 1:(length(a))) {
     label[,i] <- allLinks[,order(a)[i]]
 	trackRecord [,i,1] <- particleStats[[i]][allLinks[,order(a)[i]],'x']
 	trackRecord [,i,2] <- particleStats[[i]][allLinks[,order(a)[i]],'y']
-	sizeRecord[,i] <- particleStats[[i]][allLinks[,order(a)[i]],'n.cell']
+	sizeRecord[,i] <- particleStats[[i]][allLinks[,order(a)[i]],sizeMeasure]
 }
 
 if (plot == TRUE) {

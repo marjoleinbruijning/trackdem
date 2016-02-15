@@ -116,6 +116,14 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
     return(particleStats[[x]])                            
     }
   )
+  
+  print('Major distance calculator')
+  for (i in 1:length(particleStats)) {
+    for (X in 1:length(particleStats[[i]]$patchID)) {
+      a <- which(allImages[,,i]==particleStats[[i]]$patchID[X],arr.ind=TRUE)
+      particleStats[[i]]$majorDist[X] <- maxDist(x=a[,1],y=a[,2])
+    }
+  }
 
   # Results
   meanPart <- mean(sapply(nImages,function(X)
@@ -127,6 +135,20 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
        paste0('Mean number of identified particles equals ',round(meanPart,2),
                '; Coefficient of variation is ',round(coeffVar,3))
   return(list(allImages=allImages,particleStats=particleStats))
+}
+
+##' Maximum distance
+##'
+##' \code{maxDist} is ...
+##' @param x x coordinates
+##' @param y y coordinates
+##' @author Marjolein Bruining & Marco D. Visser
+##' @export
+maxDist <- function(x,y) {
+  x <- x - min(x)
+  y <- y - min(y)
+  mat <- sapply(1:length(y), function(i) sqrt(x^2 + y[i]^2))
+  return(max(mat))
 }
 
 
