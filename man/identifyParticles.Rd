@@ -36,7 +36,7 @@ background images.
 }
 }
 \author{
-Marjolein Bruining & Marco D. Visser
+Marjolein Bruijning & Marco D. Visser
 }
 \concept{
 What is the broad searchable concept?

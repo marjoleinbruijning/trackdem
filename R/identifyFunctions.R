@@ -55,7 +55,7 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' @param pthreshold Default is NULL. If NULL, treshold is used for filter. If
 ##' not zero, a threshold based on pthreshold quantile is calculated for each
 ##' frame.
-##' @author Marjolein Bruining & Marco D. Visser
+##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'
@@ -111,6 +111,8 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
   particleStats <- lapply(nImages,function(x) {
     rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],mean)
     cols <- tapply(coords[[x]][,2],allImages[,,x][allImages[,,x]>0],mean)
+    #rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],
+     #              function (i) )
     particleStats[[x]] <- cbind(particleStats[[x]],
                                  data.frame(x=cols,y=rows))
     return(particleStats[[x]])                            
@@ -119,9 +121,11 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
   
   print('Major distance calculator')
   for (i in 1:length(particleStats)) {
-    for (X in 1:length(particleStats[[i]]$patchID)) {
-      a <- which(allImages[,,i]==particleStats[[i]]$patchID[X],arr.ind=TRUE)
-      particleStats[[i]]$majorDist[X] <- maxDist(x=a[,1],y=a[,2])
+    if (length(particleStats[[i]]$patchID) > 0) {
+      for (X in 1:length(particleStats[[i]]$patchID)) {
+        a <- which(allImages[,,i]==particleStats[[i]]$patchID[X],arr.ind=TRUE)
+        particleStats[[i]]$majorDist[X] <- maxDist(x=a[,1],y=a[,2])
+      }
     }
   }
 
@@ -142,13 +146,14 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
 ##' \code{maxDist} is ...
 ##' @param x x coordinates
 ##' @param y y coordinates
-##' @author Marjolein Bruining & Marco D. Visser
+##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
 maxDist <- function(x,y) {
   x <- x - min(x)
   y <- y - min(y)
-  mat <- sapply(1:length(y), function(i) sqrt(x^2 + y[i]^2))
-  return(max(mat))
+  max(sqrt(x^2 + y^2))
+  #mat <- sapply(1:length(y), function(i) sqrt(x^2 + y[i]^2))
+  #return(max(mat))
 }
 
 

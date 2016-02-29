@@ -15,6 +15,6 @@ maxDist(x, y)
 \code{maxDist} is ...
 }
 \author{
-Marjolein Bruining & Marco D. Visser
+Marjolein Bruijning & Marco D. Visser
 }
 
