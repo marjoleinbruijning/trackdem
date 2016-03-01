@@ -34,8 +34,11 @@ install_github("marjoleinbruijning/trackdem")
 ## Load package
 require(trackdem)
 
+## Create image sequence
+createImageSeq(path='~/Dropbox/Github/trackdem/Test/')
+
 ## Load images
-direcPictures <- '~/Dropbox/Github/trackdem/Test/images/'
+direcPictures <- '~/Dropbox/Github/trackdem/Test/ImageSequences/20150406_50/'
 loadAll <- loadImages (direcPictures=direcPictures,nImages=1:30)
 allFullImages <- loadAll$allFullImages
 allFullImagesRGB <- loadAll$allFullImagesRGB
@@ -52,7 +55,7 @@ allImages <- sapply(1:3,
 	                  subtractBackground(allFullImages[,,x,],
 	                  stillBack[,,x],dim(allFullImages[,,x,])),
 	               simplify='array')
-	  
+
 ## Identify particles
 seqq <- seq(0,0.01,0.00001)
 pthres <- seqq[which(diff(quantile(
@@ -68,7 +71,7 @@ records <- doTrack(particleStats=particleStats,
 pdf('results.pdf')
 records2 <- linkTrajec (G=records$G,trackRecord=records$trackRecord,
                         sizeRecord=records$sizeRecord,label=records$label,
-                         R=1,plot=TRUE,L=100)
+                         R=2,plot=TRUE,L=100)
 dev.off()
 
 
@@ -102,6 +105,8 @@ confusion <- table(data.frame(D=trainingData$D,P=plogis(n1com$net.result)>Thr))
 particleStats <- updateParticles(n1,testData=nnData$testData,
                                  predictors=predictz,Thr=Thr)
                                  
+
+
 ```
 ## Examples of output
 Screenshots to come
