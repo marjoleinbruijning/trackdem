@@ -1,0 +1,98 @@
+#!/usr/bin/env python
+'''
+Created on 14 jul. 2015
+
+@author: jeroenbruijning
+'''
+import os
+import subprocess
+import string
+
+############################################################
+# De volgende regels kunnen naar behoefte worden aangepast #
+############################################################
+
+# Mapnamen. Deze kunnen zo nodig worden gewijzigd. Voor de veiligheid: houd de namen alfanumeriek zonder spaties of vreemde tekens. Hetzelfde geldt voor de naam van de map waar het programma wordt uitgevoerd.
+
+movieDirname = 'Movies'
+sequenceParentDirname = 'ImageSequences'
+
+# De volgende  functie construeert het uit te voeren commando. Kan worden aangepast maar let op eventuele veiligheidsrisico's, omdat het als een commandoregel wordt uitgevoerd.
+# Normale opties voor avconv kunnen geen kwaad.
+
+def conv_command(filename, targetDirName, start, stop):
+#     return ['avconv -i ', os.path.join(movieDir, filename) + ' -r 15 -s 1915x1080 -f image2 ' + os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')]
+    inFile = os.path.join(movieDir, filename)
+    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')
+#    nieuw: start en stoptijd
+    return ['avconv',
+            '-i', inFile,
+            '-r', '15',
+            '-s', '1915x1080',
+            '-ss', str(start),
+            '-t', str(stop - start), # duration
+            '-f', 'image2',
+            outFiles]
+
+####################################
+# Vanaf hier normaal niet wijzigen #
+####################################
+
+startDir = os.path.curdir   # Op deze manier werkt het programma (alleen) wanneer het wordt gestart vanuit de map die de submap met movies bevat.
+movieDir = os.path.abspath(os.path.join(startDir, movieDirname))
+sequenceParentDir = os.path.abspath(os.path.join(startDir, sequenceParentDirname))
+
+# Eerst halen we de namen van alle movie bestanden op
+# We controleren of ze allemaal van de vorm nnn.mts (of nnn.MTS enz.) zijn. 
+# Bestanden die hier niet aan voldoen worden overgeslagen, en er wordt een melding van gemaakt.
+# Ook deelmappen van de moviemap worden overgeslagen. Dat wordt eveneens gemeld.
+
+movieNames = []
+for filename in os.listdir(movieDir):
+    movieName, movieExtension = os.path.splitext(filename)
+    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieName.isdigit() or not movieExtension.lower() == '.mts':
+        
+# Bovenstaande test niet zonder meer veranderen. Er is een (klein) securityrisico als "vreemde" filenamen in het subprocess commando (zie onder) worden geintroduceerd.
+# Filenamen van de vorm nnn.MTS, waar nu op wordt getest, zijn veilig.
+
+        print 'Bestand %s voldoet niet aan de naamgevingseisen of is een map, overgeslagen' % filename
+    else:
+        movieNames.append(filename)
+        
+# Zo nodig wordt eerst de hoofdmap aangemaakt
+
+if not os.path.exists(sequenceParentDir):
+    os.mkdir(sequenceParentDir)
+
+# Nu gaan we de doelmappen aanmaken en de movies verwerken. Als de doelmap al bestaat, melden we dat en slaan we de conversie over. We melden ook als de verwerking fouten oplevert.
+
+for filename in movieNames:
+    movieName, movieExtension = os.path.splitext(filename)
+    try:
+        targetDirName = string.translate(subprocess.check_output(['exiftool', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName
+    except Exception:
+        print 'Fout bij opvragen datum in bestand %s, overgeslagen' % filename
+        continue
+    try:
+        duration = float(string.translate(subprocess.check_output(['exiftool', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))
+    except Exception:
+        print 'Fout bij opvragen tijdsduur in bestand %s, overgeslagen' % filename
+        continue
+    if os.path.exists(os.path.join(sequenceParentDir, targetDirName)):
+        print 'Doelmap %s bestaat al, bestand %s overgeslagen' % (targetDirName, filename)
+    else:
+# Bepaal start- en stoptijd. Dit kan veranderd worden.
+        if duration > 2:
+            start = duration/2 - 1
+            stop = duration/2 + 1
+        else:
+            start = 0
+            stop = duration
+        os.mkdir(os.path.join(sequenceParentDir, targetDirName))
+        command = conv_command(filename, targetDirName, start, stop)
+#         print 'Calling %s' % command
+        try:
+            subprocess.call(command)
+            print 'Bestand %s verwerkt' % filename
+        except Exception, e:
+            print 'Fout bij verwerken bestand %s, foutmelding: %s' % (filename, e)

@@ -1,3 +1,85 @@
+##' Create image sequence
+##'
+##' \code{createImageSeq} is a function to create an image sequence using 
+##' .MTS files as input file. All movies within a directory 'Movies' will
+##' be exported.
+##' @param path Path path to location of directory containing movies.
+##' @param x Number of pixels in horizontal direction
+##' @param y Number of pixels in vertical direction
+##' @param fps Frames per second, default is 15.
+##' @param nsec Duration of movie that is exported, default is 2 seconds.
+##' @author Marjolein Bruijning & Marco D. Visser
+##' @export
+createImageSeq <- function (path='~/Data/',x=1915,
+                            y=1080,fps=15,nsec=2) {
+  old <- getwd()
+  setwd(path)
+  fileConn<-file(paste(path,'tmp.py',sep=''))
+  writeLines(c(
+    paste("import os"),
+    paste("import subprocess"),
+    paste("import string"),
+    paste("movieDirname = 'Movies'"),
+    paste("sequenceParentDirname = 'ImageSequences'"),
+    paste("def conv_command(filename, targetDirName, start, stop):"),
+    paste("    inFile = os.path.join(movieDir, filename)"),
+    paste("    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')"),
+    paste("    return ['avconv',"),
+    paste("            '-loglevel', 'quiet',"),
+    paste("            '-i', inFile,"),
+    paste("            '-r', '",fps,"',",sep=''),
+    paste("            '-s', '",x,"x",y,"',",sep=''),
+    paste("            '-ss', str(start),"),
+    paste("            '-t', str(stop - start),"),
+    paste("            '-f', 'image2',"),
+    paste("            outFiles]"),
+    paste("startDir = os.path.curdir"),
+    paste("movieDir = os.path.abspath(os.path.join(startDir, movieDirname))"),
+    paste("sequenceParentDir = os.path.abspath(os.path.join(startDir, sequenceParentDirname))"),
+    paste("movieNames = []"),
+    paste("for filename in os.listdir(movieDir):"),
+    paste("    movieName, movieExtension = os.path.splitext(filename)"),
+    paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieName.isdigit() or not movieExtension.lower() == '.mts':"),
+    paste("        print 'Bestand %s voldoet niet aan de naamgevingseisen of is een map, overgeslagen' % filename"),
+    paste("    else:"),
+    paste("        movieNames.append(filename)"),
+    paste("if not os.path.exists(sequenceParentDir):"),
+    paste("    os.mkdir(sequenceParentDir)"),
+    paste("for filename in movieNames:"),
+    paste("    movieName, movieExtension = os.path.splitext(filename)"),
+    paste("    try:"),
+    paste("        targetDirName = string.translate(subprocess.check_output(['exiftool', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName"),
+    paste("    except Exception:"),
+    paste("        print 'Fout bij opvragen datum in bestand %s, overgeslagen' % filename"),
+    paste("        continue"),
+    paste("    try:"),
+    paste("        duration = float(string.translate(subprocess.check_output(['exiftool', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))"),
+    paste("    except Exception:"),
+    paste("        print 'Fout bij opvragen tijdsduur in bestand %s, overgeslagen' % filename"),
+    paste("        continue"),
+    paste("    if os.path.exists(os.path.join(sequenceParentDir, targetDirName)):"),
+    paste("        print 'Doelmap %s bestaat al, bestand %s overgeslagen' % (targetDirName, filename)"),
+    paste("    else:"),
+    paste("        if duration >",nsec,":",sep=''),
+    paste("            start = duration/2 -",nsec/2,sep=''),
+    paste("            stop = duration/2 +",nsec/2,sep=''),
+    paste("        else:"),
+    paste("            start = 0"),
+    paste("            stop = duration"),
+    paste("        os.mkdir(os.path.join(sequenceParentDir, targetDirName))"),
+    paste("        command = conv_command(filename, targetDirName, start, stop)"),
+    paste("        try:"),
+    paste("            subprocess.call(command)"),
+    paste("            print 'Bestand %s verwerkt' % filename"),
+    paste("        except Exception, e:"),
+    paste("            print 'Fout bij verwerken bestand %s, foutmelding: %s' % (filename, e)")
+  ), fileConn, sep = "\n")
+  close(fileConn) 
+  system('python tmp.py')
+  file.remove(paste(path,'tmp.py',sep=''))
+  setwd(old)
+}
+
 ##' Load .png images
 ##'
 ##' \code{loadImages} is a function to load png images as a three dimensional array.
