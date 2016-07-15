@@ -4,18 +4,13 @@
 \alias{doTrack}
 \title{Track particles}
 \usage{
-doTrack(particleStats = particleStats, L = 50, plot = FALSE,
-  images = allFullImagesRGB[[1]], backward = FALSE,
+doTrack(particleStats = particleStats, L = 50, backward = FALSE,
   sizeMeasure = "n.cell")
 }
 \arguments{
 \item{particleStats}{Output from \code{\link{identifyParticles}}}
 
 \item{L}{Cost for linking to dummy.}
-
-\item{plot}{Default is FALSE. Plot results?}
-
-\item{images}{Default is FALSE. Plot results?}
 
 \item{backward}{Default is FALSE.}
 }

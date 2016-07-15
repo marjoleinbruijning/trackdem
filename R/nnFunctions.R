@@ -4,7 +4,7 @@
 ##' by manually selecting false and true positives. The created training
 ##' data can be implemented in a neural net.
 ##' @param particleStats A list with particle statistics for each frame.
-##' @param colorimages A list with the original full color images, in order to plot
+##' @param images An array with the original full color images, in order to plot
 ##' on the original images.
 ##' @param frame A number defining the frame that should be used. Default
 ##' is NULL; the frame with the maximum number of identified particles is used.
@@ -21,7 +21,7 @@
 ##' @concept What is the broad searchable concept?
 ##' @export
 
-manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
+manuallySelect <- function (particleStats,images=allFullImages,
                             frame=NULL) {
   
   nImages <- 1:length(particleStats)
@@ -33,8 +33,8 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
                length(particleStats[[X]]$patchID))))[1]
   } else{n <- frame}
 
-  totx <- ncol(colorimages[[n]])
-  toty <- nrow(colorimages[[n]])
+  totx <- ncol(images)
+  toty <- nrow(images)
   
   layout(matrix(c(1,2,2,2,2), 1, 5, byrow = TRUE))
   par(mar=c(0,0,0,0))
@@ -48,8 +48,9 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
   text(0.5,0.63,label='Wrongly identified',cex=1.5)
   tmp1 <- par('usr') 
 
-  plotRGB(colorimages[[n]],scale=1,bty='n',
-	asp=toty/totx)
+  plot(images,frame=n,bty='n')
+  #plotRGB(images[[n]],scale=1,bty='n',
+  #	asp=toty/totx)
   points(particleStats[[n]]$x/totx,
        1-particleStats[[n]]$y/toty,col='blue',cex=1.5)
   title("First click on all (or a subset of) correctly identified particles, and press the green button.\n
@@ -99,43 +100,36 @@ manuallySelect <- function (particleStats,colorimages=allFullImagesRGB,
 }
 
 ##' Create trainingdata
-##'
 ##' \code{createTrainingData} is a function to to create training data that
 ##' by manually selecting false and true positives. The created training
 ##' data can be implemented in a neural net.
 ##' @param particleStats A list with particle statistics for each frame.
-##' @param colorimages A list with the original full color images, in order to plot
+##' @param images An array with the original full color images, in order to plot
 ##' on the original images.
 ##' @param frame A number defining the frame that should be used. Default
 ##' is NULL; the frame with the maximum number of identified particles is used.
 ##' @author Marjolein Bruijning & Marco D. Visser
-##' @examples
-##' \dontrun{
-##' manuallySelect(particleStats=trackObject$particleStats,frame=1)
-##'	}
-##' @seealso \code{\link{manuallySelect}},
-##' @return List containing three elements: true positives, false positives,
-##' and the evaluated frame.
-##' @concept What is the broad searchable concept?
 ##' @export
-createTrainingData <- function (particleStats,
-    allFullImagesRGB=allFullImagesRGB,
-	allImages=allImages,frames=NULL,mId=mId,training=FALSE) {
-
+createTrainingData <- function (particleStats=trackObject$particleStats,
+    images=allFullImages,
+	mSubs=allImages,frames=NULL,tfp=mId,training=FALSE) {
+  
   if (is.null(frames)) frames <- 1:length(particleStats)
   temp <- particleStats[frames]
-
   print('Extract color and neighbor info')
-
+  findMethod('as.array','package:raster')
   testI <- lapply(1:length(temp),function(X)
-                  extractRGB(temp[[X]]$x,temp[[X]]$y,images=allImages,
-                             frame=frames[X]))
+                  extractRGB(temp[[X]]$x,temp[[X]]$y,
+                             im=mSubs[,,frames[X],]))
   sapply(1:length(testI),function(X) 
-	colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
+	            colnames(testI[[X]])<<-paste0("I",colnames(testI[[X]])))
   
   testNeighbor <- lapply(1:length(frames),function(X)
-	extractNeighbors(temp[[X]]$x,temp[[X]]$y,
-	                images=as.array(allFullImagesRGB[[frames[X]]]),
+	extractNeighbors(temp[[X]]$x,temp[[X]]$y,images=images[,,,frames[X]],
+	                #images=as.array(allFullImagesRGB[[frames[X]]]),
+	                #images=aperm(array(values(allFullImagesRGB[[frames[X]]]),
+	                #             dim=c(ncol(mSubs),nrow(mSubs),3)),
+	                #       perm=c(2,1,3)),
 	                frame=frames[X]))
 	
   testNeighbor <- lapply(1:length(temp),function(X) 
@@ -154,8 +148,8 @@ createTrainingData <- function (particleStats,
     print('Create training data')
     for(i in 1:length(frames)){
 	  testData[[i]]$D <- NA
-	  testData[[i]]$D[testData[[i]]$patchID%in%mId$correct] <- 1
-	  testData[[i]]$D[testData[[i]]$patchID%in%mId$wrong] <- 0
+	  testData[[i]]$D[testData[[i]]$patchID%in%tfp$correct] <- 1
+	  testData[[i]]$D[testData[[i]]$patchID%in%tfp$wrong] <- 0
     }
     testData <- do.call(rbind,testData)
   }
@@ -249,14 +243,9 @@ resample <- function(x, ...) x[sample.int(length(x), ...)]
 ##' Find original R, G, B values
 ##'
 ##' @export
-extractRGB <- function(x,y,images,frame){
-  if(class(images)=="list"){
-    IM <- as.array(images[[frame]])
-  } else {
-    IM <- images[,,frame,]
-  }
+extractRGB <- function(x,y,im){
   coords <- cbind(x,y)
-  RGBmat <- t(apply(coords,1,function(X) IM[round(X[2]),round(X[1]),]))
+  RGBmat <- t(apply(coords,1,function(X) im[round(X[2]),round(X[1]),]))
   colnames(RGBmat) <- c("R","G","B")
   return(RGBmat)
 }
@@ -265,7 +254,9 @@ extractRGB <- function(x,y,images,frame){
 ##'
 ##' @export
 extractNeighbors <- function(x,y,images,frame){
-  IM <- as.array(images)
+  #IM <- aperm(array(values(images),dim=c(ncol(images),nrow(images),3)),
+  #     perm=c(2,1,3))
+  IM <- images
   x<-round(x)
   y<-round(y)
   Xmin<-x-1

@@ -157,8 +157,8 @@ gMat <- function (Phi) {
 ## 
 linkTrajec <- function (G,trackRecord=records$trackRecord,
                         label=records$label,sizeRecord=records$sizeRecord,
-                        L=50,plot=FALSE,R=1,images=allFullImagesRGB[[1]],
-                        incThres=10,texxt='') {
+                        L=50,R=1,particleStats=trackObject$particleStats,
+                        incThres=10) {
  
  trackRecord <- records$trackRecord
  sizeRecord <- records$sizeRecord
@@ -237,49 +237,11 @@ linkTrajec <- function (G,trackRecord=records$trackRecord,
   label[label == 0] <- NA 
   sizeRecord[sizeRecord == 0] <- NA         
                       
-  if (plot == TRUE) {
-    incLabels <- apply(trackRecord[,,1],1,function(x) sum(!is.na(x))) > incThres
-    opar <- par()
-    #par(opar)
-    perID <- apply(sizeRecord,1,mean,na.rm=T)[incLabels]
-    sdperID <- apply(sizeRecord,1,sd,na.rm=T)[incLabels]	
-    plot(1:length(perID),perID[order(perID)],pch=16,xlab='Labeled particle',
-      ylab='Size')
-    segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
-     y1=perID[order(perID)]+sdperID[order(perID)])
-    text(2,max(perID),labels=paste0('N=',length(perID)),cex=2) 
-    
-    plotRGB(images,scale=1,
-      asp=nrow(images)/ncol(images))
-    
-    if (sum(incLabels)>1) {  
-      for (i in 1:nrow(trackRecord[incLabels,,1])) {
-        lines(trackRecord[incLabels,,][i,,1]/ncol(images),
-              1-trackRecord[incLabels,,][i,,2]/nrow(images),
-        col=(rainbow(sum(incLabels),alpha=0.4))[i],lwd=1.5)
-        f <- which(!is.na(trackRecord[incLabels,,1][i,]))[1]
-        #apply(trackRecord[,,1],1,function(x) which(!is.na(x))[1])
-        points(trackRecord[incLabels,f,1][i]/1915,
-               1-trackRecord[incLabels,f,2][i]/1080,
-               col=(rainbow(sum(incLabels),alpha=0.4))[i])
-        # text(trackRecord[incLabels,,][i,,1]/ncol(images),1-trackRecord[incLabels,,][i,,2]/nrow(images),
-        #     labels=i,cex=0.4)
-      }
-    } else if (sum(incLabels)==1) {
-        lines(trackRecord[incLabels,,1]/ncol(images),
-              1-trackRecord[incLabels,,2]/nrow(images),
-        col=paste0(jet.colors(1)[1],'40'),lwd=1.5)
-        f <- which(!is.na(trackRecord[incLabels,,1]))[1]
-        #apply(trackRecord[,,1],1,function(x) which(!is.na(x))[1])
-        points(trackRecord[incLabels,f,1]/1915,
-               1-trackRecord[incLabels,f,2]/1080,
-               col=paste0(jet.colors(1)[1],'99'))
-    }
-    
-    text(1,1,labels=texxt,cex=0.8)
-  }
-  
-  return(list(trackRecord=trackRecord,A=A,label=label,sizeRecord=sizeRecord)) 
+  attr(trackRecord, "class") <- "trackrecord"
+  attr(sizeRecord, "class") <- "sizerecord"
+  res <- list(trackRecord=trackRecord,A=A,label=label,sizeRecord=sizeRecord)
+  attr(res, "class") <- "records"
+  return(res) 
 }
 
 ##' Track particles
@@ -287,16 +249,14 @@ linkTrajec <- function (G,trackRecord=records$trackRecord,
 ##' \code{doTrack} is a function link particles using \code{\link{track}}
 ##' @param particleStats Output from \code{\link{identifyParticles}}
 ##' @param L Cost for linking to dummy.
-##' @param plot Default is FALSE. Plot results?
 ##' @param backward Default is FALSE.
-##' @param images Default is FALSE. Plot results?
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ##' @return Bla
 ##' @export
 ## 
-doTrack <- function(particleStats=particleStats,L=50,plot=FALSE,
-                    images=allFullImagesRGB[[1]],backward=FALSE,
+doTrack <- function(particleStats=trackObject$particleStats,L=50,
+                    backward=FALSE,
                     sizeMeasure='n.cell') {
 
 G <- array(NA,dim=c(500,500,length(particleStats)-1))
@@ -350,6 +310,8 @@ allLinks <- allLinks[,duplicated(tmp)==F]
 #allLinks[allLinks == 1] <- NA
 trackRecord <- array(NA,dim=c(dim(allLinks)[1],dim(allLinks)[2],2))
 sizeRecord <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
+attr(trackRecord, "class") <- "trackrecord"
+attr(sizeRecord, "class") <- "sizerecord"
 label <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
 a <- tmp[duplicated(tmp)==F]
 
@@ -360,26 +322,9 @@ for (i in 1:(length(a))) {
 	sizeRecord[,i] <- particleStats[[i]][allLinks[,order(a)[i]],sizeMeasure]
 }
 
-if (plot == TRUE) {
-  incLabels <- apply(trackRecord[,,1],1,function(x) sum(!is.na(x))) > 10
-  opar <- par()
-  #incLabels <- rep(TRUE,nrow(trackRecord))
-  plotRGB(images,scale=1,
-    asp=nrow(images)/ncol(images))
-  for (i in 1:nrow(trackRecord[incLabels,,])) {
-    lines(trackRecord[incLabels,,][i,,1]/ncol(images),1-trackRecord[incLabels,,][i,,2]/nrow(images),
-    col=paste0(jet.colors(nrow(trackRecord[incLabels,,]))[i],'40'),lwd=1.5)
-  }
-  par(opar)
-  perID <- apply(sizeRecord,1,mean,na.rm=T)[incLabels]
-  sdperID <- apply(sizeRecord,1,sd,na.rm=T)[incLabels]	
-  plot(1:length(perID),perID[order(perID)],pch=16,xlab='Labeled particle',
-    ylab='Size')
-  segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
-   y1=perID[order(perID)]+sdperID[order(perID)])
-	
-}
 #print(sum(G,na.rm=T))
-return(list(trackRecord=trackRecord,sizeRecord=sizeRecord,label=label,G=G))
+res <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,label=label,G=G)
+attr(res, "class") <- "records"
+return(res)
 }
 

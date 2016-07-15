@@ -39,10 +39,7 @@ createImageSeq(path='~/Dropbox/Github/trackdem/Test/')
 
 ## Load images
 direcPictures <- '~/Dropbox/Github/trackdem/Test/ImageSequences/20150406_50/'
-loadAll <- loadImages (direcPictures=direcPictures,nImages=1:30)
-allFullImages <- loadAll$allFullImages
-allFullImagesRGB <- loadAll$allFullImagesRGB
-rm(loadAll)
+allFullImages <- loadImages (direcPictures=direcPictures,nImages=1:30)
 
 ## Create background and subtract
 stillBack <- createBackground(
@@ -66,28 +63,19 @@ trackObject <- identifyParticles(allImages,
 
 ## Track (without machine learning steps)
 particleStats <- trackObject$particleStats
-records <- doTrack(particleStats=particleStats,
-                   plot=FALSE,backward=FALSE,L=100)
+records <- doTrack(L=50)
+records2 <- linkTrajec (R=2,L=50)
+
+## Obtain results
+summary(records2)$particles
 pdf('results.pdf')
-records2 <- linkTrajec (G=records$G,trackRecord=records$trackRecord,
-                        sizeRecord=records$sizeRecord,label=records$label,
-                         R=2,plot=TRUE,L=100)
+plot(records2$trackRecord)
+plot(records2$sizeRecord)
 dev.off()
 
-
-####### TO BE UPDATED ######               
-## Prepare data for neural net
-nnData <- createNNdata(particleStats=trackObject$particleStats,
-                       allFullImagesRGB=allFullImagesRGB,allImages=allImages,
-                       frames=NULL,mId=mId,training=FALSE)
-
-## Train neural net
+## Train neural net and training data
 mId <- manuallySelect(particleStats=trackObject$particleStats)
-
-trainingData <- createTrainingData(particleStats=trackObject$particleStats,
-                              frames=mId$frame,mId=mId,
-                              allFullImagesRGB=allFullImagesRGB,
-                              allImages=allImages)
+trainingData <- createTrainingData(training=TRUE,frames=mId$frame,tfp=mId)
 
 ## Choose predictors
 predictz <- c("n.cell",'IR','IB','IG',"x","y",'perim.area.ratio')
@@ -102,15 +90,26 @@ Thr <- optThr(stat="F")$maximum
 confusion <- table(data.frame(D=trainingData$D,P=plogis(n1com$net.result)>Thr))
 
 ## Apply neural net
-particleStats <- updateParticles(n1,testData=nnData$testData,
+nnData <- createTrainingData(training=FALSE,frames=1:30)
+particleStats2 <- updateParticles(n1,testData=nnData,
                                  predictors=predictz,Thr=Thr)
-                                 
+
+## Repeat track on updated particles
+records <- doTrack(L=50,particleStats=particleStats2)
+records2 <- linkTrajec (R=2,L=50,particleStats=particleStats2)
+
+## Obtain results
+summary(records2)$particles
+pdf('results.pdf')
+plot(records2$trackRecord)
+plot(records2$sizeRecord)
+dev.off()
 
 
 ```
 ## Examples of output
-Screenshots to come
-![](images/manuallySelect.png)
+More screenshots to come
+![](images/trackingResults.png)
 
 
 

@@ -120,9 +120,10 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 		allFullImagesRGB[[x]][yranges,xranges,],simplify='array')	
   } else {allFullImages <- allFullImagesRGB}
  
-  allFullImagesRGB <- lapply(nImages,function(x) brick(allFullImagesRGB[,,,x]))
-  
-  return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
+  #allFullImagesRGB <- lapply(nImages,function(x) brick(allFullImagesRGB[,,,x]))
+  attr(allFullImages, "class") <- "colorimage"
+  #return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
+  return(allFullImages=allFullImages)
 }
 
 ##' Identify moving particles
@@ -146,11 +147,10 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' @return This function returns a list with two elements: (1) a list with
 ##' particle statistics with identified particles for each frame. (2) an array
 ##' containing all binary images.
-##' @concept What is the broad searchable concept?
 ##' @export
 
 identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
-                               pthreshold=NULL) {
+                               pthreshold=NULL,select='negative') {
   nImages <- 1:dim(images)[3]
   
   print('Thresholding')
@@ -164,7 +164,8 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
     }
    
   } else {
-    allImages <- images < threshold
+    if (select == 'negative') allImages <- images < threshold
+    else if (select == 'positive') allImages <- images > threshold
   }
   sumRGB <- apply(allImages,c(2,3),rowSums)
   sumRGB <- sumRGB > 0
@@ -193,35 +194,28 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
   particleStats <- lapply(nImages,function(x) {
     rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],mean)
     cols <- tapply(coords[[x]][,2],allImages[,,x][allImages[,,x]>0],mean)
-    #rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],
-     #              function (i) )
+   
+    # Max dist
+   tmp <- function () {
+    n <- length((unique(as.vector(allImages[,,x]))[-1]))
+    lengthh <- rep(NA,n)
+    for (j in 1:n) {
+      inc <- coords[[x]][allImages[,,x][allImages[,,x]>0] == 
+                         unique(as.vector(allImages[,,x]))[-1][j],]
+      lengthh[j] <- max(sapply(1:nrow(inc), function(i) {
+                       sqrt((inc[i,1] - inc[,1])^2 + (inc[i,2] - inc[,2])^2)}))
+    }
+   }
     particleStats[[x]] <- cbind(particleStats[[x]],
-                                 data.frame(x=cols,y=rows))
+                                 data.frame(x=cols,y=rows)) #,length=lengthh))
     return(particleStats[[x]])                            
     }
   )
-  
-  print('Major distance calculator')
-  for (i in 1:length(particleStats)) {
-    if (length(particleStats[[i]]$patchID) > 0) {
-      for (X in 1:length(particleStats[[i]]$patchID)) {
-        a <- which(allImages[,,i]==particleStats[[i]]$patchID[X],arr.ind=TRUE)
-        particleStats[[i]]$majorDist[X] <- maxDist(x=a[,1],y=a[,2])
-      }
-    }
-  }
-
-  # Results
-  meanPart <- mean(sapply(nImages,function(X)
-	length(particleStats[[X]]$patchID)))
-  coeffVar <- sd(sapply(nImages,function(X)
-	length(particleStats[[X]]$patchID)) / meanPart)
-
-  attr(particleStats,'Results') <- 
-       paste0('Mean number of identified particles equals ',round(meanPart,2),
-               '; Coefficient of variation is ',round(coeffVar,3))
-  return(list(allImages=allImages,particleStats=particleStats))
+  results <- list(allImages=allImages,particleStats=particleStats)
+  attr(results, "class") <- "identifiedParticles"
+  return(results)
 }
+
 
 ##' Maximum distance
 ##'

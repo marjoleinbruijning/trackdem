@@ -5,8 +5,7 @@
 \title{Create cost matrix}
 \usage{
 linkTrajec(G, trackRecord = records$trackRecord, label = records$label,
-  sizeRecord = records$sizeRecord, L = 50, plot = FALSE, R = 1,
-  images = allFullImagesRGB[[1]], incThres = 10, texxt = "")
+  sizeRecord = records$sizeRecord, L = 50, R = 1, incThres = 10)
 }
 \arguments{
 \item{G}{Coordinates of particles in frame n.}
@@ -19,13 +18,13 @@ linkTrajec(G, trackRecord = records$trackRecord, label = records$label,
 
 \item{L}{Cost of linking to dummy variable.}
 
-\item{plot}{Default is FALSE. Plot results?}
-
 \item{R}{Default is one; scaling parameter.}
 
-\item{images}{Default is FALSE. Plot results?}
-
 \item{incThres}{Threshold}
+
+\item{plot}{Default is FALSE. Plot results?}
+
+\item{images}{Default is FALSE. Plot results?}
 
 \item{texxt}{xlab}
 }

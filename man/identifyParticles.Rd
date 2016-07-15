@@ -5,7 +5,7 @@
 \title{Identify moving particles}
 \usage{
 identifyParticles(images, threshold = -0.1, pixelRange = NULL,
-  pthreshold = NULL)
+  pthreshold = NULL, select = "negative")
 }
 \arguments{
 \item{images}{Array containing images.}
@@ -37,8 +37,5 @@ background images.
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
-}
-\concept{
-What is the broad searchable concept?
 }
 

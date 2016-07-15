@@ -48,7 +48,7 @@ for (int j = 0; j < nrows; j++) {
     r(j,i,2) =  r(j,i,2) / images;
   }
 }
- 
+
 return(wrap(r));
 
 }

@@ -4,12 +4,12 @@
 \alias{manuallySelect}
 \title{Manually selection}
 \usage{
-manuallySelect(particleStats, colorimages = allFullImagesRGB, frame = NULL)
+manuallySelect(particleStats, images = allFullImages, frame = NULL)
 }
 \arguments{
 \item{particleStats}{A list with particle statistics for each frame.}
 
-\item{colorimages}{A list with the original full color images, in order to plot
+\item{images}{An array with the original full color images, in order to plot
 on the original images.}
 
 \item{frame}{A number defining the frame that should be used. Default
