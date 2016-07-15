@@ -110,6 +110,6 @@ dev.off()
 ## Examples of output
 More screenshots to come
 ![](images/trackingResults.png)
-
+![](images/sizeRecord.png)
 
 
