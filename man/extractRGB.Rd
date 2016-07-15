@@ -4,7 +4,7 @@
 \alias{extractRGB}
 \title{Find original R, G, B values}
 \usage{
-extractRGB(x, y, images, frame)
+extractRGB(x, y, im)
 }
 \description{
 Find original R, G, B values

@@ -1,17 +1,27 @@
 ##' Create image sequence
 ##'
-##' \code{createImageSeq} is a function to create an image sequence using 
-##' .MTS files as input file. All movies within a directory 'Movies' will
-##' be exported.
-##' @param path Path path to location of directory containing movies.
+##' \code{createImageSeq} is a function to create an image sequence (.png) using 
+##' videos file as input. All movies within a directory 'Movies' will
+##' be exported. A directory 'ImageSequences' must exist in path. For each
+##' movie, a new directory is created containing the recorded date and 
+##' name of the movie.
+##' @param path Path path to location of directory containing directories
+##' 'Movies' and 'ImageSequences'.
 ##' @param x Number of pixels in horizontal direction
 ##' @param y Number of pixels in vertical direction
 ##' @param fps Frames per second, default is 15.
 ##' @param nsec Duration of movie that is exported, default is 2 seconds.
+##' The middle 2 seconds of the movie are used.
+##' @param ext The extension of the video, in lower case. Default is 'mts'.
+##' @examples
+##' \dontrun{
+##' createImageSeq(path='~/Data/',ext='mp4')
+##'	}
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
 createImageSeq <- function (path='~/Data/',x=1915,
-                            y=1080,fps=15,nsec=2) {
+                            y=1080,fps=15,nsec=2,ext='mts') {
+  ext <- paste0("'.",ext,"'")
   old <- getwd()
   setwd(path)
   fileConn<-file(paste(path,'tmp.py',sep=''))
@@ -39,8 +49,8 @@ createImageSeq <- function (path='~/Data/',x=1915,
     paste("movieNames = []"),
     paste("for filename in os.listdir(movieDir):"),
     paste("    movieName, movieExtension = os.path.splitext(filename)"),
-    paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieName.isdigit() or not movieExtension.lower() == '.mts':"),
-    paste("        print 'Bestand %s voldoet niet aan de naamgevingseisen of is een map, overgeslagen' % filename"),
+    paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieName.isdigit() or not movieExtension.lower() == ",ext,":"),
+    paste("        print 'File %s has the wrong name or is a directory, therefore skipped' % filename"),
     paste("    else:"),
     paste("        movieNames.append(filename)"),
     paste("if not os.path.exists(sequenceParentDir):"),
@@ -50,15 +60,15 @@ createImageSeq <- function (path='~/Data/',x=1915,
     paste("    try:"),
     paste("        targetDirName = string.translate(subprocess.check_output(['exiftool', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName"),
     paste("    except Exception:"),
-    paste("        print 'Fout bij opvragen datum in bestand %s, overgeslagen' % filename"),
+    paste("        print 'Error in obtaining date in file %s; therefore skipped' % filename"),
     paste("        continue"),
     paste("    try:"),
     paste("        duration = float(string.translate(subprocess.check_output(['exiftool', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))"),
     paste("    except Exception:"),
-    paste("        print 'Fout bij opvragen tijdsduur in bestand %s, overgeslagen' % filename"),
+    paste("        print 'Error in obtaining duration movie in file %s, therefore skipped' % filename"),
     paste("        continue"),
     paste("    if os.path.exists(os.path.join(sequenceParentDir, targetDirName)):"),
-    paste("        print 'Doelmap %s bestaat al, bestand %s overgeslagen' % (targetDirName, filename)"),
+    paste("        print 'Directory %s already exists, file %s skipped' % (targetDirName, filename)"),
     paste("    else:"),
     paste("        if duration >",nsec,":",sep=''),
     paste("            start = duration/2 -",nsec/2,sep=''),
@@ -70,9 +80,9 @@ createImageSeq <- function (path='~/Data/',x=1915,
     paste("        command = conv_command(filename, targetDirName, start, stop)"),
     paste("        try:"),
     paste("            subprocess.call(command)"),
-    paste("            print 'Bestand %s verwerkt' % filename"),
+    paste("            print 'File %s done' % filename"),
     paste("        except Exception, e:"),
-    paste("            print 'Fout bij verwerken bestand %s, foutmelding: %s' % (filename, e)")
+    paste("            print 'Error in processing file %s, error: %s' % (filename, e)")
   ), fileConn, sep = "\n")
   close(fileConn) 
   system('python tmp.py')
@@ -93,14 +103,10 @@ createImageSeq <- function (path='~/Data/',x=1915,
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##'
 ##' loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
 ##'	nImages=1:30,yranges=1:1080,xranges=1:1915)
-##'
 ##'	}
-##' @return List two elements: first contains array with all images,
-##' subset when relevant. Second element contains all original color images as array.
-##' @concept What is the broad searchable concept?
+##' @return Array with all images.
 ##' @export
 
 loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
@@ -111,26 +117,24 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
   }
   else {filenames=filenames[nImages]}	
   # Load all images
-  allFullImagesRGB <- sapply(nImages,
+  allFullImages <- sapply(nImages,
 		function(x) readPNG(paste0(direcPictures,allFiles[x])),
                             simplify='array')
-
+  # Subset
   if (!is.null(xranges) | !is.null(yranges)) {
     allFullImages <- sapply(nImages,function(x) 
-		allFullImagesRGB[[x]][yranges,xranges,],simplify='array')	
-  } else {allFullImages <- allFullImagesRGB}
- 
-  #allFullImagesRGB <- lapply(nImages,function(x) brick(allFullImagesRGB[,,,x]))
+		allFullImages[[x]][yranges,xranges,],simplify='array')	
+  }
+
   attr(allFullImages, "class") <- "colorimage"
-  #return(list(allFullImages=allFullImages,allFullImagesRGB=allFullImagesRGB))
-  return(allFullImages=allFullImages)
+  return(allFullImages)
 }
 
 ##' Identify moving particles
 ##'
 ##' \code{identifyParticles} is a function to identify particles using subtracted
-##' background images.
-##' @param images Array containing images.
+##' background images, as obtained by \code{\link{subtractBackground}}
+##' @param images Array containing images containing all moving particles.
 ##' @param threshold Threshold for including particles. For a chosen 
 ##' threshold for each frame, use pthreshold.
 ##' @param pixelRange Default is NULL. Vector with minimum and maximum particle size, used as a
@@ -138,14 +142,15 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' @param pthreshold Default is NULL. If NULL, treshold is used for filter. If
 ##' not zero, a threshold based on pthreshold quantile is calculated for each
 ##' frame.
+##' @param select Use values smaller ('negative') or larger ('positive') then 
+##' threshold. Default is 'negative'.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##'
-##'   trackObject <- identifyParticles(allImages,pthreshold=0.001,pixelRange=c(3,400))
+##'   trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
 ##'	}
 ##' @return This function returns a list with two elements: (1) a list with
-##' particle statistics with identified particles for each frame. (2) an array
+##' particle statistics with identified particles for each frame. (2) An array
 ##' containing all binary images.
 ##' @export
 
@@ -215,22 +220,5 @@ identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
   attr(results, "class") <- "identifiedParticles"
   return(results)
 }
-
-
-##' Maximum distance
-##'
-##' \code{maxDist} is ...
-##' @param x x coordinates
-##' @param y y coordinates
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @export
-maxDist <- function(x,y) {
-  x <- x - min(x)
-  y <- y - min(y)
-  max(sqrt(x^2 + y^2))
-  #mat <- sapply(1:length(y), function(i) sqrt(x^2 + y[i]^2))
-  #return(max(mat))
-}
-
 
 

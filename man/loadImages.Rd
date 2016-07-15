@@ -20,8 +20,7 @@ which files to use.}
 \item{yranges}{Default all pixels are loaded; specify to subset the number of rows.}
 }
 \value{
-List two elements: first contains array with all images,
-subset when relevant. Second element contains all original color images as array.
+Array with all images.
 }
 \description{
 \code{loadImages} is a function to load png images as a three dimensional array.
@@ -29,16 +28,11 @@ The objects created through the function can be used for image analysis.
 }
 \examples{
 \dontrun{
-
 loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
 nImages=1:30,yranges=1:1080,xranges=1:1915)
-
 }
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
-}
-\concept{
-What is the broad searchable concept?
 }
 

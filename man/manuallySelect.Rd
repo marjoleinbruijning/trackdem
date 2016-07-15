@@ -2,18 +2,19 @@
 % Please edit documentation in R/nnFunctions.R
 \name{manuallySelect}
 \alias{manuallySelect}
-\title{Manually selection}
+\title{Manual selection of true and false positives.}
 \usage{
 manuallySelect(particleStats, images = allFullImages, frame = NULL)
 }
 \arguments{
-\item{particleStats}{A list with particle statistics for each frame.}
+\item{particleStats}{A list with particle statistics for each frame,
+obtained by \code{\link{identifyParticles}}.}
 
 \item{images}{An array with the original full color images, in order to plot
 on the original images.}
 
 \item{frame}{A number defining the frame that should be used. Default
-is NULL; the frame with the maximum number of identified particles is used.}
+is NULL; in that case the frame with the maximum number of identified particles is used.}
 }
 \value{
 List containing three elements: true positives, false positives,
@@ -26,18 +27,10 @@ data can be implemented in a neural net.
 }
 \examples{
 \dontrun{
-
 manuallySelect(particleStats=trackObject$particleStats,frame=1)
-
 }
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
-}
-\seealso{
-\code{\link{identifyParticles}},
-}
-\concept{
-What is the broad searchable concept?
 }
 

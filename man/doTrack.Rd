@@ -4,8 +4,8 @@
 \alias{doTrack}
 \title{Track particles}
 \usage{
-doTrack(particleStats = particleStats, L = 50, backward = FALSE,
-  sizeMeasure = "n.cell")
+doTrack(particleStats = trackObject$particleStats, L = 50,
+  backward = FALSE, sizeMeasure = "n.cell")
 }
 \arguments{
 \item{particleStats}{Output from \code{\link{identifyParticles}}}

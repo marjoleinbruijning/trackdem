@@ -7,14 +7,21 @@
 createBackground(m1, m2, m3, d)
 }
 \arguments{
-\item{allFullImages}{Array containing all images (and three color layers)}
+\item{m1}{Array containing all frames for first color layer.}
+
+\item{m2}{Array containing all frames for second color layer.}
+
+\item{m3}{Array containing all frames for third color layer.}
+
+\item{d}{Vector containing dimensions of images(number of rows, number
+of columns, number of frames).}
 }
 \value{
-Returns array with still background.
+Array with still background.
 }
 \description{
 \code{createBackground} is a function to create a still background,
-exluding movies objects, using loaded image sequences as input, taking
+containing all motionless, by taking
 mean pixel values over all frames.
 }
 \examples{

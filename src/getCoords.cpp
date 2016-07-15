@@ -5,10 +5,11 @@ using namespace arma;
 
 //' Get coordinates of all particles
 //'
-//' \code{getCoords} finds all coordinates of values  > 1 in a matrix
-//' @param m bla
+//' \code{getCoords} finds all coordinates of values  > 0 in a matrix
+//' @param m Matrix containing values 0's and values > 0.
+//' @param d Vector containing dimension of matrix.
 //' @author Marjolein Bruijning & Marco D. Visser
-//' @return Returns array with still background.
+//' @return Returns matrix with x and y coordinates for all labels > 0.
 //' @export
 // [[Rcpp::export]]
 

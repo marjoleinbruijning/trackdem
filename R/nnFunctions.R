@@ -1,24 +1,21 @@
-##' Manually selection
+##' Manual selection of true and false positives.
 ##'
 ##' \code{manuallySelect} is a function to to create training data that
 ##' by manually selecting false and true positives. The created training
 ##' data can be implemented in a neural net.
-##' @param particleStats A list with particle statistics for each frame.
+##' @param particleStats A list with particle statistics for each frame,
+##' obtained by \code{\link{identifyParticles}}.
 ##' @param images An array with the original full color images, in order to plot
 ##' on the original images.
 ##' @param frame A number defining the frame that should be used. Default
-##' is NULL; the frame with the maximum number of identified particles is used.
+##' is NULL; in that case the frame with the maximum number of identified particles is used.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##'
 ##' manuallySelect(particleStats=trackObject$particleStats,frame=1)
-##'
 ##'	}
-##' @seealso \code{\link{identifyParticles}},
 ##' @return List containing three elements: true positives, false positives,
 ##' and the evaluated frame.
-##' @concept What is the broad searchable concept?
 ##' @export
 
 manuallySelect <- function (particleStats,images=allFullImages,
@@ -100,14 +97,21 @@ manuallySelect <- function (particleStats,images=allFullImages,
 }
 
 ##' Create trainingdata
-##' \code{createTrainingData} is a function to to create training data that
-##' by manually selecting false and true positives. The created training
-##' data can be implemented in a neural net.
-##' @param particleStats A list with particle statistics for each frame.
+##' \code{createTrainingData} creates a dataframe as preparation for 
+##' applying a neural net (\code{\link{runNN}}). For all particles over all
+##' frames, it collects information on color intensities and neighbor pixels.
+##' @param particleStats A list with particle statistics for each frame,
+##' as obtained by \code{\link{identifyParticles}}.
 ##' @param images An array with the original full color images, in order to plot
-##' on the original images.
+##' on the original images, obtained by \code{\link{loadImages}}.
+##' @param msubs Images subtracted from background, as obtained by 
+##' \code{\link{subtractBackground}}.
 ##' @param frame A number defining the frame that should be used. Default
-##' is NULL; the frame with the maximum number of identified particles is used.
+##' is NULL, in that case all frames are used.
+##' @param training Logical. Should identified false and true positives 
+##' be combined to this dataframe? Default is FALSE.
+##' @param tfp If training=TRUE, give a list with true and false positives, 
+##' returned from \code{\link{manuallySelect}}, for each frame.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
 createTrainingData <- function (particleStats=trackObject$particleStats,
@@ -183,11 +187,11 @@ optThr <- function(trD=trainingData$D,nnP=plogis(n1com$net.result),
 ##'
 ##' @export
 confuStats <- function(confusion){
-  accuracy <- sum(diag(confusion))/sum(confusion) ## correct predictions
+  accuracy <- sum(diag(confusion))/sum(confusion) # correct predictions
   recall <-  diag(confusion)[2]/sum(confusion[,2])# true positive rate
-  TN <- diag(confusion)[1]/sum(confusion[,1]) #Treu negative 
-  FN <- confusion[2,1]/sum(confusion[,1]) #FALSE negative
-  precision <- confusion[2,2]/sum(confusion[,2]) #prop positive that are correct
+  TN <- diag(confusion)[1]/sum(confusion[,1]) # true negative 
+  FN <- confusion[2,1]/sum(confusion[,1]) # false negative
+  precision <- confusion[2,2]/sum(confusion[,2]) # prop positive that are correct
   F <-  2*((recall*precision)/(recall+precision))
   data.frame(accuracy,recall,TN,FN,precision,F)
 }
@@ -254,21 +258,18 @@ extractRGB <- function(x,y,im){
 ##'
 ##' @export
 extractNeighbors <- function(x,y,images,frame){
-  #IM <- aperm(array(values(images),dim=c(ncol(images),nrow(images),3)),
-  #     perm=c(2,1,3))
-  IM <- images
   x<-round(x)
   y<-round(y)
   Xmin<-x-1
   Xmax<-x+1
   Ymin<-y-1
   Ymax<-y+1
-  Xmax[Xmax > dim(IM)[2]] <- dim(IM)[2]
-  Ymax[Ymax > dim(IM)[1]] <- dim(IM)[1]
+  Xmax[Xmax > dim(images)[2]] <- dim(images)[2]
+  Ymax[Ymax > dim(images)[1]] <- dim(images)[1]
   Xmin[Xmin < 1] <- 1
   Ymin[Ymin < 1] <- 1
   return(lapply(1:length(x),function(i) 
-         IM[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
+         images[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
 
 

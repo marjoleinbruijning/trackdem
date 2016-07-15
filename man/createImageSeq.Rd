@@ -5,10 +5,11 @@
 \title{Create image sequence}
 \usage{
 createImageSeq(path = "~/Data/", x = 1915, y = 1080, fps = 15,
-  nsec = 2)
+  nsec = 2, ext = "mts")
 }
 \arguments{
-\item{path}{Path path to location of directory containing movies.}
+\item{path}{Path path to location of directory containing directories
+'Movies' and 'ImageSequences'.}
 
 \item{x}{Number of pixels in horizontal direction}
 
@@ -16,12 +17,22 @@ createImageSeq(path = "~/Data/", x = 1915, y = 1080, fps = 15,
 
 \item{fps}{Frames per second, default is 15.}
 
-\item{nsec}{Duration of movie that is exported, default is 2 seconds.}
+\item{nsec}{Duration of movie that is exported, default is 2 seconds.
+The middle 2 seconds of the movie are used.}
+
+\item{ext}{The extension of the video, in lower case. Default is 'mts'.}
 }
 \description{
-\code{createImageSeq} is a function to create an image sequence using 
-.MTS files as input file. All movies within a directory 'Movies' will
-be exported.
+\code{createImageSeq} is a function to create an image sequence (.png) using 
+videos file as input. All movies within a directory 'Movies' will
+be exported. A directory 'ImageSequences' must exist in path. For each
+movie, a new directory is created containing the recorded date and 
+name of the movie.
+}
+\examples{
+\dontrun{
+createImageSeq(path='~/Data/',ext='mp4')
+}
 }
 \author{
 Marjolein Bruijning & Marco D. Visser

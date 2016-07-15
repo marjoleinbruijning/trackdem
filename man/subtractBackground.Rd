@@ -7,9 +7,13 @@
 subtractBackground(m1, bg, d)
 }
 \arguments{
-\item{background}{Array containing still background.}
+\item{bg}{Array containing still background, as returned from
+\code{\link{createBackground}}.}
 
-\item{images}{Array containing all images.}
+\item{d}{Vector containing dimensions of images(number of rows, number
+of columns, number of frames).}
+
+\item{images}{Array containing all images for one color layer.}
 }
 \value{
 Returns array with same size as images, subtracted from background.
@@ -17,22 +21,19 @@ Returns array with same size as images, subtracted from background.
 \description{
 \code{subtractBackground} is a function to subtract each
 image from the created still background.
-The objects created through the function contain all moving
+The objects created through the function contain all changing
 pixels.
 }
 \examples{
 \dontrun{
-
-  allImages <- subtractBackground(background=stillBack,allFullImages)
-}
+## For all color layers
+allImages <- sapply(1:3, 
+                  function(x) 
+                     subtractBackground(allFullImages[,,x,],
+                     stillBack[,,x],dim(allFullImages[,,x,])),
+                  simplify='array') }
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
-}
-\seealso{
-\code{\link{createBackground}}
-}
-\concept{
-What is the broad searchable concept?
 }
 

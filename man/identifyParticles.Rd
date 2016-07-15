@@ -8,7 +8,7 @@ identifyParticles(images, threshold = -0.1, pixelRange = NULL,
   pthreshold = NULL, select = "negative")
 }
 \arguments{
-\item{images}{Array containing images.}
+\item{images}{Array containing images containing all moving particles.}
 
 \item{threshold}{Threshold for including particles. For a chosen 
 threshold for each frame, use pthreshold.}
@@ -19,20 +19,22 @@ first filter to identify particles.}
 \item{pthreshold}{Default is NULL. If NULL, treshold is used for filter. If
 not zero, a threshold based on pthreshold quantile is calculated for each
 frame.}
+
+\item{select}{Use values smaller ('negative') or larger ('positive') then 
+threshold. Default is 'negative'.}
 }
 \value{
 This function returns a list with two elements: (1) a list with
-particle statistics with identified particles for each frame. (2) an array
+particle statistics with identified particles for each frame. (2) An array
 containing all binary images.
 }
 \description{
 \code{identifyParticles} is a function to identify particles using subtracted
-background images.
+background images, as obtained by \code{\link{subtractBackground}}
 }
 \examples{
 \dontrun{
-
-  trackObject <- identifyParticles(allImages,pthreshold=0.001,pixelRange=c(3,400))
+  trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
 }
 }
 \author{

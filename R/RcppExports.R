@@ -4,15 +4,19 @@
 #' Background detection
 #'
 #' \code{createBackground} is a function to create a still background,
-#' exluding movies objects, using loaded image sequences as input, taking
+#' containing all motionless, by taking
 #' mean pixel values over all frames.
-#' @param allFullImages Array containing all images (and three color layers)
+#' @param m1 Array containing all frames for first color layer.
+#' @param m2 Array containing all frames for second color layer.
+#' @param m3 Array containing all frames for third color layer.
+#' @param d Vector containing dimensions of images(number of rows, number
+#' of columns, number of frames).
 #' @author Marjolein Bruijning & Marco D. Visser
 #' @examples
 #' \dontrun{
 #' stillBack <- createBackground (allFullImages)
 #'	}
-#' @return Returns array with still background.
+#' @return Array with still background.
 #' @export
 createBackground <- function(m1, m2, m3, d) {
     .Call('trackdem_createBackground', PACKAGE = 'trackdem', m1, m2, m3, d)
@@ -20,10 +24,11 @@ createBackground <- function(m1, m2, m3, d) {
 
 #' Get coordinates of all particles
 #'
-#' \code{getCoords} finds all coordinates of values  > 1 in a matrix
-#' @param m bla
+#' \code{getCoords} finds all coordinates of values  > 0 in a matrix
+#' @param m Matrix containing values 0's and values > 0.
+#' @param d Vector containing dimension of matrix.
 #' @author Marjolein Bruijning & Marco D. Visser
-#' @return Returns array with still background.
+#' @return Returns matrix with x and y coordinates for all labels > 0.
 #' @export
 getCoords <- function(m, d) {
     .Call('trackdem_getCoords', PACKAGE = 'trackdem', m, d)
@@ -33,19 +38,23 @@ getCoords <- function(m, d) {
 #'
 #' \code{subtractBackground} is a function to subtract each
 #' image from the created still background.
-#' The objects created through the function contain all moving
+#' The objects created through the function contain all changing
 #' pixels.
-#' @param background Array containing still background.
-#' @param images Array containing all images.
+#' @param bg Array containing still background, as returned from
+#' \code{\link{createBackground}}.
+#' @param images Array containing all images for one color layer.
+#' @param d Vector containing dimensions of images(number of rows, number
+#' of columns, number of frames).
 #' @author Marjolein Bruijning & Marco D. Visser
 #' @examples
 #' \dontrun{
-#'
-#'   allImages <- subtractBackground(background=stillBack,allFullImages)
-#'	}
-#' @seealso \code{\link{createBackground}}
+#' ## For all color layers
+#' allImages <- sapply(1:3, 
+#'                   function(x) 
+#'                      subtractBackground(allFullImages[,,x,],
+#'                      stillBack[,,x],dim(allFullImages[,,x,])),
+#'                   simplify='array') }
 #' @return Returns array with same size as images, subtracted from background.
-#' @concept What is the broad searchable concept?
 #' @export
 subtractBackground <- function(m1, bg, d) {
     .Call('trackdem_subtractBackground', PACKAGE = 'trackdem', m1, bg, d)

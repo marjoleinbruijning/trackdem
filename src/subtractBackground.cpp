@@ -7,19 +7,23 @@ using namespace arma;
 //'
 //' \code{subtractBackground} is a function to subtract each
 //' image from the created still background.
-//' The objects created through the function contain all moving
+//' The objects created through the function contain all changing
 //' pixels.
-//' @param background Array containing still background.
-//' @param images Array containing all images.
+//' @param bg Array containing still background, as returned from
+//' \code{\link{createBackground}}.
+//' @param images Array containing all images for one color layer.
+//' @param d Vector containing dimensions of images(number of rows, number
+//' of columns, number of frames).
 //' @author Marjolein Bruijning & Marco D. Visser
 //' @examples
 //' \dontrun{
-//'
-//'   allImages <- subtractBackground(background=stillBack,allFullImages)
-//'	}
-//' @seealso \code{\link{createBackground}}
+//' ## For all color layers
+//' allImages <- sapply(1:3, 
+//'                   function(x) 
+//'                      subtractBackground(allFullImages[,,x,],
+//'                      stillBack[,,x],dim(allFullImages[,,x,])),
+//'                   simplify='array') }
 //' @return Returns array with same size as images, subtracted from background.
-//' @concept What is the broad searchable concept?
 //' @export
 // [[Rcpp::export]] 
 

@@ -5,7 +5,8 @@
 \title{Create cost matrix}
 \usage{
 linkTrajec(G, trackRecord = records$trackRecord, label = records$label,
-  sizeRecord = records$sizeRecord, L = 50, R = 1, incThres = 10)
+  sizeRecord = records$sizeRecord, L = 50, R = 1,
+  particleStats = trackObject$particleStats, incThres = 10)
 }
 \arguments{
 \item{G}{Coordinates of particles in frame n.}

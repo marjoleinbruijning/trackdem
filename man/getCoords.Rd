@@ -7,13 +7,15 @@
 getCoords(m, d)
 }
 \arguments{
-\item{m}{bla}
+\item{m}{Matrix containing values 0's and values > 0.}
+
+\item{d}{Vector containing dimension of matrix.}
 }
 \value{
-Returns array with still background.
+Returns matrix with x and y coordinates for all labels > 0.
 }
 \description{
-\code{getCoords} finds all coordinates of values  > 1 in a matrix
+\code{getCoords} finds all coordinates of values  > 0 in a matrix
 }
 \author{
 Marjolein Bruijning & Marco D. Visser

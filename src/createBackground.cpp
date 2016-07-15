@@ -6,15 +6,19 @@ using namespace arma;
 //' Background detection
 //'
 //' \code{createBackground} is a function to create a still background,
-//' exluding movies objects, using loaded image sequences as input, taking
+//' containing all motionless, by taking
 //' mean pixel values over all frames.
-//' @param allFullImages Array containing all images (and three color layers)
+//' @param m1 Array containing all frames for first color layer.
+//' @param m2 Array containing all frames for second color layer.
+//' @param m3 Array containing all frames for third color layer.
+//' @param d Vector containing dimensions of images(number of rows, number
+//' of columns, number of frames).
 //' @author Marjolein Bruijning & Marco D. Visser
 //' @examples
 //' \dontrun{
 //' stillBack <- createBackground (allFullImages)
 //'	}
-//' @return Returns array with still background.
+//' @return Array with still background.
 //' @export
 // [[Rcpp::export]]
 
