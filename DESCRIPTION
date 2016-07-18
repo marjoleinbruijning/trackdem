@@ -21,7 +21,9 @@ Depends:
     SDMTools,
     neuralnet,
     neuralnet,
-    raster
+    raster,
+    R.utils,
+    sp
 Imports:
     compiler
 LinkingTo: 

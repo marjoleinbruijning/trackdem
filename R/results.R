@@ -56,7 +56,7 @@ print.summary.records <- function(x,...) {
   cat("Identified particles:\n")
   print(x$particles)
   cat("\n")
-  cat(paste("(Minimum presence equals",x$presence,"frames) \n",sep=' '))
+  cat(paste("(Minimum presence is set at",x$presence,"frames) \n",sep=' '))
 }
 
 ##' @export
@@ -91,6 +91,33 @@ plot.sizerecord <- function (x,type='p',bg=allFullImages,incThres=10,...) {
   if (type == 'd') {
     hist(perID,xlab='Size (pixels)',main='Particle size distribution',...)
   }
+}
+
+##' @export
+summary.nnTrackdem <- function (object,...) {
+  confusion <- table(data.frame(Obs=object$trainingData$D,
+                                Pred=plogis(object$predicted$net.result) > 
+                                                            object$thr))
+  res <- list(confusion=confusion,hl=object$hl,rep=object$reps,
+              thr=object$thr,reps=object$reps)
+  class(res) <- 'summary.nnTrackdem'
+  return(res)
+}
+
+##' @export
+print.summary.nnTrackdem <- function (object,...) {
+  cat("Confusion table \n")
+  print(object$confusion)
+  cat("\n")
+  cat(paste(object$reps,'neural nets were trained with',object$hl,'hidden layers. \n',sep=' '))
+  cat(paste('A threshold of',round(object$thr,2),'was chosen.\n',sep=' '))
+}
+
+##' @export
+plot.nnTrackdem <- function (object,...) {
+  plot(cbind(object$trainingData$D,plogis(object$predicted$net.result)),
+       xlab='Identified',ylab='Probability based on neural network',...)
+  abline(h=object$thr,lty=2,lwd=2)
 }
 
 ##' Make animation

@@ -46,8 +46,6 @@ manuallySelect <- function (particleStats,images=allFullImages,
   tmp1 <- par('usr') 
 
   plot(images,frame=n,bty='n')
-  #plotRGB(images[[n]],scale=1,bty='n',
-  #	asp=toty/totx)
   points(particleStats[[n]]$x/totx,
        1-particleStats[[n]]$y/toty,col='blue',cex=1.5)
   title("First click on all (or a subset of) correctly identified particles, and press the green button.\n
@@ -196,29 +194,27 @@ confuStats <- function(confusion){
   data.frame(accuracy,recall,TN,FN,precision,F)
 }
 
-##' Create createNNData
+##' Create neural net
 ##'
 ##' @export
-runNN <- function(predictors,trainingData,hiddenLayers=3,Thr=0.6) {
+runNN <- function(predictors,trainingData,hiddenLayers=3,reps=5) {
   
-  n1<-neuralnet(as.formula(paste("D ~ ", paste(predictors, collapse= "+"))),
-                data=trainingData,hidden=hiddenLayers)
-  n1com<-compute(n1,trainingData[,predictors])
-  
-  plot(cbind(trainingData$D,plogis(n1com$net.result)),
-       xlab='Identified',ylab='Probability based on neural network')
-  abline(h=Thr,lty=2,lwd=2)
-
-  confusion <- table(data.frame(D=trainingData$D,P=plogis(n1com$net.result)>Thr))
-  return(list(confusion=confusion,n1=n1))
+  n1 <- neuralnet(as.formula(paste("D ~ ", paste(predictors, collapse= "+"))),
+                data=trainingData,hidden=hiddenLayers,rep=reps)
+  n1com <- compute(n1,trainingData[,predictors])
+  Thr <- optThr(stat="F",nnP=plogis(n1com$net.result))$maximum # find threshold
+  res <- list(nn=n1,thr=Thr,predicted=n1com,trainingData=trainingData,
+              hl=hiddenLayers,reps=reps,predictors=predictors)
+  class(res) <- 'nnTrackdem'
+  return(res)
 }
 
-##' Create createNNData
+##' Update particles
 ##'
 ##' @export
-updateParticles <- function(nn,testData,predictors,Thr) {
-  newParticleStats <- idDaphnia(nn,testData,predictors=predictors,FnTr=Thr)
-  tmp <- lapply(newParticleStats,function(x) x > Thr)
+updateParticles <- function(object,testData) {
+  newParticleStats <- idDaphnia(object$nn,testData,predictors=object$predictors)
+  tmp <- lapply(newParticleStats,function(x) x > object$thr)
   prob <- lapply(1:length(newParticleStats),function(X) 
                  newParticleStats[[X]][tmp[[X]]])
   particleStats <- lapply(1:length(testData), function(X) 
@@ -235,7 +231,7 @@ updateParticles <- function(nn,testData,predictors,Thr) {
 ##' Create createNNData
 ##'
 ##' @export
-idDaphnia <- function(nn,testData,FnTr=0.6,predictors) {
+idDaphnia <- function(nn,testData,predictors) {
   lapply(testData,function(X) plogis(compute(nn,X[,predictors])$net.result[,1]))
 }
 

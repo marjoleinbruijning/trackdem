@@ -2,11 +2,11 @@
 % Please edit documentation in R/nnFunctions.R
 \name{updateParticles}
 \alias{updateParticles}
-\title{Create createNNData}
+\title{Update particles}
 \usage{
-updateParticles(nn, testData, predictors, Thr)
+updateParticles(object, testData)
 }
 \description{
-Create createNNData
+Update particles
 }
 

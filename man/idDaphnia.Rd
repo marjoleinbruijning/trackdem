@@ -4,7 +4,7 @@
 \alias{idDaphnia}
 \title{Create createNNData}
 \usage{
-idDaphnia(nn, testData, FnTr = 0.6, predictors)
+idDaphnia(nn, testData, predictors)
 }
 \description{
 Create createNNData

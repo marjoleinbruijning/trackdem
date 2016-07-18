@@ -2,11 +2,11 @@
 % Please edit documentation in R/nnFunctions.R
 \name{runNN}
 \alias{runNN}
-\title{Create createNNData}
+\title{Create neural net}
 \usage{
-runNN(predictors, trainingData, hiddenLayers = 3, Thr = 0.6)
+runNN(predictors, trainingData, hiddenLayers = 3, reps = 5)
 }
 \description{
-Create createNNData
+Create neural net
 }
 
