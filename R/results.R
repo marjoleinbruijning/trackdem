@@ -6,6 +6,7 @@ jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
 ##' @export
 summary.identifiedParticles <- function(object, ...) {
   n <- 1:length(object$particleStats)
+  names(n) <- 1:length(n)
   numbers <- sapply(n,function(X)
                    length(object$particleStats[[X]]$patchID))
   mu <- mean(numbers)
@@ -14,8 +15,16 @@ summary.identifiedParticles <- function(object, ...) {
   tab <- cbind(Mean=mu,SD=sdd,CV=cv)
   res <- list(particles=tab,
               n=numbers)
-  names(res) <- c('Summary of identified particles','Per frame')
+  class(res) <- 'summary.identifiedParticles'
   return(res)
+}
+
+##' @export
+print.summary.identifiedParticles <- function(x, ...) {
+  cat("Average number of identified particles: \n")
+  print(x$particles)
+  cat("\nNumber of particles for each frame: \n")
+  print(x$n)
 }
 
 ##' @export
@@ -32,12 +41,22 @@ summary.records <- function(object, incThres=10, ...) {
   sdd <- apply(sr,1,sd,na.rm=T)
   muD <- apply(dr,1,sum,na.rm=T) # total movement
   tab <- cbind(ID=which(incLabels),Mean=perID,SD=sdd,movement=muD)
-  colnames(tab) <- c('ID','Size','SD','Total movement')
+  colnames(tab) <- c('ID','Size','SD size','Total movement')
   res <- list(particles=tab,
               trackrecord=tr,
               sizerecord=sr,
-              distrecord=dr)
+              distrecord=dr,
+              presence=incThres)
+  class(res) <- 'summary.records'
   return(res)
+}
+
+##' @export
+print.summary.records <- function(x,...) {
+  cat("Identified particles:\n")
+  print(x$particles)
+  cat("\n")
+  cat(paste("(Minimum presence equals",x$presence,"frames) \n",sep=' '))
 }
 
 ##' @export

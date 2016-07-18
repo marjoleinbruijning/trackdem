@@ -6,13 +6,11 @@ Date: 2016-07-18
 Author: Marjolein Bruijning, Marco D. Visser
 Maintainer: Marjolein Bruijning <m.bruijning@science.ru.nl>
 Description: Use video footage to follow moving
-    particles over multiple frames, and it suitable for 
-    laboratoy settings. This package contains
+    particles over multiple frames. This package contains
     functions to create image sequences from videos (requiring
     Python, Libav and ExitTool), background detection and 
     subtraction, and particle tracking. Machine learning is 
-    implemented to filter noise. It provides particle counts 
-    and size structure.
+    implemented to filter noise.
 License: GPL-2
 URL: https://github.com/marjoleinbruijning/trackdem
 BugReports: https://github.com/marjoleinbruijning/trackdem/issues
