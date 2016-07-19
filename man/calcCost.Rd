@@ -2,7 +2,9 @@
 % Please edit documentation in R/trackFunctions.R
 \name{calcCost}
 \alias{calcCost}
-\title{Calculate costs}
+\title{Calculate costs
+\code{calcCost} is a function to linking particle i to particle j,
+based on particle distance and size.}
 \usage{
 calcCost(x1, x2, y1, y2, s1, s2)
 }
@@ -20,6 +22,7 @@ calcCost(x1, x2, y1, y2, s1, s2)
 \item{s2}{particle sizes in frame n+1.}
 }
 \description{
+Calculate costs
 \code{calcCost} is a function to linking particle i to particle j,
 based on particle distance and size.
 }

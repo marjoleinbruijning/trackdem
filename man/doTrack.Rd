@@ -2,22 +2,28 @@
 % Please edit documentation in R/trackFunctions.R
 \name{doTrack}
 \alias{doTrack}
-\title{Track particles}
+\title{Track particles
+\code{doTrack} is a function link particles using \code{\link{track}}}
 \usage{
-doTrack(particleStats = trackObject$particleStats, L = 50,
-  backward = FALSE, sizeMeasure = "n.cell")
+doTrack(particleStatObject, L = 50, backward = FALSE,
+  sizeMeasure = "n.cell")
 }
 \arguments{
-\item{particleStats}{Output from \code{\link{identifyParticles}}}
+\item{particleStatObject}{Object with class particleStatistics,
+obtained using \code{\link{identifyParticles}}.}
 
-\item{L}{Cost for linking to dummy.}
+\item{L}{Cost for linking to dummy. Default set at 50.}
 
-\item{backward}{Default is FALSE.}
+\item{backward}{Reverse frames. Default is FALSE.}
+
+\item{sizeMeasure}{Measure for size (area, length, etc.).
+Currently not implemented.}
 }
 \value{
-Bla
+A list of class 'records'. Use 'summary' and 'plot'.
 }
 \description{
+Track particles
 \code{doTrack} is a function link particles using \code{\link{track}}
 }
 \author{

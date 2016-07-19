@@ -7,25 +7,24 @@
 applying a neural net (\code{\link{runNN}}). For all particles over all
 frames, it collects information on color intensities and neighbor pixels.}
 \usage{
-createTrainingData(particleStats = trackObject$particleStats,
-  images = allFullImages, mSubs = allImages, frames = NULL, tfp = mId,
-  training = FALSE)
+createTrainingData(particleStatObject, colorimages, mSub, frames = NULL,
+  mIdObject = NULL, training = FALSE)
 }
 \arguments{
-\item{particleStats}{A list with particle statistics for each frame,
+\item{particleStatObject}{A list with particle statistics for each frame,
 as obtained by \code{\link{identifyParticles}}.}
 
-\item{images}{An array with the original full color images, in order to plot
-on the original images, obtained by \code{\link{loadImages}}.}
+\item{mSub}{Images subtracted from background, as obtained by 
+\code{\link{subtractBackground}}.}
 
-\item{tfp}{If training=TRUE, give a list with true and false positives, 
+\item{mIdObject}{If training=TRUE, provide a list with true and false positives, 
 returned from \code{\link{manuallySelect}}, for each frame.}
 
 \item{training}{Logical. Should identified false and true positives 
 be combined to this dataframe? Default is FALSE.}
 
-\item{msubs}{Images subtracted from background, as obtained by 
-\code{\link{subtractBackground}}.}
+\item{images}{An array with the original full color images, in order to plot
+on the original images, obtained by \code{\link{loadImages}}.}
 
 \item{frame}{A number defining the frame that should be used. Default
 is NULL, in that case all frames are used.}

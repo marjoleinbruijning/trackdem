@@ -2,11 +2,18 @@
 % Please edit documentation in R/nnFunctions.R
 \name{extractRGB}
 \alias{extractRGB}
-\title{Find original R, G, B values}
+\title{Find values for R, G and B layer for specified coordinates.}
 \usage{
-extractRGB(x, y, im)
+extractRGB(x, y, images)
+}
+\arguments{
+\item{x}{Vector containing x coordinates.}
+
+\item{y}{Vector containing y coordinates.}
+
+\item{images}{Three dimensional array.}
 }
 \description{
-Find original R, G, B values
+Find values for R, G and B layer for specified coordinates.
 }
 

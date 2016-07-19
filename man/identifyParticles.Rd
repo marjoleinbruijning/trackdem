@@ -4,11 +4,12 @@
 \alias{identifyParticles}
 \title{Identify moving particles}
 \usage{
-identifyParticles(images, threshold = -0.1, pixelRange = NULL,
+identifyParticles(mSub, threshold = -0.1, pixelRange = NULL,
   pthreshold = NULL, select = "negative")
 }
 \arguments{
-\item{images}{Array containing images containing all moving particles.}
+\item{mSub}{Array containing images containing all moving particles,
+as obtained by \code{\link{subtractBackground}}}
 
 \item{threshold}{Threshold for including particles. For a chosen 
 threshold for each frame, use pthreshold.}
@@ -29,8 +30,7 @@ particle statistics with identified particles for each frame. (2) An array
 containing all binary images.
 }
 \description{
-\code{identifyParticles} is a function to identify particles using subtracted
-background images, as obtained by \code{\link{subtractBackground}}
+\code{identifyParticles} is a function to identify particles.
 }
 \examples{
 \dontrun{

@@ -2,7 +2,9 @@
 % Please edit documentation in R/trackFunctions.R
 \name{gMat}
 \alias{gMat}
-\title{Create random start g matrix}
+\title{Create random start g matrix
+\code{gMat} is a function to create a random G-matrix, that
+can be implemented in \code{\link{doTrack}}.}
 \usage{
 gMat(Phi)
 }
@@ -13,6 +15,7 @@ gMat(Phi)
 Random G-matrix
 }
 \description{
+Create random start g matrix
 \code{gMat} is a function to create a random G-matrix, that
 can be implemented in \code{\link{doTrack}}.
 }

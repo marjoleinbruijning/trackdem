@@ -2,7 +2,9 @@
 % Please edit documentation in R/trackFunctions.R
 \name{phiMat}
 \alias{phiMat}
-\title{Create cost matrix}
+\title{Create cost matrix
+\code{phiMat} is a function to create a cost matrix based on defined
+cost function \code{\link{calcCost}}.}
 \usage{
 phiMat(coords1, coords2, sizes1, sizes2, r = 1, L = 50)
 }
@@ -23,6 +25,7 @@ phiMat(coords1, coords2, sizes1, sizes2, r = 1, L = 50)
 Cost matrix linking particles.
 }
 \description{
+Create cost matrix
 \code{phiMat} is a function to create a cost matrix based on defined
 cost function \code{\link{calcCost}}.
 }

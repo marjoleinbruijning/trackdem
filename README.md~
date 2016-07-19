@@ -18,7 +18,7 @@ Final dependencies will be listed here.
 
 ## Installation
 
-We are aiming to have a release on [CRAN](http://cran.r-project.org/web/packages/aprof/index.html) soon,
+We are aiming to have a release on CRAN soon,
 however to install the developmental version from github use the **devtools** package to install the current development version from R.
 
 ```r
@@ -45,61 +45,68 @@ direcPictures <- '~/Dropbox/Github/trackdem/Test/ImageSequences/20150406_50/'
 allFullImages <- loadImages (direcPictures=direcPictures,nImages=1:30)
 
 ## Create background and subtract
-stillBack <- createBackground(
-                             allFullImages[,,1,],
-                             allFullImages[,,2,],
-                             allFullImages[,,3,],
-                             dim(allFullImages[,,1,]))
-allImages <- sapply(1:3, 
-                   function(x) 
-	                  subtractBackground(allFullImages[,,x,],
-	                  stillBack[,,x],dim(allFullImages[,,x,])),
-	               simplify='array')
+stillBack <- createBackground(allFullImages)
+allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
 
 ## Identify particles
-seqq <- seq(0,0.01,0.00001)
-pthres <- seqq[which(diff(quantile(
-                          allImages[,,1,1],prob=seqq)) < 1E-10)[1]]
-trackObject <- identifyParticles(allImages,
-               pthreshold=pthres,
-               pixelRange=c(10,500))
+partIden <- identifyParticles(mSub=allImages,
+                              pthreshold=0.0041, # chosen threshold
+                              pixelRange=c(10,500)) # min and max size
+summary(partIden)
 
 ## Track (without machine learning steps)
-records <- doTrack(L=50,particleStats=trackObject$particleStats)
-records2 <- linkTrajec (R=2,L=50)
+records <- doTrack(particleStatObject=partIden,L=50)
+records2 <- linkTrajec (recordsObject=records,
+                        particleStatObject=partIden,
+                        R=2,L=50)
 
 ## Obtain results
-summary(records2)
-pdf('results.pdf')
-plot(records2$trackRecord)
-plot(records2$sizeRecord)
+incT <- 10
+summary(records2,incThres=incT)
+pdf('resultsNN.pdf')
+plot(records2,type='trajectories',bg=allFullImages,incThres=incT)
+plot(records2,type='sizes',incThres=incT)
 dev.off()
 
+#########################################################################
+## Artificial neural network ############################################
+#########################################################################
+
 ## Create training data
-mId <- manuallySelect(particleStats=trackObject$particleStats)
-trainingData <- createTrainingData(training=TRUE,frames=mId$frame,tfp=mId)
+mId <- manuallySelect(particleStatObject=partIden,colorimages=allFullImages)
+trainingData <- createTrainingData(particleStatObject=partIden,
+                                   colorimages=allFullImages,
+                                   mSub=allImages,
+                                   training=TRUE,
+                                   frames=mId$frame,
+                                   mIdObject=mId)
 
 ## Choose predictors and train neural net
 predictors <- c("n.cell",'IR','IB','IG',"x","y",'perim.area.ratio')
-nn <- runNN(predictors,trainingData,hiddenLayers=6,reps=10)
+nn <- runNN(predictors,trainingData,hidden=4,reps=10,stat='F')
 plot(nn)
 summary(nn)
 
 ## Apply neural net
-nnData <- createTrainingData(training=FALSE,frames=1:30)
-particleStats2 <- updateParticles(nn,testData=nnData)
+nnData <- createTrainingData(particleStatObject=partIden,
+                                   colorimages=allFullImages,
+                                   mSub=allImages,
+                                   training=FALSE,
+                                   frames=1:30)
+
+particleStatsNN <- updateParticles(nn,nnData)
 
 ## Repeat tracking on updated particles
-records <- doTrack(L=50,particleStats=particleStats2)
-records2 <- linkTrajec (R=2,L=50,particleStats=particleStats2)
+records <- doTrack(particleStatsNN,L=50)
+records2 <- linkTrajec (records,particleStatsNN,R=2,L=50)
 
 ## Obtain results
-summary(records2)
-pdf('results.pdf')
-plot(records2$trackRecord)
-plot(records2$sizeRecord)
+incT <- 10
+summary(records2,incThres=incT)
+pdf('resultsNN.pdf')
+plot(records2,type='trajectories',bg=allFullImages,incThres=incT)
+plot(records2,type='sizes',incThres=incT)
 dev.off()
-
 
 ```
 ## Examples of output

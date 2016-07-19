@@ -2,7 +2,9 @@
 % Please edit documentation in R/trackFunctions.R
 \name{track}
 \alias{track}
-\title{Track particles}
+\title{Track particles
+\code{track} is a function to track particles over subsequent frames.
+Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).}
 \usage{
 track(Phi, g, L = 50)
 }
@@ -18,6 +20,7 @@ List two elements: first contains array with all images,
 subset when relevant. Second element contains all original color images as array.
 }
 \description{
+Track particles
 \code{track} is a function to track particles over subsequent frames.
 Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).
 }

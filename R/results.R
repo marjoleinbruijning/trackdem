@@ -4,23 +4,23 @@ jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
 "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
 
 ##' @export
-summary.identifiedParticles <- function(object, ...) {
-  n <- 1:length(object$particleStats)
+summary.particleStatObject <- function(object, ...) {
+  n <- 1:length(object)
   names(n) <- 1:length(n)
   numbers <- sapply(n,function(X)
-                   length(object$particleStats[[X]]$patchID))
+                   length(object[[X]]$patchID))
   mu <- mean(numbers)
   sdd <- sd(numbers)
   cv <- sdd/mu
   tab <- cbind(Mean=mu,SD=sdd,CV=cv)
   res <- list(particles=tab,
               n=numbers)
-  class(res) <- 'summary.identifiedParticles'
+  class(res) <- 'summary.particleStatObject'
   return(res)
 }
 
 ##' @export
-print.summary.identifiedParticles <- function(x, ...) {
+print.summary.particleStatObject <- function(x, ...) {
   cat("Average number of identified particles: \n")
   print(x$particles)
   cat("\nNumber of particles for each frame: \n")
@@ -28,7 +28,7 @@ print.summary.identifiedParticles <- function(x, ...) {
 }
 
 ##' @export
-summary.records <- function(object, incThres=10, ...) {
+summary.records <- function(object, incThres, ...) {
   incLabels <- apply(object$trackRecord[,,1],1,function(x) 
                                                sum(!is.na(x))) > incThres
   tr <- object$trackRecord[incLabels,,,drop=FALSE]
@@ -42,7 +42,8 @@ summary.records <- function(object, incThres=10, ...) {
   muD <- apply(dr,1,sum,na.rm=T) # total movement
   tab <- cbind(ID=which(incLabels),Mean=perID,SD=sdd,movement=muD)
   colnames(tab) <- c('ID','Size','SD size','Total movement')
-  res <- list(particles=tab,
+  res <- list(N=nrow(tab),
+              particles=tab,
               trackrecord=tr,
               sizerecord=sr,
               distrecord=dr,
@@ -53,7 +54,7 @@ summary.records <- function(object, incThres=10, ...) {
 
 ##' @export
 print.summary.records <- function(x,...) {
-  cat("Identified particles:\n")
+  cat(paste("Total of",x$N,"Identified particles:\n",sep=' '))
   print(x$particles)
   cat("\n")
   cat(paste("(Minimum presence is set at",x$presence,"frames) \n",sep=' '))
@@ -61,44 +62,45 @@ print.summary.records <- function(x,...) {
 
 ##' @export
 plot.colorimage <- function (x,frame=1,...) {
-  x <- brick(x[,,,frame])
+  if (length(dim(x)) > 3) {
+    x <- brick(x[,,,frame])
+  } else if (length(dim(x)) == 3) {
+    class(x) <- 'array'
+    x <- brick(x)
+  }
   plotRGB(x,scale=1,asp=nrow(x)/ncol(x),...)
 }
 
 ##' @export
-plot.trackrecord <- function (x,bg=allFullImages,incThres=10,...) {
-  incLabels <- apply(x[,,1],1,function(x) sum(!is.na(x))) > incThres
-  x <- x[incLabels,,,drop=FALSE]
-  plot(bg,...)
-   for (i in 1:nrow(x)) {
-    lines(x[i,,1]/ncol(bg),1-x[i,,2]/nrow(bg),
-         col=paste0(jet.colors(nrow(x))[i],'40'),lwd=1.5)
-  }
-}
-
-##' @export
-plot.sizerecord <- function (x,type='p',bg=allFullImages,incThres=10,...) {
-  incLabels <- apply(x,1,function(x) sum(!is.na(x))) > incThres
-  x <- x[incLabels,,drop=FALSE]
-  perID <- apply(x,1,mean,na.rm=T)
-  sdperID <- apply(x,1,sd,na.rm=T)
-  if (type == 'p') {
+plot.records <- function (x,bg,incThres,type='trajectories',...) {
+  if (type == 'trajectories') {
+    incLabels <- apply(x$trackRecord[,,1],1,function(x) 
+                                             sum(!is.na(x))) > incThres
+    x <- x$trackRecord[incLabels,,,drop=FALSE]
+    plot(bg,...)
+    for (i in 1:nrow(x)) {
+      lines(x[i,,1]/ncol(bg),1-x[i,,2]/nrow(bg),
+           col=paste0(jet.colors(nrow(x))[i],'40'),lwd=1.5)
+    }
+  } else if (type == 'sizes') {
+    incLabels <- apply(x$sizeRecord,1,function(x) 
+                                             sum(!is.na(x))) > incThres
+    x <- x$sizeRecord[incLabels,,drop=FALSE]
+    perID <- apply(x,1,mean,na.rm=T)
+    sdperID <- apply(x,1,sd,na.rm=T)
     plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,bg='#00000050',
          xlab='Labeled particle',ylab='Size (pixels)',...)
     segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
      y1=perID[order(perID)]+sdperID[order(perID)])
   }
-  if (type == 'd') {
-    hist(perID,xlab='Size (pixels)',main='Particle size distribution',...)
-  }
 }
 
 ##' @export
 summary.nnTrackdem <- function (object,...) {
-  confusion <- table(data.frame(Obs=object$trainingData$D,
+  confusion <- table(data.frame(Obs=object$trainingData$trY,
                                 Pred=plogis(object$predicted$net.result) > 
                                                             object$thr))
-  res <- list(confusion=confusion,hl=object$hl,rep=object$reps,
+  res <- list(confusion=confusion,hidden=object$hidden,
               thr=object$thr,reps=object$reps)
   class(res) <- 'summary.nnTrackdem'
   return(res)
@@ -109,13 +111,14 @@ print.summary.nnTrackdem <- function (object,...) {
   cat("Confusion table \n")
   print(object$confusion)
   cat("\n")
-  cat(paste(object$reps,'neural nets were trained with',object$hl,'hidden layers. \n',sep=' '))
+  cat(paste(object$reps,'neural nets were trained with',object$hidden,
+      'hidden neurons in each layer. \n',sep=' '))
   cat(paste('A threshold of',round(object$thr,2),'was chosen.\n',sep=' '))
 }
 
 ##' @export
 plot.nnTrackdem <- function (object,...) {
-  plot(cbind(object$trainingData$D,plogis(object$predicted$net.result)),
+  plot(cbind(object$trainingData$trY,plogis(object$predicted$net.result)),
        xlab='Identified',ylab='Probability based on neural network',...)
   abline(h=object$thr,lty=2,lwd=2)
 }

@@ -2,11 +2,14 @@
 % Please edit documentation in R/nnFunctions.R
 \name{confuStats}
 \alias{confuStats}
-\title{Create createNNData}
+\title{Calculate different statistics for trained neural network.}
 \usage{
 confuStats(confusion)
 }
+\arguments{
+\item{confusion}{Confusion matrix}
+}
 \description{
-Create createNNData
+Calculate different statistics for trained neural network.
 }
 

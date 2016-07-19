@@ -126,15 +126,63 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 		allFullImages[[x]][yranges,xranges,],simplify='array')	
   }
 
-  attr(allFullImages, "class") <- "colorimage"
+  attr(allFullImages, "class") <- c('colorimage','array')
   return(allFullImages)
+}
+
+##' Background detection
+##'
+##' \code{createBackground} is a function to create a still background,
+##' containing all motionless, by taking
+##' mean pixel values over all frames.
+##' @param colorimages Array containing all frames, obtained by 
+##' \code{\link{loadImages}}
+##' @author Marjolein Bruijning & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' stillBack <- createBackground (allFullImages)
+##'	}
+##' @return Array with still background.
+##' @export
+
+createBackground <- function(colorimages) {
+  A <- cb(allFullImages[,,1,],
+     allFullImages[,,2,],
+     allFullImages[,,3,],
+     dim(allFullImages[,,1,]))
+  class(A) <- c('colorimage','array')
+  return(A)
+}
+
+##' Background subtraction
+##'
+##' \code{subtractBackground} is a function to subtract each
+##' image from the created still background.
+##' The objects created through the function contain all changing
+##' pixels.
+##' @param bg Array containing still background, as returned from
+##' \code{\link{createBackground}}.
+##' @param colorimages Array containing all frames, obtained by 
+##' \code{\link{loadImages}}
+##' @author Marjolein Bruijning & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' allImages <- subtractBackground(stillBack,allFullImages) }
+##' @return Returns array with same size as images, subtracted from background.
+##' @export
+
+subtractBackground <- function (bg,colorimages) {
+  sapply(1:3, function(x) sb(colorimages[,,x,],
+	                         bg[,,x],
+	                         dim(colorimages[,,x,])),
+	     simplify='array')
 }
 
 ##' Identify moving particles
 ##'
-##' \code{identifyParticles} is a function to identify particles using subtracted
-##' background images, as obtained by \code{\link{subtractBackground}}
-##' @param images Array containing images containing all moving particles.
+##' \code{identifyParticles} is a function to identify particles.
+##' @param mSub Array containing images containing all moving particles,
+##' as obtained by \code{\link{subtractBackground}}
 ##' @param threshold Threshold for including particles. For a chosen 
 ##' threshold for each frame, use pthreshold.
 ##' @param pixelRange Default is NULL. Vector with minimum and maximum particle size, used as a
@@ -154,71 +202,54 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' containing all binary images.
 ##' @export
 
-identifyParticles <- function (images,threshold=-0.1,pixelRange=NULL,
+identifyParticles <- function (mSub,threshold=-0.1,pixelRange=NULL,
                                pthreshold=NULL,select='negative') {
-  nImages <- 1:dim(images)[3]
-  
+  n <- 1:dim(mSub)[3]
   print('Thresholding')
-  if(!is.null(pthreshold)){
-    allImages <- array(NA,dim=dim(images))
+  if(!is.null(pthreshold)) {
+    A <- array(NA,dim=dim(mSub))
     for (i in 1:3) {
-		allImages[,,,i] <- sapply(1:dim(images)[3], function(x)
-                           images[,,x,i]<quantile(images[,,x,i],
-			               pthreshold),
-			               simplify='array')
+		A[,,,i] <- sapply(1:dim(mSub)[3], function(x)
+                                       mSub[,,x,i] < quantile(mSub[,,x,i],
+			                                                  pthreshold),
+			              simplify='array')
     }
    
   } else {
-    if (select == 'negative') allImages <- images < threshold
-    else if (select == 'positive') allImages <- images > threshold
+    if (select == 'negative') A <- mSub < threshold
+    else if (select == 'positive') A <- mSub > threshold
   }
-  sumRGB <- apply(allImages,c(2,3),rowSums)
+  sumRGB <- apply(A,c(2,3),rowSums)
   sumRGB <- sumRGB > 0
   print('Labeling particles')
-  allImages <- sapply(nImages, function (x) 
-	ConnCompLabel(sumRGB[,,x]),simplify='array') # label particles
+  A <- sapply(n, function (x) ConnCompLabel(sumRGB[,,x]),simplify='array')
  
  print('Size filtering')
  if (!is.null(pixelRange)) {
-	for (i in nImages) {
-		allLabels <- tabulate(as.vector(allImages[,,i]),nbins=max(allImages[,,i]))
+	for (i in n) {
+		allLabels <- tabulate(as.vector(A[,,i]),nbins=max(A[,,i]))
 		allLabels <- allLabels[allLabels > 0]
-		names(allLabels) <- sort(unique(as.numeric(allImages[,,i])))[-1]
+		names(allLabels) <- sort(unique(as.numeric(A[,,i])))[-1]
 		inc <- allLabels >= pixelRange[1] & allLabels <= pixelRange[2]
-		allImages[,,i] [!allImages[,,i] %in% names(inc[inc==TRUE])] <- 0
+		A[,,i] [!A[,,i] %in% names(inc[inc==TRUE])] <- 0
 	}
   }
   print('Particle statistics')
-  particleStats <- lapply(nImages,function(x) 
-	PatchStat(allImages[,,x])[-1,]) # calculate patch statistics
+  particleStats <- lapply(n,function(x) PatchStat(A[,,x])[-1,])
   
   print('Coordinates calculation')
-  coords <- lapply(1:dim(allImages)[3],function(x) 
-    getCoords(m=allImages[,,x],d=dim(allImages[,,x])))
+  coords <- lapply(1:dim(A)[3],function(x) getCoords(m=A[,,x],d=dim(A[,,x])))
 
-  particleStats <- lapply(nImages,function(x) {
-    rows <- tapply(coords[[x]][,1],allImages[,,x][allImages[,,x]>0],mean)
-    cols <- tapply(coords[[x]][,2],allImages[,,x][allImages[,,x]>0],mean)
-   
-    # Max dist
-   tmp <- function () {
-    n <- length((unique(as.vector(allImages[,,x]))[-1]))
-    lengthh <- rep(NA,n)
-    for (j in 1:n) {
-      inc <- coords[[x]][allImages[,,x][allImages[,,x]>0] == 
-                         unique(as.vector(allImages[,,x]))[-1][j],]
-      lengthh[j] <- max(sapply(1:nrow(inc), function(i) {
-                       sqrt((inc[i,1] - inc[,1])^2 + (inc[i,2] - inc[,2])^2)}))
-    }
-   }
+  particleStats <- lapply(n,function(x) {
+    rows <- tapply(coords[[x]][,1],A[,,x][A[,,x]>0],mean)
+    cols <- tapply(coords[[x]][,2],A[,,x][A[,,x]>0],mean)
     particleStats[[x]] <- cbind(particleStats[[x]],
-                                 data.frame(x=cols,y=rows)) #,length=lengthh))
+                                 data.frame(x=cols,y=rows))
     return(particleStats[[x]])                            
     }
   )
-  results <- list(allImages=allImages,particleStats=particleStats)
-  attr(results, "class") <- "identifiedParticles"
-  return(results)
+  attr(particleStats,"images") <- A
+  attr(particleStats, "class") <- "particleStatObject"
+  return(particleStats)
 }
-
 

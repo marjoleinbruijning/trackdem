@@ -2,11 +2,19 @@
 % Please edit documentation in R/nnFunctions.R
 \name{updateParticles}
 \alias{updateParticles}
-\title{Update particles}
+\title{Apply trained artificial neural network to particleStat object.}
 \usage{
-updateParticles(object, testData)
+updateParticles(nnTrackdemObject, particleStatObject)
+}
+\arguments{
+\item{nnTrackdemObject}{Object of class nnTrackdemObject.}
+
+\item{particleStatObject}{Object of class particleStatObject.}
+}
+\value{
+A list of class particleStatObject.
 }
 \description{
-Update particles
+Apply trained artificial neural network to particleStat object.
 }
 

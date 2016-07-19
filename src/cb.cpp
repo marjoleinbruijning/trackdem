@@ -3,26 +3,9 @@
 using namespace Rcpp;
 using namespace arma;
 
-//' Background detection
-//'
-//' \code{createBackground} is a function to create a still background,
-//' containing all motionless, by taking
-//' mean pixel values over all frames.
-//' @param m1 Array containing all frames for first color layer.
-//' @param m2 Array containing all frames for second color layer.
-//' @param m3 Array containing all frames for third color layer.
-//' @param d Vector containing dimensions of images(number of rows, number
-//' of columns, number of frames).
-//' @author Marjolein Bruijning & Marco D. Visser
-//' @examples
-//' \dontrun{
-//' stillBack <- createBackground (allFullImages)
-//'	}
-//' @return Array with still background.
 //' @export
 // [[Rcpp::export]]
-
-NumericVector createBackground(NumericVector m1, NumericVector m2, NumericVector m3, IntegerVector d) {
+NumericVector cb(NumericVector m1, NumericVector m2, NumericVector m3, IntegerVector d) {
 	
 NumericVector mat1(m1);
 NumericVector mat2(m2);

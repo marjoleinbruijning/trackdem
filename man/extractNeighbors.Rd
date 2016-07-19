@@ -2,11 +2,20 @@
 % Please edit documentation in R/nnFunctions.R
 \name{extractNeighbors}
 \alias{extractNeighbors}
-\title{Get RGB values for neighbor pixels}
+\title{Get R, G and B values for specified coordinates, and its eight neighbor 
+pixels.}
 \usage{
-extractNeighbors(x, y, images, frame)
+extractNeighbors(x, y, images)
+}
+\arguments{
+\item{x}{Vector containing x coordinates.}
+
+\item{y}{Vector containing y coordinates.}
+
+\item{Three}{dimensional array.}
 }
 \description{
-Get RGB values for neighbor pixels
+Get R, G and B values for specified coordinates, and its eight neighbor 
+pixels.
 }
 

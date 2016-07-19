@@ -4,17 +4,17 @@
 \alias{manuallySelect}
 \title{Manual selection of true and false positives.}
 \usage{
-manuallySelect(particleStats, images = allFullImages, frame = NULL)
+manuallySelect(particleStatObject, colorimages, frame = NULL)
 }
 \arguments{
-\item{particleStats}{A list with particle statistics for each frame,
-obtained by \code{\link{identifyParticles}}.}
-
-\item{images}{An array with the original full color images, in order to plot
+\item{colorimages}{An array with the original full color images, in order to plot
 on the original images.}
 
 \item{frame}{A number defining the frame that should be used. Default
 is NULL; in that case the frame with the maximum number of identified particles is used.}
+
+\item{particleStats}{A list with particle statistics for each frame,
+obtained by \code{\link{identifyParticles}}.}
 }
 \value{
 List containing three elements: true positives, false positives,

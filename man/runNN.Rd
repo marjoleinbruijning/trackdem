@@ -2,11 +2,39 @@
 % Please edit documentation in R/nnFunctions.R
 \name{runNN}
 \alias{runNN}
-\title{Create neural net}
+\title{Create neural net
+\code{runNN} traines an artificial neural network.}
 \usage{
-runNN(predictors, trainingData, hiddenLayers = 3, reps = 5)
+runNN(predictors, trainingData, hidden = 3, reps = 5, stat = "F", ...)
+}
+\arguments{
+\item{predictors}{Vector containing predictors of interest, present 
+as column names in TrainingData.}
+
+\item{trainingData}{Dataframe containing the variables of the neural
+network.}
+
+\item{hidden}{A vector of integers specifying the number of hidden neurons
+in each layer (see also \code{\link{neuralnet}}). Default is 3.}
+
+\item{reps}{The number of repetitions. Default is 5.}
+
+\item{stat}{The statistic to be optimized to calculate the threshold.
+Either 'accuray', 'recall', or 'F' (F-measure). Default is 'F'.}
+}
+\value{
+An object of class 'nnTrackdem', containing the trained neural
+net. 'Summary' can be used to obtain a summary of the results. 'Plot' 
+can be used to plot the results.
 }
 \description{
 Create neural net
+\code{runNN} traines an artificial neural network.
+}
+\author{
+Marjolein Bruijning & Marco D. Visser
+}
+\seealso{
+\code{\link{neuralnet}}, \code{\link{compute}}
 }
 

@@ -2,12 +2,24 @@
 % Please edit documentation in R/nnFunctions.R
 \name{optThr}
 \alias{optThr}
-\title{optThr}
+\title{Optimize threshold based on precision, recall or F-measure.}
 \usage{
-optThr(trD = trainingData$D, nnP = plogis(n1com$net.result),
+optThr(trY = trainingData$trY, nnP = plogis(nCom$net.result),
   stat = "accuracy")
 }
+\arguments{
+\item{stat}{The statistic to be optimized to calculate the threshold.
+Either 'accuray', 'recall', or 'F' (F-measure).
+nnP Vector containing probabilities.
+trY Vector containing trained response values (either 0 or 1).}
+}
+\value{
+Returns a threshold probability.
+}
 \description{
-optThr
+Optimize threshold based on precision, recall or F-measure.
+}
+\seealso{
+\code{\link{neuralnet}}, \code{\link{compute}}
 }
 

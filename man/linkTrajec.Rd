@@ -2,44 +2,31 @@
 % Please edit documentation in R/trackFunctions.R
 \name{linkTrajec}
 \alias{linkTrajec}
-\title{Create cost matrix}
+\title{Link created track segments}
 \usage{
-linkTrajec(G, trackRecord = records$trackRecord, label = records$label,
-  sizeRecord = records$sizeRecord, L = 50, R = 1,
-  particleStats = trackObject$particleStats, incThres = 10)
+linkTrajec(recordsObject, particleStatObject, L = 50, R = 1,
+  incThres = 10)
 }
 \arguments{
-\item{G}{Coordinates of particles in frame n.}
+\item{L}{Cost of linking to dummy variable, default is 50.}
 
-\item{trackRecord}{Coordinates of particles in frame n+1.}
-
-\item{label}{Sizes of particles in frame n.}
-
-\item{sizeRecord}{Sizes of particles in frame n+1.}
-
-\item{L}{Cost of linking to dummy variable.}
-
-\item{R}{Default is one; scaling parameter.}
-
-\item{incThres}{Threshold}
-
-\item{plot}{Default is FALSE. Plot results?}
-
-\item{images}{Default is FALSE. Plot results?}
-
-\item{texxt}{xlab}
+\item{R}{Default is one; link to how many subsequent frames?}
 }
 \value{
-Bla
+Returns a list of class 'records', containing all merged
+track segments. See 'summary' and 'plot'.
 }
 \description{
-\code{phiMat} is a function to create a cost matrix based on defined
-cost function \code{\link{calcCost}}.
+\code{linkTrajec} is a function to merge track segments, based on 
+distance and size of particles, using a record object 
+provided by \code{\link{doTrack}}.
+recordsObject Object of class records.
+particleStatObject Object of class particleStatistics.
 }
 \author{
 Marjolein Bruijning & Marco D. Visser
 }
 \seealso{
-\code{\link{doTrack}}, \code{\link{linkTrajec}},
+\code{\link{doTrack}}
 }
 
