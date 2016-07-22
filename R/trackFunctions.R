@@ -310,8 +310,25 @@ doTrack <- function(particles,L=50,
   return(res)
 }
 
-trackParticles <- function (particles,L=50,R=2) {
-  records <- doTrack(particles=particles,L=L)
+
+##' Track particles
+##' \code{trackParticles} is a function link particles.
+##' @param particles Object with class particles,
+##' obtained using \code{\link{identifyParticles}}.
+##' @param L Cost for linking to dummy. Default set at 50.
+##' @param R Default is one; link to how many subsequent frames? Default set
+##' at 2.
+##' @param backward Reverse frames. Default is FALSE.
+##' @param sizeMeasure Measure for size (area, length, etc.).
+##' Currently not implemented.
+##' @author Marjolein Bruijning & Marco D. Visser
+##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
+##' @return A list of class 'records'. Use 'summary' and 'plot'.
+##' @export
+## 
+trackParticles <- function (particles,L=50,R=2,backward=FALSE,
+                            sizeMeasure='n.cell') {
+  records <- doTrack(particles=particles,L=L,backward=backward)
   rec <- linkTrajec (recordsObject=records,
                         particles=particles,
                         R=R,L=L)
