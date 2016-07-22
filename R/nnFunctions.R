@@ -354,6 +354,7 @@ getConfMat <- function(Y,P,thr,stat="F"){
 ##' @param nnTrackdemObject Object of class nnTrackdemObject.
 ##' @param particleStatObject Object of class particleStatObject.
 ##' @return A list of class particleStatObject.
+##' @export
 update.particles <- function(particles,neuralnet,...) {
     if(!is.TrDm(neuralnet)){
         stop("Input does not appear to be of the class \"TrDm\"")
