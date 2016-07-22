@@ -11,14 +11,14 @@ createImageSeq(path = "~/Data/", x = 1915, y = 1080, fps = 15,
 \item{path}{Path path to location of directory containing directories
 'Movies' and 'ImageSequences'.}
 
-\item{x}{Number of pixels in horizontal direction}
+\item{x}{Number of pixels in horizontal direction (ncol); default is 1915.}
 
-\item{y}{Number of pixels in vertical direction}
+\item{y}{Number of pixels in vertical direction (nrow); default is 1080.}
 
 \item{fps}{Frames per second, default is 15.}
 
 \item{nsec}{Duration of movie that is exported, default is 2 seconds.
-The middle 2 seconds of the movie are used.}
+The middle nsec seconds of the movie are used.}
 
 \item{ext}{The extension of the video, in lower case. Default is 'mts'.}
 }

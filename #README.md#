@@ -56,54 +56,67 @@ allFullImages <- loadImages (direcPictures=direcPictures,nImages=1:30)
 
 ## Create background and subtract
 stillBack <- createBackground(allFullImages)
-allImages <- subtractBackground(bg=stillBack)
+allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
 
 ## Identify particles
-partIden <- identifyParticles(sbg=allImages,
+partIden <- identifyParticles(mSub=allImages,
                               pthreshold=0.0041, # chosen threshold
                               pixelRange=c(10,500)) # min and max size
 summary(partIden)
 
 ## Track (without machine learning steps)
-records <- trackParticles(partIden)
-
-## Obtain results
-incT <- 10
-summary(records,incThres=incT)
-pdf('resultsNN.pdf')
-plot(records,incThres=incT)
-dev.off()
-
-
-#########################################################################
-## Artificial neural network ############################################
-#########################################################################
-## Create training data set
-mId <- list()
-trainingData <- list()
-n <- 5 # top n frames
-frames <- order(sapply(1:length(partIden),function(X) nrow(partIden[[X]])),
-                decreasing=TRUE)[1:n]
-for (i in 1:n) {
-  mId[[i]] <- manuallySelect(particles=partIden,frame=frames[i])
-  trainingData[[i]] <- extractInfo(particles=partIden,
-                                   training=TRUE,
-                                   frames=mId[[i]]$frame,
-                                   mIdObject=mId[[i]])
-}
-trainingData <- do.call(rbind,trainingData)
-
-finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
-partIden2 <- update(partIden,finalNN) # update with neural net
-
-## Track (with machine learning steps)
-records2 <- trackParticles(partIden2)
+records <- doTrack(particleStatObject=partIden,L=50)
+records2 <- linkTrajec (recordsObject=records,
+                        particleStatObject=partIden,
+                        R=2,L=50)
 
 ## Obtain results
 incT <- 10
 summary(records2,incThres=incT)
-plot(records2,incThres=incT)
+pdf('resultsNN.pdf')
+plot(records2,type='trajectories',bg=allFullImages,incThres=incT)
+plot(records2,type='sizes',incThres=incT)
+dev.off()
 
+#########################################################################
+## Artificial neural network ############################################
+#########################################################################
+
+## Create training data
+mId <- manuallySelect(particleStatObject=partIden,colorimages=allFullImages)
+trainingData <- createTrainingData(particleStatObject=partIden,
+                                   colorimages=allFullImages,
+                                   mSub=allImages,
+                                   training=TRUE,
+                                   frames=mId$frame,
+                                   mIdObject=mId)
+
+## Choose predictors and train neural net
+predictors <- c("n.cell",'IR','IB','IG',"x","y",'perim.area.ratio')
+nn <- runNN(predictors,trainingData,hidden=4,reps=10,stat='F')
+plot(nn)
+summary(nn)
+
+## Apply neural net
+nnData <- createTrainingData(particleStatObject=partIden,
+                                   colorimages=allFullImages,
+                                   mSub=allImages,
+                                   training=FALSE,
+                                   frames=1:30)
+
+particleStatsNN <- updateParticles(nn,nnData)
+
+## Repeat tracking on updated particles
+records <- doTrack(particleStatsNN,L=50)
+records2 <- linkTrajec (records,particleStatsNN,R=2,L=50)
+
+## Obtain results
+incT <- 10
+summary(records2,incThres=incT)
+pdf('resultsNN.pdf')
+plot(records2,type='trajectories',bg=allFullImages,incThres=incT)
+plot(records2,type='sizes',incThres=incT)
+dev.off()
 
 ```
 ## Examples of output

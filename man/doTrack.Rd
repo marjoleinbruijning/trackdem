@@ -5,11 +5,10 @@
 \title{Track particles
 \code{doTrack} is a function link particles using \code{\link{track}}}
 \usage{
-doTrack(particleStatObject, L = 50, backward = FALSE,
-  sizeMeasure = "n.cell")
+doTrack(particles, L = 50, backward = FALSE, sizeMeasure = "n.cell")
 }
 \arguments{
-\item{particleStatObject}{Object with class particleStatistics,
+\item{particles}{Object with class particleStatistics,
 obtained using \code{\link{identifyParticles}}.}
 
 \item{L}{Cost for linking to dummy. Default set at 50.}

@@ -17,7 +17,15 @@ trY Vector containing trained response values (either 0 or 1).}
 Returns a threshold probability.
 }
 \description{
-Optimize threshold based on precision, recall or F-measure.
+Precision is the number of correct positive results divided by the
+number of all positive predictions. Recall is the number of correct
+positive results divided by the number of positive results that
+could have been returned if the algoritm was perfect.
+In binary classification, a F1 score (F-score/ F-measure) is statistical
+measure of accuracy. F1 scores considers both the precision
+and the recall. A F1 score may be seen as a weighted average
+(harmonic mean) of the precision and recall.
+Precision and F1 scores are at best 1 and at worst 0.
 }
 \seealso{
 \code{\link{neuralnet}}, \code{\link{compute}}

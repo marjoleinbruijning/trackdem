@@ -4,14 +4,15 @@
 \alias{subtractBackground}
 \title{Background subtraction}
 \usage{
-subtractBackground(bg, colorimages)
+subtractBackground(bg, colorimages = NULL)
 }
 \arguments{
 \item{bg}{Array containing still background, as returned from
 \code{\link{createBackground}}.}
 
 \item{colorimages}{Array containing all frames, obtained by 
-\code{\link{loadImages}}}
+\code{\link{loadImages}}. Default is NULL, in case the original images
+are used.}
 }
 \value{
 Returns array with same size as images, subtracted from background.
@@ -24,7 +25,7 @@ pixels.
 }
 \examples{
 \dontrun{
-allImages <- subtractBackground(stillBack,allFullImages) }
+allImages <- subtractBackground(stillBack) }
 }
 \author{
 Marjolein Bruijning & Marco D. Visser

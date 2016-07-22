@@ -5,7 +5,8 @@
 \title{Create neural net
 \code{runNN} traines an artificial neural network.}
 \usage{
-runNN(predictors, trainingData, hidden = 3, reps = 5, stat = "F", ...)
+runNN(predictors, trainingData, validationData, hidden = 3, reps = 5,
+  stat = "F", ...)
 }
 \arguments{
 \item{predictors}{Vector containing predictors of interest, present 

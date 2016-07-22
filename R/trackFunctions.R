@@ -142,7 +142,7 @@ gMat <- function (Phi) {
 ##' distance and size of particles, using a record object 
 ##' provided by \code{\link{doTrack}}.
 ##' recordsObject Object of class records.
-##' particleStatObject Object of class particleStatistics.
+##' particles Object of class particleStatistics.
 ##' @param R Default is one; link to how many subsequent frames?
 ##' @param L Cost of linking to dummy variable, default is 50.
 ##' @author Marjolein Bruijning & Marco D. Visser
@@ -151,7 +151,7 @@ gMat <- function (Phi) {
 ##' track segments. See 'summary' and 'plot'.
 ##' @export
 ## 
-linkTrajec <- function (recordsObject,particleStatObject,
+linkTrajec <- function (recordsObject,particles,
                         L=50,R=1,incThres=10) {
  
   trackRecord <- recordsObject$trackRecord
@@ -163,7 +163,7 @@ linkTrajec <- function (recordsObject,particleStatObject,
   sizeRecord[is.na(sizeRecord)] <- 0     
  
   for (r in 1:R) {
-    A <- array(NA,dim=c(500,500,length(particleStatObject)-r-1))
+    A <- array(NA,dim=c(500,500,length(particles)-r-1))
     links <- list()
       
     for (i in 1:(dim(G)[3]-r)) {
@@ -176,13 +176,13 @@ linkTrajec <- function (recordsObject,particleStatObject,
       beginTrajec <- beginTrajec[beginTrajec != 0]
     
       if (length(endTrajec)>0 & length(beginTrajec)>0) {    
-        coords1 <- matrix(c(particleStatObject[[i]]$x[endTrajec],
-                   particleStatObject[[i]]$y[endTrajec]),ncol=2,byrow=F)
-        sizes1 <- particleStatObject[[i]]$n.cell[endTrajec]           
+        coords1 <- matrix(c(particles[[i]]$x[endTrajec],
+                   particles[[i]]$y[endTrajec]),ncol=2,byrow=F)
+        sizes1 <- particles[[i]]$n.cell[endTrajec]           
     
-        coords2 <- matrix(c(particleStatObject[[i+r]]$x[beginTrajec],
-                   particleStatObject[[i+r]]$y[beginTrajec]),ncol=2,byrow=F)
-        sizes2 <- particleStatObject[[i+r]]$n.cell[beginTrajec]
+        coords2 <- matrix(c(particles[[i+r]]$x[beginTrajec],
+                   particles[[i+r]]$y[beginTrajec]),ncol=2,byrow=F)
+        sizes2 <- particles[[i+r]]$n.cell[beginTrajec]
     
         Phi <- phiMat(coords1,coords2,
 	                  sizes1=sizes1,
@@ -226,13 +226,12 @@ linkTrajec <- function (recordsObject,particleStatObject,
   label[label == 0] <- NA 
   sizeRecord[sizeRecord == 0] <- NA         
   res <- list(trackRecord=trackRecord,A=A,label=label,sizeRecord=sizeRecord)
-  attr(res, "class") <- "records"
   return(res) 
 }
 
 ##' Track particles
 ##' \code{doTrack} is a function link particles using \code{\link{track}}
-##' @param particleStatObject Object with class particleStatistics,
+##' @param particles Object with class particleStatistics,
 ##' obtained using \code{\link{identifyParticles}}.
 ##' @param L Cost for linking to dummy. Default set at 50.
 ##' @param backward Reverse frames. Default is FALSE.
@@ -243,24 +242,24 @@ linkTrajec <- function (recordsObject,particleStatObject,
 ##' @return A list of class 'records'. Use 'summary' and 'plot'.
 ##' @export
 ## 
-doTrack <- function(particleStatObject,L=50,
+doTrack <- function(particles,L=50,
                     backward=FALSE,
                     sizeMeasure='n.cell') {
 
-  G <- array(NA,dim=c(500,500,length(particleStatObject)-1))
+  G <- array(NA,dim=c(500,500,length(particles)-1))
   links <- list()
   if (backward == TRUE) {
-    n <- length(particleStatObject)
-    particleStatObject <- particleStatObject[n:1]
+    n <- length(particles)
+    particles <- particles[n:1]
   }
 
-  for (i in 1:(length(particleStatObject)-1)) {
-    coords1 <- matrix(c(particleStatObject[[i]]$x,
-                      particleStatObject[[i]]$y),ncol=2,byrow=F)
-    sizes1 <- particleStatObject[[i]]$n.cell
-    coords2 <- matrix(c(particleStatObject[[i+1]]$x,
-                      particleStatObject[[i+1]]$y),ncol=2,byrow=F)	
-    sizes2 <- particleStatObject[[i+1]]$n.cell
+  for (i in 1:(length(particles)-1)) {
+    coords1 <- matrix(c(particles[[i]]$x,
+                      particles[[i]]$y),ncol=2,byrow=F)
+    sizes1 <- particles[[i]]$n.cell
+    coords2 <- matrix(c(particles[[i+1]]$x,
+                      particles[[i+1]]$y),ncol=2,byrow=F)	
+    sizes2 <- particles[[i+1]]$n.cell
     Phi <- phiMat(coords1,coords2,
 	              sizes1=sizes1,
 	              sizes2=sizes2,
@@ -303,12 +302,25 @@ doTrack <- function(particleStatObject,L=50,
 
   for (i in 1:(length(a))) {
     label[,i] <- allLinks[,order(a)[i]]
-	trackRecord [,i,1] <- particleStatObject[[i]][allLinks[,order(a)[i]],'x']
-	trackRecord [,i,2] <- particleStatObject[[i]][allLinks[,order(a)[i]],'y']
-	sizeRecord[,i] <- particleStatObject[[i]][allLinks[,order(a)[i]],sizeMeasure]
+	trackRecord [,i,1] <- particles[[i]][allLinks[,order(a)[i]],'x']
+	trackRecord [,i,2] <- particles[[i]][allLinks[,order(a)[i]],'y']
+	sizeRecord[,i] <- particles[[i]][allLinks[,order(a)[i]],sizeMeasure]
   }
   res <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,label=label,G=G)
-  attr(res, "class") <- "records"
   return(res)
 }
+
+trackParticles <- function (particles,L=50,R=2) {
+  records <- doTrack(particles=particles,L=L)
+  rec <- linkTrajec (recordsObject=records,
+                        particles=particles,
+                        R=R,L=L)
+  class(rec) <- c('TrDm','tracked')
+  attr(rec,"background") <- attributes(particles)$background
+  attr(rec,"originalImages") <- attributes(particles)$originalImages
+  attr(rec,"subtractedImages") <- attributes(particles)$subtractedImages
+  return(rec)
+}
+
+
 

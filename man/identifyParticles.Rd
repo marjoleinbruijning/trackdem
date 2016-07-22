@@ -4,13 +4,10 @@
 \alias{identifyParticles}
 \title{Identify moving particles}
 \usage{
-identifyParticles(mSub, threshold = -0.1, pixelRange = NULL,
+identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
   pthreshold = NULL, select = "negative")
 }
 \arguments{
-\item{mSub}{Array containing images containing all moving particles,
-as obtained by \code{\link{subtractBackground}}}
-
 \item{threshold}{Threshold for including particles. For a chosen 
 threshold for each frame, use pthreshold.}
 
@@ -23,6 +20,9 @@ frame.}
 
 \item{select}{Use values smaller ('negative') or larger ('positive') then 
 threshold. Default is 'negative'.}
+
+\item{mSub}{Array containing images containing all moving particles,
+as obtained by \code{\link{subtractBackground}}}
 }
 \value{
 This function returns a list with two elements: (1) a list with

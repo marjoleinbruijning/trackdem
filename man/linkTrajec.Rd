@@ -4,8 +4,7 @@
 \alias{linkTrajec}
 \title{Link created track segments}
 \usage{
-linkTrajec(recordsObject, particleStatObject, L = 50, R = 1,
-  incThres = 10)
+linkTrajec(recordsObject, particles, L = 50, R = 1, incThres = 10)
 }
 \arguments{
 \item{L}{Cost of linking to dummy variable, default is 50.}
@@ -21,7 +20,7 @@ track segments. See 'summary' and 'plot'.
 distance and size of particles, using a record object 
 provided by \code{\link{doTrack}}.
 recordsObject Object of class records.
-particleStatObject Object of class particleStatistics.
+particles Object of class particleStatistics.
 }
 \author{
 Marjolein Bruijning & Marco D. Visser

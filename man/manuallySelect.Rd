@@ -4,7 +4,7 @@
 \alias{manuallySelect}
 \title{Manual selection of true and false positives.}
 \usage{
-manuallySelect(particleStatObject, colorimages, frame = NULL)
+manuallySelect(particles, colorimages = NULL, frame = NULL)
 }
 \arguments{
 \item{colorimages}{An array with the original full color images, in order to plot
