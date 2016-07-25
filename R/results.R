@@ -14,6 +14,7 @@ is.TrDm <- function(object) {
 jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
 "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
 
+## Summary TrDm objects
 ##' @export
 summary.TrDm <- function(x,incThres=10,...) {
   if (sum(class(x) == 'particles') > 0) {
@@ -84,6 +85,7 @@ summary.TrDm <- function(x,incThres=10,...) {
   } else {cat("\t No summary available for this object.\n\n")}
 } 
 
+## Print TrDm objects
 ##' @export
 print.TrDm <- function(x,...) {
   if (sum(class(x) == 'colorimage') > 0) {
@@ -114,9 +116,10 @@ print.TrDm <- function(x,...) {
   } 
 }
 
+## Plot TrDm objects
 ##' @export
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
-                      cl=1,...) {
+                      cl=1,path='~',name='animation',...) {
   #oldpar <- par('mar','mfrow')
   if (any(class(x) == 'colorimage')) {  
     if (length(dim(x)) > 3) {
@@ -156,15 +159,38 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
                xlab='Labeled particle',ylab='Size (pixels)',...)
           segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
                    y1=perID[order(perID)]+sdperID[order(perID)])
-        }
-          if (type == 'trajectories') {
+        } else if (type == 'trajectories') {
             x <- x$trackRecord[incLabels,,,drop=FALSE]
             plot(colorimages,...)
             for (i in 1:nrow(x)) {
             lines(x[i,,1]/ncol(colorimages),1-x[i,,2]/nrow(colorimages),
                   col=paste0(jet.colors(nrow(x))[i],'99'),lwd=1.5)
             }
-          }
+          } else if (type == 'animation') {
+            oldwd <- getwd()
+            setwd(path)
+            x <- x$trackRecord[incLabels,,]
+            dir.create(paste0('images'))
+            width <- ifelse(ncol(colorimages) %% 2 == 0, 
+                            ncol(colorimages),ncol(colorimages)+1)
+            height <- ifelse(nrow(colorimages) %% 2 == 0, 
+                            nrow(colorimages),nrow(colorimages)+1)
+            rownames(x) <- 1:nrow(x)
+            for (i in 1:ncol(x)) {
+              png(paste0('images/images',i,'.png'),width=width,height=height)
+              plot(colorimages,frame=i)
+              points(x[,i,1]/width,
+                     1-x[,i,2]/height,
+                     col=rainbow(nrow(x))[as.numeric(rownames(x))],
+                     cex=2)
+              cat("\r \t Animation:",i,"out of",ncol(x))
+              dev.off()
+           }
+           system(paste0("avconv -loglevel quiet -r 10 -i 'images/images'%d.png -b:v 1000k ",name,".mp4"))
+           system("rm -r images")
+           setwd(oldwd)
+           cat('\n')
+        }
      }  
   } else if (any(class(x) == 'nnObject')) {
     plot(cbind(x$trainingData$trY,plogis(x$predicted$net.result)),
@@ -175,35 +201,3 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
   }
   #par(oldpar)
 }
-
-
-##' Make animation
-##' \code{makeAnimation} is ...
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @export
-makeAnimation <- function(particleStats,images=allFullImagesRGB,
-                         path='~',incThr=10,trackRecord=trackRecord) {
-  oldwd <- getwd()
-  setwd(path)
-  incLabels <- apply(trackRecord[,,1],1,function(x) sum(!is.na(x))) > incThres
- 
-  trackRecord <- trackRecord[incLabels,,]
-  dir.create(paste0('images'))
-  width <- ncol(images[[i]])
-  height <- nrow(images[[i]])
-  rownames(trackRecord) <- 1:nrow(trackRecord)
-  for (i in 1:length(particleStats)) {
-    png(paste0('images/images',i,'.png'),width=850,height=height)
-    plot(images,frame=i)
-    points(trackRecord[,i,1]/width,
-           1-trackRecord[,i,2]/height,
-           col=rainbow(nrow(trackRecord))[as.numeric(rownames(trackRecord))],
-           cex=2)
-    print(i)
-    dev.off()
-  }
-  system("avconv -r 10 -i 'images/images'%d.png -b:v 1000k animation.mp4")
-  setwd(oldwd)
-}
-
-
