@@ -1,3 +1,65 @@
+##' Batch analysis
+##' \code{runBatch} is a function to analyze all image sequences in a specified
+##' directory.
+##' @param path A character vector of path name.
+##' @param direcnames Default is NULL. If not all image sequences should be
+##' analyzed, specificy which files to use.
+##' @param nn Name of artifical neural net if apply it to images. Default
+##' is NULL, resulting in no neural net being applied.
+##' @seealso \code{\link{loadImages}}, \code{\link{createBackground}},
+##' \code{\link{subtractBackground}},\code{\link{identifyParticles}},
+##' \code{\link{trackParticles}}.
+##' @author Marjolein Bruijning & Marco D. Visser
+##' @return Dataframe with estimated population size for each image sequence.
+##' @export
+##
+
+runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
+                     threshold=-0.1,pthreshold=NULL,select='negative',
+                     nn=NULL,incThres=10,date=TRUE) {
+  if (is.null(direcnames)) {
+    allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
+  } else {allDirec <- paste0(path,'/',direcnames,'/')}
+  
+  dat <- data.frame(Directory=rep(NA,length(allDirec)),
+                    Size=NA)
+                    
+  if (is.null(direcnames)) {
+    dat$Directory <- list.dirs(path,recursive=FALSE,full.names=FALSE)
+  } else {dat$Directory <- direcnames}
+  
+  if (date == TRUE) dat$date <- as.Date(substr(dat$Directory,1,8),format='%Y%m%d')
+  results <- vector('list',length(allDirec))
+  cat("\n")
+  for (i in 1:length(allDirec)) {
+    cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
+    direcPictures <- allDirec[i]
+    allFullImages <- loadImages (direcPictures=direcPictures,nImages=nImages)
+    stillBack <- createBackground(allFullImages)
+    allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
+    partIden <- identifyParticles(sbg=allImages,
+                                  pthreshold=pthreshold,
+                                  threshold=threshold,
+                                  select=select,
+                                  pixelRange=pixelRange)
+    if (!is.null(nn)) {
+      pca <- any(names(attributes(finalNN)) == 'pca')
+      partIden <- update(partIden,nn,pca=pca)
+    }
+    records <- trackParticles(partIden)
+    results[[i]] <- records
+    dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
+                                               sum(!is.na(x))) > incThres)
+    rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
+    gc()
+  }
+  cat("\n")
+  class(dat) <- c('TrDm','batch','data.frame')
+  attr(dat,"path") <- path
+  attr(dat,"results") <- results
+  return(dat)
+}
+
 #' is.TrDm
 #'
 #' Generic lower-level function to test whether an object
@@ -113,6 +175,8 @@ print.TrDm <- function(x,...) {
     print.data.frame(x)
   } else if (sum(class(x) == 'neuralnet') > 0) {
       cat("\t Trained neural network with",x$bestNN$hidden,"layers.\n")
+  } else if (sum(class(x) == 'batch') > 0) {
+      print.data.frame(x)
   } 
 }
 
@@ -198,6 +262,9 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
     abline(h=x$thr,lty=2,lwd=2)
   } else if (any(class(x) == 'sbg')) {
     image(x[,,frame,cl])
+  } else if (any(class(x) == 'batch')) {
+    plot(x$date,x$Size,type='b',lwd=2,ylab='Population size',xlab='Date',
+         ...)
   }
   #par(oldpar)
 }

@@ -8,7 +8,6 @@
 ##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ##' @return List two elements: first contains array with all images,
 ##' subset when relevant. Second element contains all original color images as array.
-##' @concept What is the broad searchable concept?
 ##' @export
 ## 
 track <- function (Phi, g, L=50) {

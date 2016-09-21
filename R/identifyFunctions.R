@@ -280,7 +280,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     attr(particleStats,"originalImages") <- attributes(sbg)$originalImages
     attr(particleStats,"originalDirec") <- attributes(sbg)$originalDirec
     attr(particleStats,"subtractedImages") <- deparse(substitute(sbg))
-    attr(dat,"nn") <- FALSE
+    attr(particleStats,"nn") <- FALSE
 
     return(particleStats)
 }

@@ -30,7 +30,4 @@ Marjolein Bruijning & Marco D. Visser
 \seealso{
 \code{\link{doTrack}}, \code{\link{linkTrajec}},
 }
-\concept{
-What is the broad searchable concept?
-}
 
