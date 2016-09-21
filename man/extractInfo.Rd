@@ -7,8 +7,9 @@
 applying a neural net (\code{\link{runNN}}). For all particles over all
 frames, it collects information on color intensities and neighbor pixels.}
 \usage{
-extractInfo(particles, colorimages = NULL, sbg = NULL, frames = NULL,
-  mIdObject = NULL, training = FALSE)
+extractInfo(particles, info = c("intensity", "average", "neighbors", "sd"),
+  colorimages = NULL, sbg = NULL, frames = NULL, mIdObject = NULL,
+  training = FALSE)
 }
 \arguments{
 \item{mIdObject}{If training=TRUE, provide a list with true and false positives, 

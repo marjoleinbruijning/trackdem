@@ -32,7 +32,7 @@ To use the automated video to image and metadata creation function from **trackd
 Ubuntu user can copy & paste the following commands in a terminal 
 ```
 sudo apt-get update
-sudo apt-get install ibav-tools
+sudo apt-get install libav-tools
 ``` 
 
 A guide for Mac and Windows users will follow asap.
@@ -107,7 +107,6 @@ plot(records2,incThres=incT)
 
 ```
 ## Examples of output
-More screenshots to come
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
 

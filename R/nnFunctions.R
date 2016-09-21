@@ -173,39 +173,71 @@ makeButtons <- function () {
 ##' returned from \code{\link{manuallySelect}}, for each frame.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
-extractInfo <- function (particles,colorimages=NULL,sbg=NULL,
+extractInfo <- function (particles,info=c('intensity','average','neighbors','sd'),
+                         colorimages=NULL,sbg=NULL,
                          frames=NULL,mIdObject=NULL,training=FALSE) {
 
     if(is.null(colorimages)) { colorimages <- get(attributes(particles)$originalImages,
                                                   envir=.GlobalEnv) }
     if(is.null(sbg)) { sbg <- get(attributes(particles)$subtractedImages,
                                                   envir=.GlobalEnv) }
-   if (is.null(frames)) frames <- 1:length(particles)
+    if (is.null(frames)) frames <- 1:length(particles)
+    
     stat <- particles[frames] # Subset
     
+    
     cat("\n")
-  cat('\t Extract intensity info')
-  getI <- lapply(1:length(stat),function(X)
-                  extractRGB(stat[[X]]$x,stat[[X]]$y,
+  if ('intensity' %in% info) {
+    cat('\t Extract intensity info')
+    getI <- lapply(1:length(stat),function(X)
+                    extractRGB(stat[[X]]$x,stat[[X]]$y,
                              images=sbg[,,frames[X],]))
-  sapply(1:length(getI),function(X) 
-	            colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
- 
-   cat('\r \t Extract neighbor info\t')
-  getNeighbor <- lapply(1:length(frames),function(X)
-	                       extractNeighbors(stat[[X]]$x,stat[[X]]$y,
+    sapply(1:length(getI),function(X) 
+	              colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
+  }
+  if ('neighbors' %in% info) {
+    cat('\r \t Extract neighbor info\t')
+    getNeighbor <- lapply(1:length(frames),function(X)
+	                         extractNeighbors(stat[[X]]$x,stat[[X]]$y,
 	                                        images=colorimages[,,,frames[X]]))
-  getNeighbor <- lapply(1:length(stat),function(X) 
-                      t(sapply(1:length(getNeighbor[[X]]),function(i) 
-		                as.vector(getNeighbor[[X]][[i]])))) 
-  sapply(1:length(getNeighbor),function(X) 
-	colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
-  
-                                        # Test data
+    getNeighbor <- lapply(1:length(stat),function(X) 
+                        t(sapply(1:length(getNeighbor[[X]]),function(i) 
+		                  as.vector(getNeighbor[[X]][[i]])))) 
+    sapply(1:length(getNeighbor),function(X) 
+                      colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
+  }
+  if ('average' %in% info) {
+    cat('\r \t Extract mean particle info\t')
+    getMean <- lapply(1:length(frames),function(X)
+                  extractMean(stat[[X]]$patchID,
+                             colorimages=colorimages[,,,X],
+                             images=attributes(particles)$images[,,frames[X]]))
+	                         
+    sapply(1:length(getMean),function(X) 
+                   colnames(getMean[[X]]) <<- paste0('mu',c('R','G','B')))
+  }  
+  if ('sd' %in% info) {
+    cat('\r \t Extract variance particle info\t')
+    getVar <- lapply(1:length(frames),function(X)
+                  extractMean(stat[[X]]$patchID,
+                              colorimages=colorimages[,,,X],
+                              images=attributes(particles)$images[,,frames[X]],
+                              fun=sd))
+	                         
+    sapply(1:length(getVar),function(X) 
+                   colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
+  }  
+
   cat('\r \t Assembling datasets \t \n')
-  dat <- lapply(1:length(stat),function(X)
-                     cbind(stat[[X]],getI[[X]],getNeighbor[[X]])
-                )
+  dat <- lapply(1:length(stat),function(X) {
+            dat <- stat[[X]]
+            if(exists('getI')) dat <- cbind(dat,getI[[X]])
+            if(exists('getNeighbor')) dat <- cbind(dat,getNeighbor[[X]])
+            if(exists('getMean')) dat <- cbind(dat,getMean[[X]])
+            if(exists('getVar')) dat <- cbind(dat,getVar[[X]])
+            return(dat)
+          })
+                 
   ## Make training data based on test data and manually identified objects
   if (training == TRUE) {
     for(i in 1:length(frames)){
@@ -355,7 +387,7 @@ getConfMat <- function(Y,P,thr,stat="F"){
 ##' @param particleStatObject Object of class particleStatObject.
 ##' @return A list of class particleStatObject.
 ##' @export
-update.particles <- function(particles,neuralnet,...) {
+update.particles <- function(particles,neuralnet,pca=TRUE,...) {
     if(!is.TrDm(neuralnet)){
         stop("Input does not appear to be of the class \"TrDm\"")
     }
@@ -365,8 +397,14 @@ update.particles <- function(particles,neuralnet,...) {
     
     particles <- extractInfo(particles,training=FALSE,...)
     
-    pred <- neuralnet$bestNN$predictors
-  newParticleStats <- lapply(particles,function(X) 
+    if (pca == TRUE) {
+       p <- lapply(1:length(particles),function(X) 
+                                      predict(attributes(neuralnet)$pca,
+                                              particles[[X]]))
+    } else p <- particles
+    
+  pred <- neuralnet$bestNN$predictors
+  newParticleStats <- lapply(p,function(X) 
                                       plogis(compute(neuralnet$bestNN$nn,
                                              X[,pred])$net.result[,1]))
 
@@ -398,6 +436,19 @@ extractRGB <- function(x,y,images){
   RGBmat <- t(apply(coords,1,function(X) images[round(X[2]),round(X[1]),]))
   colnames(RGBmat) <- c("R","G","B")
   return(RGBmat)
+}
+
+##' Find mean particle values
+##' @param ID Particle ID.
+##' @param colorimages Original color images.
+##' @param images Array containing identified particles with ID.
+##' @param fun Default is mean.
+extractMean <- function (ID,colorimages,images,fun=mean) {
+  mu <- matrix(NA,ncol=3,nrow=length(ID))
+  for (i in 1:length(ID)) {
+    mu[i,] <- sapply(1:3,function(k) fun(colorimages[,,k][images == ID[i]]))
+  }
+  return(mu)
 }
 
 ##' Get R, G and B values for specified coordinates, and its eight neighbor 
@@ -433,16 +484,16 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 
     ## force proportions
     prop <- prop/sum(prop)
-    Ndf <- nrow(trainingData)
+    Ndf <- nrow(dat)
     spl <- seq_len(Ndf)
-    Tr.spl <- sample(spl,floor(.8*Ndf),replace=FALSE)
-    Va.spl <- sample(spl[-Tr.spl],floor(.1*Ndf),replace=FALSE)
+    Tr.spl <- sample(spl,floor(prop[1]*Ndf),replace=FALSE)
+    Va.spl <- sample(spl[-Tr.spl],floor(prop[2]*Ndf),replace=FALSE)
     Te.spl <- spl[-c(Tr.spl,Va.spl)]
 
     
-    Tr <- trainingData[Tr.spl,]
-    Va <- trainingData[Va.spl,]
-    Te <- trainingData[Te.spl,]
+    Tr <- dat[Tr.spl,]
+    Va <- dat[Va.spl,]
+    Te <- dat[Te.spl,]
 
     return(list(Tr=Tr,Va=Va,Te=Te))
 }
@@ -482,20 +533,28 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' @param prop the proportion or ratio for each class
 ##' c(training, validation,test).
 ##' @param predictors Optional. A set of custom predictors
-##' for the neural network.
+##' for the neural network. Default uses all columns in dat.
 ##' @param \dots additional parameters, passed to neuralnet.
 ##' @export
 testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
-                   predictors=NULL, ...) {
+                   predictors=NULL,pca=TRUE,thr=0.95, ...) {
 
-
+    datOrig <- dat
+    attributes(datOrig) <- attributes(dat)
+        
     if(is.null(predictors)){
-        predictors <- c("n.cell", "IR", "IB", "IG",
-                        "x", "y", "perim.area.ratio", "n1", 
-                        "n2", "n3", "n4", "n5", "n6", "n7", "n8",
-                        "n9", "n10", "n11", "n12", "n13", "n14", "n15"
-                      , "n16", "n17", "n18", "n19", "n20", 
-                        "n21", "n22", "n23", "n24", "n25", "n26", "n27")
+        predictors <- colnames(dat)
+        predictors <- predictors[predictors != 'trY']
+        predictors <- predictors[predictors != 'patchID']
+    }
+    
+    if (pca == TRUE) {
+      d <- dat[,predictors]
+      pc.cr <- princomp(d,cor=TRUE)
+      datComp= predict(pc.cr)
+      datComp <- datComp[,cumsum(pc.cr$sdev^2/sum(pc.cr$sdev^2)) < thr]
+      predictors <- colnames(datComp)
+      dat <- as.data.frame(cbind(datComp,dat[,'trY',drop=FALSE]))
     }
     
     Hidd <- 1:maxH
@@ -566,12 +625,15 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
 
     res <- list(bestNN=results[[bestNN]],
               finalstats=testTable,confusion=conf,fscore=final[bestNN])
-    attr(res,"background") <- attributes(dat)$background
-    attr(res,"originalImages") <- attributes(dat)$originalImages
-    attr(res,"originalDirec") <- attributes(dat)$originalDirec
-    attr(res,"subtractedImages") <- attributes(dat)$subtractedImages
-    attr(res,"trainingData") <- deparse(substitute(dat))
-
+              
+    attr(res,"background") <- attributes(datOrig)$background
+    attr(res,"originalImages") <- attributes(datOrig)$originalImages
+    attr(res,"originalDirec") <- attributes(datOrig)$originalDirec
+    attr(res,"subtractedImages") <- attributes(datOrig)$subtractedImages
+    attr(res,"trainingData") <- deparse(substitute(datOrig))
+    attr(res,"data") <- dat
+    if(exists('pc.cr')) attr(res,"pca") <- pc.cr
+    
     class(res) <- c("TrDm","neuralnet","list")
               
     invisible(res)

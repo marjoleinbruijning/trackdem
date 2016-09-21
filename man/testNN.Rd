@@ -6,7 +6,7 @@
 neural networks}
 \usage{
 testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1, 1),
-  predictors = NULL, ...)
+  predictors = NULL, pca = TRUE, thr = 0.95, ...)
 }
 \arguments{
 \item{dat}{a previously constructed dataset}
@@ -21,7 +21,7 @@ for the neural network's training.}
 c(training, validation,test).}
 
 \item{predictors}{Optional. A set of custom predictors
-for the neural network.}
+for the neural network. Default uses all columns in dat.}
 
 \item{fits}{statistic. May be "precision", "recall", or
 "F" for the harmonic mean of precision and recall.}

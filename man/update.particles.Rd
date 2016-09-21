@@ -4,7 +4,7 @@
 \alias{update.particles}
 \title{Apply trained artificial neural network to particleStat object.}
 \usage{
-update.particles(particles, neuralnet, ...)
+update.particles(particles, neuralnet, pca = TRUE, ...)
 }
 \arguments{
 \item{nnTrackdemObject}{Object of class nnTrackdemObject.}
