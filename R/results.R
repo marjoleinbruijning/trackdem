@@ -6,6 +6,8 @@
 ##' analyzed, specificy which files to use.
 ##' @param nn Name of artifical neural net if apply it to images. Default
 ##' is NULL, resulting in no neural net being applied.
+##' @param plotOutput Plot results?
+##' @param plotType Default is 'trajectories'.
 ##' @seealso \code{\link{loadImages}}, \code{\link{createBackground}},
 ##' \code{\link{subtractBackground}},\code{\link{identifyParticles}},
 ##' \code{\link{trackParticles}}.
@@ -16,7 +18,8 @@
 
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                      threshold=-0.1,pthreshold=NULL,select='negative',
-                     nn=NULL,incThres=10,date=TRUE) {
+                     nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
+                     plotType='trajectories') {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -32,26 +35,31 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
   results <- vector('list',length(allDirec))
   cat("\n")
   for (i in 1:length(allDirec)) {
-    cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
-    direcPictures <- allDirec[i]
-    allFullImages <- loadImages (direcPictures=direcPictures,nImages=nImages)
-    stillBack <- createBackground(allFullImages)
-    allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
-    partIden <- identifyParticles(sbg=allImages,
-                                  pthreshold=pthreshold,
-                                  threshold=threshold,
-                                  select=select,
-                                  pixelRange=pixelRange)
-    if (!is.null(nn)) {
-      pca <- any(names(attributes(finalNN)) == 'pca')
-      partIden <- update(partIden,nn,pca=pca)
-    }
-    records <- trackParticles(partIden)
-    results[[i]] <- records
-    dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
-                                               sum(!is.na(x))) > incThres)
-    rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
-    gc()
+    tryCatch ({
+      cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
+      direcPictures <- allDirec[i]
+      allFullImages <- loadImages (direcPictures=direcPictures,nImages=nImages)
+      stillBack <- createBackground(allFullImages)
+      allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
+      partIden <- identifyParticles(sbg=allImages,
+                                    pthreshold=pthreshold,
+                                    threshold=threshold,
+                                    select=select,
+                                    pixelRange=pixelRange)
+      if (!is.null(nn)) {
+        pca <- any(names(attributes(finalNN)) == 'pca')
+        partIden <- update(partIden,nn,pca=pca)
+      }
+      records <- trackParticles(partIden)
+      results[[i]] <- records
+      if (plotOutput == TRUE) {
+        plot(records,type=plotType)
+      }
+      dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
+                                                 sum(!is.na(x))) > incThres)
+      rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
+      gc()
+    }, error=function(e){})
   }
   cat("\n")
   class(dat) <- c('TrDm','batch','data.frame')

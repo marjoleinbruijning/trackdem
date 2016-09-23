@@ -39,6 +39,7 @@ manuallySelect <- function (particles,colorimages=NULL,
   totx <- ncol(colorimages)
   toty <- nrow(colorimages)
  
+  dev.new(width=10, height=7)
   layout(matrix(c(1:4,rep(5,20)), 6, 4, byrow = TRUE))
   par(mar=c(0,0,0,0))
   buttons <- makeButtons()
