@@ -19,7 +19,17 @@ getCoords <- function(m, d) {
 }
 
 #' @export
+muP <- function(m, id, cm1, cm2, cm3, d) {
+    .Call('trackdem_muP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
+}
+
+#' @export
 sb <- function(m1, bg, d) {
     .Call('trackdem_sb', PACKAGE = 'trackdem', m1, bg, d)
+}
+
+#' @export
+sdP <- function(m, id, cm1, cm2, cm3, d) {
+    .Call('trackdem_sdP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
 }
 

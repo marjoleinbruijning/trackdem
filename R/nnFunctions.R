@@ -223,8 +223,8 @@ extractInfo <- function (particles,info=c('intensity','average','neighbors','sd'
                   extractMean(stat[[X]]$patchID,
                               colorimages=colorimages[,,,X],
                               images=attributes(particles)$images[,,frames[X]],
-                              fun=sd))
-	                         
+                              fun='sd'))
+                                           
     sapply(1:length(getVar),function(X) 
                    colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
   }  
@@ -439,17 +439,27 @@ extractRGB <- function(x,y,images){
   return(RGBmat)
 }
 
-##' Find mean particle values
+
+##' Find mean and sd particle values
 ##' @param ID Particle ID.
 ##' @param colorimages Original color images.
 ##' @param images Array containing identified particles with ID.
-##' @param fun Default is mean.
-extractMean <- function (ID,colorimages,images,fun=mean) {
-  mu <- matrix(NA,ncol=3,nrow=length(ID))
-  for (i in 1:length(ID)) {
-    mu[i,] <- sapply(1:3,function(k) fun(colorimages[,,k][images == ID[i]]))
-  }
-  return(mu)
+##' @export
+extractMean <- function(ID,colorimages,images,fun='mean') {
+   if (fun=='mean') {
+     A <- muP(m=images,id=ID,
+              cm1=colorimages[,,1],
+              cm2=colorimages[,,2],
+              cm3=colorimages[,,3],
+              d=dim(images))
+   } else if (fun == 'sd') {
+     A <- sdP(m=images,id=ID,
+              cm1=colorimages[,,1],
+              cm2=colorimages[,,2],
+              cm3=colorimages[,,3],
+              d=dim(images))
+   }
+  return(A)
 }
 
 ##' Get R, G and B values for specified coordinates, and its eight neighbor 

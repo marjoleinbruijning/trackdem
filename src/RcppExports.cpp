@@ -32,6 +32,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// muP
+NumericVector muP(NumericVector m, NumericVector id, NumericVector cm1, NumericVector cm2, NumericVector cm3, IntegerVector d);
+RcppExport SEXP trackdem_muP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m(mSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type id(idSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm1(cm1SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm2(cm2SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm3(cm3SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(muP(m, id, cm1, cm2, cm3, d));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sb
 NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d);
 RcppExport SEXP trackdem_sb(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP) {
@@ -42,6 +58,22 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type bg(bgSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
     rcpp_result_gen = Rcpp::wrap(sb(m1, bg, d));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sdP
+NumericVector sdP(NumericVector m, NumericVector id, NumericVector cm1, NumericVector cm2, NumericVector cm3, IntegerVector d);
+RcppExport SEXP trackdem_sdP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m(mSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type id(idSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm1(cm1SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm2(cm2SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm3(cm3SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(sdP(m, id, cm1, cm2, cm3, d));
     return rcpp_result_gen;
 END_RCPP
 }

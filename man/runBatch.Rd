@@ -8,7 +8,8 @@ directory.}
 \usage{
 runBatch(path, direcnames = NULL, nImages = 1:30, pixelRange = NULL,
   threshold = -0.1, pthreshold = NULL, select = "negative", nn = NULL,
-  incThres = 10, date = TRUE)
+  incThres = 10, date = TRUE, plotOutput = FALSE,
+  plotType = "trajectories", L = 20, R = 2, name = "animation")
 }
 \arguments{
 \item{path}{A character vector of path name.}
@@ -18,6 +19,10 @@ analyzed, specificy which files to use.}
 
 \item{nn}{Name of artifical neural net if apply it to images. Default
 is NULL, resulting in no neural net being applied.}
+
+\item{plotOutput}{Plot results?}
+
+\item{plotType}{Default is 'trajectories'.}
 }
 \value{
 Dataframe with estimated population size for each image sequence.

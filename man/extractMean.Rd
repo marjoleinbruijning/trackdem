@@ -2,9 +2,9 @@
 % Please edit documentation in R/nnFunctions.R
 \name{extractMean}
 \alias{extractMean}
-\title{Find mean particle values}
+\title{Find mean and sd particle values}
 \usage{
-extractMean(ID, colorimages, images, fun = mean)
+extractMean(ID, colorimages, images, fun = "mean")
 }
 \arguments{
 \item{ID}{Particle ID.}
@@ -12,10 +12,8 @@ extractMean(ID, colorimages, images, fun = mean)
 \item{colorimages}{Original color images.}
 
 \item{images}{Array containing identified particles with ID.}
-
-\item{fun}{Default is mean.}
 }
 \description{
-Find mean particle values
+Find mean and sd particle values
 }
 

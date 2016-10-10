@@ -19,7 +19,7 @@
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                      threshold=-0.1,pthreshold=NULL,select='negative',
                      nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
-                     plotType='trajectories') {
+                     plotType='trajectories',L=20,R=2,name='animation') {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -47,16 +47,18 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                                     select=select,
                                     pixelRange=pixelRange)
       if (!is.null(nn)) {
-        pca <- any(names(attributes(finalNN)) == 'pca')
-        partIden <- update(partIden,nn,pca=pca)
+        pca <- any(names(attributes(nn)) == 'pca')
+        partIden <- update(partIden,nn,pca=pca,colorimages=allFullImages,
+                           sbg=allImages)
       }
-      records <- trackParticles(partIden)
+      records <- trackParticles(partIden,L=L,R=R)
       results[[i]] <- records
-      if (plotOutput == TRUE) {
-        plot(records,type=plotType)
-      }
       dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
                                                  sum(!is.na(x))) > incThres)
+      if (plotOutput == TRUE) {
+        plot(records,type=plotType,colorimages=allFullImages,name=name,
+             path=path)
+      }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
     }, error=function(e){})
@@ -241,8 +243,9 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
           } else if (type == 'animation') {
             oldwd <- getwd()
             setwd(path)
+            y <- x$sizeRecord[incLabels,]
             x <- x$trackRecord[incLabels,,]
-            dir.create(paste0('images'))
+            dir.create('images')
             width <- ifelse(ncol(colorimages) %% 2 == 0, 
                             ncol(colorimages),ncol(colorimages)+1)
             height <- ifelse(nrow(colorimages) %% 2 == 0, 
@@ -254,7 +257,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
               points(x[,i,1]/width,
                      1-x[,i,2]/height,
                      col=rainbow(nrow(x))[as.numeric(rownames(x))],
-                     cex=2)
+                     cex=y[,i]/50,lwd=4)
               cat("\r \t Animation:",i,"out of",ncol(x))
               dev.off()
            }
