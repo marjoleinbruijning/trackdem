@@ -118,7 +118,7 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
     else {filenames=filenames[nImages]}	
                                         # Load all images
     allFullImages <- sapply(nImages,
-                            function(x) readPNG(paste0(direcPictures,allFiles[x])),
+                            function(x) readPNG(file.path(direcPictures,allFiles[x])),
                             simplify='array')
                                         # Subset
     if (!is.null(xranges) | !is.null(yranges)) {

@@ -267,7 +267,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
            cat('\n')
         }
      }  
-  } else if (any(class(x) == 'nnObject')) {
+  } else if (any(class(x) == 'neuralnet')) {
     plot(cbind(x$trainingData$trY,plogis(x$predicted$net.result)),
          xlab='Identified',ylab='Probability based on neural network',...)
     abline(h=x$thr,lty=2,lwd=2)
@@ -276,6 +276,12 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
   } else if (any(class(x) == 'batch')) {
     plot(x$date,x$Size,type='b',lwd=2,ylab='Population size',xlab='Date',
          ...)
+  } else if (any(class(x) == 'particles')) {
+    if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
+                                                  envir=.GlobalEnv) }
+    plot(colorimages,frame=frame)
+    points(x[[frame]]$x/ncol(colorimages),1-x[[frame]]$y/nrow(colorimages),
+           cex=1.2)
   }
   #par(oldpar)
 }
