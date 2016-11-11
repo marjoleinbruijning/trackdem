@@ -9,7 +9,8 @@ directory.}
 runBatch(path, direcnames = NULL, nImages = 1:30, pixelRange = NULL,
   threshold = -0.1, pthreshold = NULL, select = "negative", nn = NULL,
   incThres = 10, date = TRUE, plotOutput = FALSE,
-  plotType = "trajectories", L = 20, R = 2, name = "animation")
+  plotType = "trajectories", L = 20, R = 2, name = "animation",
+  width = 50, weight = c(1, 1))
 }
 \arguments{
 \item{path}{A character vector of path name.}

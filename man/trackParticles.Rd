@@ -6,7 +6,7 @@
 \code{trackParticles} is a function link particles.}
 \usage{
 trackParticles(particles, L = 50, R = 2, backward = FALSE,
-  sizeMeasure = "n.cell")
+  sizeMeasure = "n.cell", weight = c(1, 1))
 }
 \arguments{
 \item{particles}{Object with class particles,

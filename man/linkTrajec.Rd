@@ -4,7 +4,8 @@
 \alias{linkTrajec}
 \title{Link created track segments}
 \usage{
-linkTrajec(recordsObject, particles, L = 50, R = 1, incThres = 10)
+linkTrajec(recordsObject, particles, L = 50, R = 1, incThres = 10,
+  weight = weight)
 }
 \arguments{
 \item{L}{Cost of linking to dummy variable, default is 50.}
