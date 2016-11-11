@@ -85,8 +85,8 @@ track <- function (Phi, g, L=50) {
 ##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ##' @export
 ## 
-calcCost <- function(x1,x2,y1,y2,s1,s2) {
-  sqrt((x1-x2)^2 + (y1-y2)^2 + (s1-s2)^2)
+calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1)) {
+  sqrt(weight[1] * (x1-x2)^2 + weight[1] * (y1-y2)^2 + weight[2] * (s1-s2)^2)
 }
 
 ##' Create cost matrix
@@ -103,13 +103,14 @@ calcCost <- function(x1,x2,y1,y2,s1,s2) {
 ##' @return Cost matrix linking particles.
 ##' @export
 ## 
-phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50) {
+phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight) {
   Phi <- sapply(1:nrow(coords1),function(x) calcCost(coords1[x,1],
                                                      coords2[,1],
                                                      coords1[x,2],
                                                      coords2[,2],
 		                                             sizes1[x],
-		                                             sizes2)
+		                                             sizes2,
+		                                             weight=weight)
                 )
   Phi <- matrix(Phi,ncol=dim(coords1)[1],nrow=dim(coords2)[1])
   Phi <- cbind(rep(L*r,nrow(Phi)),Phi)
@@ -151,7 +152,7 @@ gMat <- function (Phi) {
 ##' @export
 ## 
 linkTrajec <- function (recordsObject,particles,
-                        L=50,R=1,incThres=10) {
+                        L=50,R=1,incThres=10,weight=weight) {
  
   trackRecord <- recordsObject$trackRecord
   sizeRecord <- recordsObject$sizeRecord
@@ -186,7 +187,7 @@ linkTrajec <- function (recordsObject,particles,
         Phi <- phiMat(coords1,coords2,
 	                  sizes1=sizes1,
 	                  sizes2=sizes2,
-	                  L=L/r,r=1)   
+	                  L=L/r,r=1,weight=weight)   
         gstart <- gMat(Phi)
         A[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L/r) * Phi
       
@@ -243,7 +244,7 @@ linkTrajec <- function (recordsObject,particles,
 ## 
 doTrack <- function(particles,L=50,
                     backward=FALSE,
-                    sizeMeasure='n.cell') {
+                    sizeMeasure='n.cell',weight=weight) {
 
   G <- array(NA,dim=c(500,500,length(particles)-1))
   links <- list()
@@ -262,7 +263,7 @@ doTrack <- function(particles,L=50,
     Phi <- phiMat(coords1,coords2,
 	              sizes1=sizes1,
 	              sizes2=sizes2,
-	              L=L,r=1)
+	              L=L,r=1,weight=weight)
     gstart <- gMat(Phi)
     G[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L) * Phi	
   
@@ -326,11 +327,11 @@ doTrack <- function(particles,L=50,
 ##' @export
 ## 
 trackParticles <- function (particles,L=50,R=2,backward=FALSE,
-                            sizeMeasure='n.cell') {
-  records <- doTrack(particles=particles,L=L,backward=backward)
+                            sizeMeasure='n.cell',weight=c(1,1)) {
+  records <- doTrack(particles=particles,L=L,backward=backward,weight=weight)
   rec <- linkTrajec (recordsObject=records,
                         particles=particles,
-                        R=R,L=L)
+                        R=R,L=L,weight=weight)
   class(rec) <- c('TrDm','tracked')
   attr(rec,"background") <- attributes(particles)$background
   attr(rec,"originalImages") <- attributes(particles)$originalImages

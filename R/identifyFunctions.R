@@ -244,6 +244,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     } else {
         if (select == 'negative') A <- sbg < threshold
         else if (select == 'positive') A <- sbg > threshold
+        else if (select == 'both') A <- sbg > threshold | sbg < -threshold
     }
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0

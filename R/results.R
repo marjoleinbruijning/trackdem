@@ -19,7 +19,8 @@
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                      threshold=-0.1,pthreshold=NULL,select='negative',
                      nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
-                     plotType='trajectories',L=20,R=2,name='animation') {
+                     plotType='trajectories',L=20,R=2,name='animation',
+                     width=50,weight=c(1,1)) {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -51,13 +52,13 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
         partIden <- update(partIden,nn,pca=pca,colorimages=allFullImages,
                            sbg=allImages)
       }
-      records <- trackParticles(partIden,L=L,R=R)
+      records <- trackParticles(partIden,L=L,R=R,weight=weight)
       results[[i]] <- records
       dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
                                                  sum(!is.na(x))) > incThres)
       if (plotOutput == TRUE) {
-        plot(records,type=plotType,colorimages=allFullImages,name=name,
-             path=path)
+        plot(records,type=plotType,colorimages=allFullImages,name=i,
+             path=path,incThres=incThres,width=width)
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
@@ -193,7 +194,8 @@ print.TrDm <- function(x,...) {
 ## Plot TrDm objects
 ##' @export
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
-                      cl=1,path='~',name='animation',...) {
+                      cl=1,path='~',name='animation',width=50,alpha=0.2,
+                      lags=5,...) {
   #oldpar <- par('mar','mfrow')
   if (any(class(x) == 'colorimage')) {  
     if (length(dim(x)) > 3) {
@@ -240,7 +242,46 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
             lines(x[i,,1]/ncol(colorimages),1-x[i,,2]/nrow(colorimages),
                   col=paste0(jet.colors(nrow(x))[i],'99'),lwd=1.5)
             }
-          } else if (type == 'animation') {
+        } else if (type == 'heatmap') {
+            #x <- x$trackRecord[incLabels,,,drop=FALSE]
+            xsave <- x
+            a <- x$trackRecord
+            x <- as.vector(a[incLabels,,1])
+            x <- x[!is.na(x)]
+            y <- as.vector(a[incLabels,,2])
+            y <- y[!is.na(y)]
+            l1 <- seq(0,ncol(colorimages)*1.1,width)
+            l2 <- seq(0,nrow(colorimages)*1.1,width)
+            x1 <- cut(x,l1,
+                      labels=seq(width/2,ncol(colorimages),length.out=length(l1)-1))
+            y1 <- cut(y,l2,
+                      labels=seq(width/2,nrow(colorimages),length.out=length(l2)-1))
+            counts <- table(paste(x1,y1))
+            
+            x2 <- as.numeric(unlist(lapply(strsplit(names(counts),' '),function(x) x[[1]])))
+            y2 <- as.numeric(unlist(lapply(strsplit(names(counts),' '),function(x) x[[2]])))
+            
+            counts <- c(0,0,0,0,counts)
+            x2 <- c(ncol(colorimages),ncol(colorimages),1,1,x2)
+            y2 <- c(nrow(colorimages),1,nrow(colorimages),1,y2)
+            
+            counts <- as.numeric(scale(as.numeric(counts)))
+            out <- kriging(x2,y2,response=counts,lags=lags)
+            mat <- matrix(out$map$pred,ncol=length(unique(out$map$x)),
+                          nrow=length(unique(out$map$y)),byrow=FALSE)
+            rownames(mat) <- unique(out$map$y)
+            colnames(mat) <- unique(out$map$x)
+ 
+            plot(colorimages,frame=frame)
+            #points(x2/ncol(colorimages),1-y2/nrow(colorimages),cex=counts,col='blue')
+            #points(records$trackRecord[,1,1]/ncol(colorimages),
+             #      1-records$trackRecord[,1,2]/nrow(colorimages),col='red')
+            image(x=as.numeric(colnames(mat)) / ncol(colorimages),
+                y=sort(1-as.numeric(rownames(mat)) / nrow(colorimages)), 
+                z=t(mat[nrow(mat):1,]),
+                col=topo.colors(100,alpha=alpha),add=TRUE)
+            
+        } else if (type == 'animation') {
             oldwd <- getwd()
             setwd(path)
             y <- x$sizeRecord[incLabels,]
@@ -251,13 +292,14 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
             height <- ifelse(nrow(colorimages) %% 2 == 0, 
                             nrow(colorimages),nrow(colorimages)+1)
             rownames(x) <- 1:nrow(x)
-            for (i in 1:ncol(x)) {
+           for (i in 1:ncol(x)) {
               png(paste0('images/images',i,'.png'),width=width,height=height)
               plot(colorimages,frame=i)
               points(x[,i,1]/width,
                      1-x[,i,2]/height,
                      col=rainbow(nrow(x))[as.numeric(rownames(x))],
-                     cex=y[,i]/50,lwd=4)
+                     cex=2,lwd=2)
+                     #cex=y[,i]/50,lwd=4)
               cat("\r \t Animation:",i,"out of",ncol(x))
               dev.off()
            }
