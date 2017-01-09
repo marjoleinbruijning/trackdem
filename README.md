@@ -48,7 +48,9 @@ require(trackdem)
 ## This function requires Python, Libav and ExifTool.
 ## Alternatively, if images are already made, this
 ## step can be skipped.
-createImageSeq(path='~/Dropbox/Github/trackdem/Test/')
+
+createImageSeq(moviepath='Dropbox/Github/trackdem/Test/Movies',
+               imagepath='Dropbox/Github/trackdem/Test/ImageSequences')
 
 ## Load images
 direcPictures <- '~/Dropbox/Github/trackdem/Test/ImageSequences/20150406_50/'

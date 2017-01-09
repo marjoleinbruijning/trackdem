@@ -85,8 +85,21 @@ track <- function (Phi, g, L=50) {
 ##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ##' @export
 ## 
-calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1)) {
-  sqrt(weight[1] * (x1-x2)^2 + weight[1] * (y1-y2)^2 + weight[2] * (s1-s2)^2)
+calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
+                     x0=NULL,y0=NULL) {
+  if (predLoc) {
+    predx <- x1-x0 + x1
+    predy <- y1-y0 + y1
+    sqrt(weight[1] * (x1-x2)^2 + 
+         weight[1] * (y1-y2)^2 + 
+         weight[2] * (s1-s2)^2 + 
+         weight[3] * (x2-predx)^2 + 
+         weight[3] * (y2-predy)^2)
+  } else {
+    sqrt((weight[1]+weight[3]) * (x1-x2)^2 + 
+         (weight[1]+weight[3]) * (y1-y2)^2 + 
+         weight[2] * (s1-s2)^2)
+  }
 }
 
 ##' Create cost matrix
@@ -103,15 +116,27 @@ calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1)) {
 ##' @return Cost matrix linking particles.
 ##' @export
 ## 
-phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight) {
-  Phi <- sapply(1:nrow(coords1),function(x) calcCost(coords1[x,1],
-                                                     coords2[,1],
-                                                     coords1[x,2],
-                                                     coords2[,2],
-		                                             sizes1[x],
-		                                             sizes2,
-		                                             weight=weight)
-                )
+phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
+                    coords0=NULL) {
+  
+  Phi <- sapply(1:nrow(coords1),function(x) {
+	  if (length(coords0[rownames(coords0) == x,]) > 0) {
+        predLoc <- TRUE
+      } else {
+        predLoc <- FALSE
+      }
+	  calcCost(x1=coords1[x,1],
+	           x2=coords2[,1],
+	           y1=coords1[x,2],
+               y2=coords2[,2],
+		       s1=sizes1[x],
+		       s2=sizes2,
+		       weight=weight,
+		       predLoc=predLoc,
+		       x0=coords0[rownames(coords0) == x,1],
+		       y0=coords0[rownames(coords0) == x,2])
+   })
+   
   Phi <- matrix(Phi,ncol=dim(coords1)[1],nrow=dim(coords2)[1])
   Phi <- cbind(rep(L*r,nrow(Phi)),Phi)
   Phi <- rbind(rep(L*r,ncol(Phi)),Phi)
@@ -156,17 +181,26 @@ linkTrajec <- function (recordsObject,particles,
  
   trackRecord <- recordsObject$trackRecord
   sizeRecord <- recordsObject$sizeRecord
+  colorRecord <- recordsObject$colorRecord
   label <- recordsObject$label
   G <- recordsObject$G
-  trackRecord[is.na(trackRecord)] <- 0                             
+  trackRecord[is.na(trackRecord)] <- 0
   label[is.na(label)] <- 0   
-  sizeRecord[is.na(sizeRecord)] <- 0     
+  sizeRecord[is.na(sizeRecord)] <- 0
  
+  colorRecord[colorRecord == 0 & !is.na(colorRecord)] <- 
+         colorRecord[colorRecord == 0 & !is.na(colorRecord)] + 0.000001
+  colorRecord[is.na(colorRecord)] <- 0
+  
+  n <- unique(particles$frame)
+  
   for (r in 1:R) {
-    A <- array(NA,dim=c(500,500,length(particles)-r-1))
+    A <- array(NA,dim=c(500,500,length(n)-r-1))
     links <- list()
       
     for (i in 1:(dim(G)[3]-r)) {
+      inc <- particles$frame == i
+      inc2 <- particles$frame == (i + r)
       endTrajec <- as.vector(na.omit(label[apply(
                              trackRecord[,i:(i+1),1],1,function(x) 
                                              x[1] != 0 & x[2] == 0),i]))
@@ -176,20 +210,31 @@ linkTrajec <- function (recordsObject,particles,
       beginTrajec <- beginTrajec[beginTrajec != 0]
     
       if (length(endTrajec)>0 & length(beginTrajec)>0) {    
-        coords1 <- matrix(c(particles[[i]]$x[endTrajec],
-                   particles[[i]]$y[endTrajec]),ncol=2,byrow=F)
-        sizes1 <- particles[[i]]$n.cell[endTrajec]           
+        
+        if (i > 1) {
+          tmp <- as.vector(na.omit(label[apply(
+                               trackRecord[,i:(i+1),1],1,function(x) 
+                                               x[1] != 0 & x[2] == 0),i-1]))
+          tmp <- tmp[tmp > 1] - 1
+          coords0 <- matrix(c(particles[particles$frame == (i-1),]$x[tmp],
+                   particles[particles$frame == (i-1),]$y[tmp]),ncol=2,byrow=F)
+          rownames(coords0) <- tmp
+        }
+
+        coords1 <- matrix(c(particles[inc,]$x[endTrajec],
+                   particles[inc,]$y[endTrajec]),ncol=2,byrow=F)
+        sizes1 <- particles[inc,]$n.cell[endTrajec]           
     
-        coords2 <- matrix(c(particles[[i+r]]$x[beginTrajec],
-                   particles[[i+r]]$y[beginTrajec]),ncol=2,byrow=F)
-        sizes2 <- particles[[i+r]]$n.cell[beginTrajec]
+        coords2 <- matrix(c(particles[inc2,]$x[beginTrajec],
+                   particles[inc2,]$y[beginTrajec]),ncol=2,byrow=F)
+        sizes2 <- particles[inc2,]$n.cell[beginTrajec]
     
         Phi <- phiMat(coords1,coords2,
 	                  sizes1=sizes1,
 	                  sizes2=sizes2,
-	                  L=L/r,r=1,weight=weight)   
+	                  L=L*r,r=1,weight=weight,coords0=NULL)
         gstart <- gMat(Phi)
-        A[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L/r) * Phi
+        A[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L*r) * Phi
       
         tmp <- data.frame(which(A[,,i] > 0,TRUE))
         tmp <- tmp[tmp[,1] != 1,]
@@ -204,6 +249,9 @@ linkTrajec <- function (recordsObject,particles,
             trackRecord[ind1,,2] <- trackRecord[ind1,,2] + trackRecord[ind2,,2]
             label[ind1,] <- label[ind1,] + label[ind2,]
             sizeRecord[ind1,] <- sizeRecord[ind1,] + sizeRecord[ind2,]
+            colorRecord[ind1,,1] <- colorRecord[ind1,,1] + colorRecord[ind2,,1]
+            colorRecord[ind1,,2] <- colorRecord[ind1,,2] + colorRecord[ind2,,2]
+            colorRecord[ind1,,3] <- colorRecord[ind1,,3] + colorRecord[ind2,,3]
           
             # Take mean values for coordinates in between
             if (r > 1) {
@@ -216,6 +264,8 @@ linkTrajec <- function (recordsObject,particles,
             trackRecord <- trackRecord[-ind2,,]
             label <- label[-ind2,]     
             sizeRecord <- sizeRecord[-ind2,]   
+            colorRecord <- colorRecord[-ind2,,]   
+
           } 
         }                
       } 
@@ -224,8 +274,10 @@ linkTrajec <- function (recordsObject,particles,
  
   trackRecord[trackRecord == 0] <- NA                             
   label[label == 0] <- NA 
-  sizeRecord[sizeRecord == 0] <- NA         
-  res <- list(trackRecord=trackRecord,A=A,label=label,sizeRecord=sizeRecord)
+  sizeRecord[sizeRecord == 0] <- NA
+  colorRecord[colorRecord == 0] <- NA         
+  res <- list(trackRecord=trackRecord,A=A,label=label,
+              sizeRecord=sizeRecord,colorRecord=colorRecord)
   return(res) 
 }
 
@@ -242,29 +294,49 @@ linkTrajec <- function (recordsObject,particles,
 ##' @return A list of class 'records'. Use 'summary' and 'plot'.
 ##' @export
 ## 
-doTrack <- function(particles,L=50,
-                    backward=FALSE,
-                    sizeMeasure='n.cell',weight=weight) {
+doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
-  G <- array(NA,dim=c(500,500,length(particles)-1))
+  n <- unique(particles$frame)
+  
+  G <- array(NA,dim=c(500,500,length(n)-1))
   links <- list()
-  if (backward == TRUE) {
-    n <- length(particles)
-    particles <- particles[n:1]
-  }
 
-  for (i in 1:(length(particles)-1)) {
-    coords1 <- matrix(c(particles[[i]]$x,
-                      particles[[i]]$y),ncol=2,byrow=F)
-    sizes1 <- particles[[i]]$n.cell
-    coords2 <- matrix(c(particles[[i+1]]$x,
-                      particles[[i+1]]$y),ncol=2,byrow=F)	
-    sizes2 <- particles[[i+1]]$n.cell
+  for (i in 1:(length(n)-1)) {
+	inc <- particles$frame == i
+	inc2 <- particles$frame == (i + 1)
+    coords1 <- matrix(c(particles[inc,]$x,
+                      particles[inc,]$y),ncol=2,byrow=F)
+    sizes1 <- particles[inc,]$n.cell
+    coords2 <- matrix(c(particles[inc2,]$x,
+                      particles[inc2,]$y),ncol=2,byrow=F)	
+    sizes2 <- particles[inc2,]$n.cell
+    
+    if (i > 1) {
+      coords0 <- matrix(c(particles[particles$frame == (i-1),]$x,
+                        particles[particles$frame == (i-1),]$y),
+                        ncol=2,byrow=F)
+      # labels for previous linked frame
+      tmp <- links[[i-1]][,2]
+      # combine with labels for frame i
+      names(tmp) <- links[[i-1]][,1]
+      # only succesful links
+      tmp <- tmp[tmp > 1] - 1
+      tmp <- tmp[names(tmp) > 1]
+      coords0 <- coords0[tmp,]
+      rownames(coords0) <- as.numeric(names(tmp)) - 1 
+
+    } else {coords0 <- NULL}
+    
+    ## create cost matrix
     Phi <- phiMat(coords1,coords2,
 	              sizes1=sizes1,
 	              sizes2=sizes2,
-	              L=L,r=1,weight=weight)
+	              L=L,r=1,weight=weight,
+	              coords0=NULL)
+
     gstart <- gMat(Phi)
+    
+    ## optimize
     G[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L) * Phi	
   
     links[[i]] <- data.frame(which(G[,,i] > 0,TRUE))
@@ -297,16 +369,25 @@ doTrack <- function(particles,L=50,
 
   trackRecord <- array(NA,dim=c(dim(allLinks)[1],dim(allLinks)[2],2))
   sizeRecord <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
+  colorRecord <- array(NA,dim=c(dim(allLinks)[1],dim(allLinks)[2],3))
+
   label <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
   a <- tmp[duplicated(tmp)==F]
 
   for (i in 1:(length(a))) {
+	inc <- particles$frame == i
     label[,i] <- allLinks[,order(a)[i]]
-	trackRecord [,i,1] <- particles[[i]][allLinks[,order(a)[i]],'x']
-	trackRecord [,i,2] <- particles[[i]][allLinks[,order(a)[i]],'y']
-	sizeRecord[,i] <- particles[[i]][allLinks[,order(a)[i]],sizeMeasure]
+	trackRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'x']
+	trackRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'y']
+	sizeRecord[,i] <- particles[inc,][allLinks[,order(a)[i]],sizeMeasure]
+    
+    colorRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'muR']
+	colorRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'muG']
+	colorRecord [,i,3] <- particles[inc,][allLinks[,order(a)[i]],'muB']
+    
   }
-  res <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,label=label,G=G)
+  res <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,
+              colorRecord=colorRecord,label=label,G=G)
   return(res)
 }
 
@@ -318,7 +399,11 @@ doTrack <- function(particles,L=50,
 ##' @param L Cost for linking to dummy. Default set at 50.
 ##' @param R Default is one; link to how many subsequent frames? Default set
 ##' at 2.
-##' @param backward Reverse frames. Default is FALSE.
+##' @param weight Vector containing weights to calculate costs. First number 
+##' gives the weight for differences in x and y coordinates; second number 
+##' gives the weight for particle size differences; third number gives the 
+##' difference bewteen the predicted location and the observed location. This 
+##' is calculated using the location of the identified particle in the previous frame.
 ##' @param sizeMeasure Measure for size (area, length, etc.).
 ##' Currently not implemented.
 ##' @author Marjolein Bruijning & Marco D. Visser
@@ -326,9 +411,9 @@ doTrack <- function(particles,L=50,
 ##' @return A list of class 'records'. Use 'summary' and 'plot'.
 ##' @export
 ## 
-trackParticles <- function (particles,L=50,R=2,backward=FALSE,
-                            sizeMeasure='n.cell',weight=c(1,1)) {
-  records <- doTrack(particles=particles,L=L,backward=backward,weight=weight)
+trackParticles <- function (particles,L=50,R=2,
+                            sizeMeasure='n.cell',weight=c(1,1,1)) {
+  records <- doTrack(particles=particles,L=L,weight=weight)
   rec <- linkTrajec (recordsObject=records,
                         particles=particles,
                         R=R,L=L,weight=weight)

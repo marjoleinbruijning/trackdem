@@ -1,36 +1,36 @@
 ##' Create image sequence
 ##'
-##' \code{createImageSeq} is a function to create an image sequence (.png) using 
-##' videos file as input. All movies within a directory 'Movies' will
-##' be exported. A directory 'ImageSequences' must exist in path. For each
-##' movie, a new directory is created containing the recorded date and 
+##' \code{createImageSeq} is a function to create an image sequence (.png) using
+##'  video files as input. All movies within a directory will  
+##' be exported into a new directory called 'ImageSequences' created in the path.
+##' For each movie, a new directory is created containing the recorded date and 
 ##' name of the movie.
-##' @param path Path path to location of directory containing directories
-##' 'Movies' and 'ImageSequences'.
+##' @param path Path path to location of (stem) directory containing the directory
+##' in which the video files are located.
 ##' @param x Number of pixels in horizontal direction (ncol); default is 1915.
 ##' @param y Number of pixels in vertical direction (nrow); default is 1080.
 ##' @param fps Frames per second, default is 15.
 ##' @param nsec Duration of movie that is exported, default is 2 seconds.
 ##' The middle nsec seconds of the movie are used.
-##' @param ext The extension of the video, in lower case. Default is 'mts'.
+##' @param ext The extension of the video. Default is 'MTS'.
 ##' @examples
 ##' \dontrun{
 ##' createImageSeq(path='~/Data/',ext='mp4')
 ##'	}
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
-createImageSeq <- function (path='~/Data/',x=1915,
-                            y=1080,fps=15,nsec=2,ext='mts') {
-    ext <- paste0("'.",ext,"'")
-    old <- getwd()
-    setwd(path)
-    fileConn<-file(paste(path,'tmp.py',sep=''))
+createImageSeq <- function (moviepath,imagepath,x=1915,
+                            y=1080,fps=15,nsec=2,ext='MTS',path=getwd()) {
+        
+    ext <- paste0("'.",tolower(ext),"'")
+    fileConn<-file(paste(path,'/tmp.py',sep=''))
+    
     writeLines(c(
         paste("import os"),
         paste("import subprocess"),
         paste("import string"),
-        paste("movieDirname = 'Movies'"),
-        paste("sequenceParentDirname = 'ImageSequences'"),
+        paste("movieDirname = os.path.abspath('",moviepath,"')",sep=''),
+        paste("sequenceParentDirname = os.path.abspath('",imagepath,"')",sep=''),
         paste("def conv_command(filename, targetDirName, start, stop):"),
         paste("    inFile = os.path.join(movieDir, filename)"),
         paste("    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')"),
@@ -44,8 +44,11 @@ createImageSeq <- function (path='~/Data/',x=1915,
         paste("            '-f', 'image2',"),
         paste("            outFiles]"),
         paste("startDir = os.path.curdir"),
-        paste("movieDir = os.path.abspath(os.path.join(startDir, movieDirname))"),
-        paste("sequenceParentDir = os.path.abspath(os.path.join(startDir, sequenceParentDirname))"),
+        
+        paste("movieDir = os.path.abspath(movieDirname)"),
+        paste("sequenceParentDir = os.path.abspath(sequenceParentDirname)"),
+        #paste("movieDir = os.path.abspath(os.path.join(startDir, movieDirname))"),
+        #paste("sequenceParentDir = os.path.abspath(os.path.join(startDir, sequenceParentDirname))"),
         paste("movieNames = []"),
         paste("for filename in os.listdir(movieDir):"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
@@ -84,10 +87,10 @@ createImageSeq <- function (path='~/Data/',x=1915,
         paste("        except Exception, e:"),
         paste("            print 'Error in processing file %s, error: %s' % (filename, e)")
     ), fileConn, sep = "\n")
+
     close(fileConn) 
-    system('python tmp.py')
-    file.remove(paste(path,'tmp.py',sep=''))
-    setwd(old)
+    system(paste('python ',path,'/tmp.py',sep=''))
+    file.remove(paste('tmp.py',sep=''))
 }
 
 ##' Load .png images
@@ -111,18 +114,23 @@ createImageSeq <- function (path='~/Data/',x=1915,
 
 loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
                         xranges=NULL,yranges=NULL) {
+
+    if (is.null(direcPictures)) {
+		directPictures <- getwd()
+	}
+	
     if (is.null(filenames)) {
         allFiles <- list.files(path=direcPictures) # List all files in folder
         allFiles <- allFiles[nImages]
     }
-    else {filenames=filenames[nImages]}	
-                                        # Load all images
-    allFullImages <- sapply(nImages,
+    else {filenames <- filenames[nImages]}	
+    # Load all images
+    allFullImages <- sapply(1:length(nImages),
                             function(x) readPNG(file.path(direcPictures,allFiles[x])),
                             simplify='array')
-                                        # Subset
+    # Subset
     if (!is.null(xranges) | !is.null(yranges)) {
-        allFullImages <- sapply(nImages,function(x) 
+        allFullImages <- sapply(1:length(nImages),function(x) 
             allFullImages[[x]][yranges,xranges,],simplify='array')	
     }
 
@@ -147,19 +155,32 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' @return Array with still background.
 ##' @export
 
-createBackground <- function(colorimages) {
+createBackground <- function(colorimages,method='mean') {
     if(!is.TrDm(colorimages)){
         stop("Input does not appear to be of the class \"TrDm\"")
     }
-    A <- cb(colorimages[,,1,],
-            colorimages[,,2,],
-            colorimages[,,3,],
-            dim(colorimages[,,1,]))
+    if (method == 'mean') {
+      A <- cb(colorimages[,,1,],
+              colorimages[,,2,],
+              colorimages[,,3,],
+              dim(colorimages[,,1,]))
+    } else if (method == 'mean2') {
+      zz <- apply(colorimages[,,1,],c(1,2),function(x)  mean(x^50)^(1/50) )
+      zz2 <- apply(colorimages[,,2,],c(1,2),function(x)  mean(x^50)^(1/50) )
+      zz3 <- apply(colorimages[,,3,],c(1,2),function(x)  mean(x^50)^(1/50) )
+      A <- array(0,c(dim(zz),3))
+      A[,,1]<-zz
+      A[,,2]<-zz2
+      A[,,3]<-zz3
+    } else {stop('No valid method for creating background')}
+
     class(A) <- c('TrDm','colorimage','array')
     attr(A,"originalImages") <- deparse(substitute(colorimages))
     attr(A,"originalDirec") <- attributes(colorimages)$originalDirec
     return(A)
 }
+
+
 
 ##' Background subtraction
 ##'
@@ -204,15 +225,20 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' \code{identifyParticles} is a function to identify particles.
 ##' @param mSub Array containing images containing all moving particles,
 ##' as obtained by \code{\link{subtractBackground}}
-##' @param threshold Threshold for including particles. For a chosen 
-##' threshold for each frame, use pthreshold.
+##' @param threshold Thresholds for including particles. For a chosen 
+##' threshold for each frame, use pthreshold. Either one value, or a value 
+##' per color layer.
 ##' @param pixelRange Default is NULL. Vector with minimum and maximum particle size, used as a
 ##' first filter to identify particles.
 ##' @param pthreshold Default is NULL. If NULL, treshold is used for filter. If
 ##' not zero, a threshold based on pthreshold quantile is calculated for each
 ##' frame.
-##' @param select Use values smaller ('negative') or larger ('positive') then 
-##' threshold. Default is 'negative'.
+##' @param select Select dark particles ('dark'), light particles ('light'), or
+##' both ('both'), compared to background. Default is dark.
+##' @param autoThres TRUE to get an automated threshold for each color layer.
+##' Default is FALSE.
+##' @param perFrame If autoThres=TRUE, set at TRUE to calculate a threshold for 
+##' each frame seperately. Default is FALSE.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -224,14 +250,30 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' @export
 
 identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
-                               pthreshold=NULL,select='negative') {
+                               pthreshold=NULL,select='dark',
+                               colorimages=NULL,autoThres=FALSE,
+                               perFrame=FALSE,frames=NULL) {
 
     if(!is.TrDm(sbg)){
         stop("Input does not appear to be of the class \"TrDm\"")
     }
+    if(is.null(colorimages)) { colorimages <- get(attributes(sbg)$originalImages,
+                                                  envir=.GlobalEnv) }
+                                                      
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
     cat("\r \t Particle Identification: Thresholding (1 of 5) \t")
+
+    # if only one value supplied, use same value for each color layer
+    if (length(threshold) == 1) {threshold <- rep(threshold,3)}
+
+    # automated threshold
+    if(autoThres) {
+      cat("\r \t Particle Identification: Automated thresholding (1 of 5) \t")
+	  if (is.null(frames)) { frames <- n }
+      threshold <- calcAutoThres(sbg[,,frames,],perFrame=perFrame)
+	}
+    
     if(!is.null(pthreshold)) {
         A <- array(NA,dim=dim(sbg))
         for (i in 1:3) {
@@ -242,12 +284,27 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         }
         
     } else {
-        if (select == 'negative') A <- sbg < threshold
-        else if (select == 'positive') A <- sbg > threshold
-        else if (select == 'both') A <- sbg > threshold | sbg < -threshold
+        if (select == 'dark') {
+          A <- sapply(1:length(threshold), function(x) sbg[,,,x] < threshold[x],
+                      simplify='array')
+		}
+        else if (select == 'light') {
+          A <- sapply(1:length(threshold), function(x) sbg[,,,x] > threshold[x],
+                      simplify='array')
+        }
+        else if (select == 'both') {
+          A <- sapply(1:length(threshold), function(x) sbg[,,,x] > threshold[x] |
+                                                       sbg[,,,x] < -threshold[x],
+                      simplify='array')
+
+        }
+        else {stop("Invalid selection, choose 'dark', 'light' or 'both' ")}
     }
+    
+    # 1 if 1 in at least one color layer
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0
+
     cat("\r \t Particle Identification: Labeling (2 out of 5) \t")
     A <- sapply(n, function (x) ConnCompLabel(sumRGB[,,x]),simplify='array')
     
@@ -265,6 +322,14 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     cat("\r \t Particle Identification: Particle statistics (4 out of 5) \t")
     particleStats <- lapply(n,function(x) PatchStat(A[,,x])[-1,])
 
+    getMean <- lapply(1:length(particleStats),function(X)
+                  extractMean(particleStats[[X]]$patchID,
+                             colorimages=colorimages[,,,X],
+                             images=A[,,X]))
+	                         
+    sapply(1:length(getMean),function(X) 
+                   colnames(getMean[[X]]) <<- paste0('mu',c('R','G','B')))
+
     cat("\r \t Particle Identification: Coordinates calculation (5 out of 5) \n ")
     coords <- lapply(1:dim(A)[3],function(x) getCoords(m=A[,,x],d=dim(A[,,x])))
 
@@ -272,17 +337,60 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         rows <- tapply(coords[[x]][,1],A[,,x][A[,,x]>0],mean)
         cols <- tapply(coords[[x]][,2],A[,,x][A[,,x]>0],mean)
         particleStats[[x]] <- cbind(particleStats[[x]],
-                                    data.frame(x=cols,y=rows))
-        return(particleStats[[x]])                            
+                                    data.frame(x=cols,y=rows,frame=x),
+                                    getMean[[x]])
+        return(particleStats[[x]])
        } )
+
+    particleStats <- do.call(rbind,particleStats)
+
     attr(particleStats,"images") <- A
-    attr(particleStats, "class") <- c("TrDm","particles","list")
+    attr(particleStats, "class") <- c("TrDm","particles","data.frame")
+    attr(particleStats,"threshold") <- threshold
     attr(particleStats,"background") <- attributes(sbg)$background
     attr(particleStats,"originalImages") <- attributes(sbg)$originalImages
     attr(particleStats,"originalDirec") <- attributes(sbg)$originalDirec
     attr(particleStats,"subtractedImages") <- deparse(substitute(sbg))
     attr(particleStats,"nn") <- FALSE
-
+    
     return(particleStats)
+}
+
+##' Calculate automated threshold.
+##'
+##' @export
+
+calcAutoThres <- function(sbg,perFrame=FALSE){
+
+ ncolours<- dim(sbg)[4]
+ nframes<-  dim(sbg)[3]
+
+ f<-function(a){
+  t1<-(i1>a)
+  sum((i1[t1]-mean(i1[t1]))^2)+
+  sum((i1[!t1]-mean(i1[!t1]))^2)
+  }
+
+ if(perFrame){
+ pp<-array(0,c(nframes,ncolours))
+ for(j in 1:nframes){
+ for(i in 1:ncolours){
+  i1<- c( sbg[,,j,i] )
+  pp[j,i]<-
+  optimize(function(a){
+  t1<-(i1>a)+1
+  sum((i1[t1==1]-mean(i1[t1==1]))^2)+
+  sum((i1[t1==2]-mean(i1[t1==2]))^2)
+  } ,range(i1))$min
+ }}
+ } else {
+ pp<-numeric(ncolours)
+ for(i in 1:ncolours){
+  i1<- c( sbg[,,,i] )
+  pp[i]<- optimize(f,range(i1))$min
+ }
+ }
+ 
+ return(pp)
 }
 

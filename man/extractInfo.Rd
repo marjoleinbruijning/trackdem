@@ -7,7 +7,7 @@
 applying a neural net (\code{\link{runNN}}). For all particles over all
 frames, it collects information on color intensities and neighbor pixels.}
 \usage{
-extractInfo(particles, info = c("intensity", "average", "neighbors", "sd"),
+extractInfo(particles, info = c("intensity", "neighbors", "sd"),
   colorimages = NULL, sbg = NULL, frames = NULL, mIdObject = NULL,
   training = FALSE)
 }

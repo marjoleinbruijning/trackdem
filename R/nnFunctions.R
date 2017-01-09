@@ -174,7 +174,7 @@ makeButtons <- function () {
 ##' returned from \code{\link{manuallySelect}}, for each frame.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @export
-extractInfo <- function (particles,info=c('intensity','average','neighbors','sd'),
+extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                          colorimages=NULL,sbg=NULL,
                          frames=NULL,mIdObject=NULL,training=FALSE) {
 
@@ -207,16 +207,6 @@ extractInfo <- function (particles,info=c('intensity','average','neighbors','sd'
     sapply(1:length(getNeighbor),function(X) 
                       colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
   }
-  if ('average' %in% info) {
-    cat('\r \t Extract mean particle info\t')
-    getMean <- lapply(1:length(frames),function(X)
-                  extractMean(stat[[X]]$patchID,
-                             colorimages=colorimages[,,,X],
-                             images=attributes(particles)$images[,,frames[X]]))
-	                         
-    sapply(1:length(getMean),function(X) 
-                   colnames(getMean[[X]]) <<- paste0('mu',c('R','G','B')))
-  }  
   if ('sd' %in% info) {
     cat('\r \t Extract variance particle info\t')
     getVar <- lapply(1:length(frames),function(X)

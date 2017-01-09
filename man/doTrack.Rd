@@ -6,7 +6,7 @@
 \code{doTrack} is a function link particles using \code{\link{track}}}
 \usage{
 doTrack(particles, L = 50, backward = FALSE, sizeMeasure = "n.cell",
-  weight = weight)
+  weight = weight, extractColor = FALSE)
 }
 \arguments{
 \item{particles}{Object with class particleStatistics,

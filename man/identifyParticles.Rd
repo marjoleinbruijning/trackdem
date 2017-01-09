@@ -5,7 +5,7 @@
 \title{Identify moving particles}
 \usage{
 identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
-  pthreshold = NULL, select = "negative")
+  pthreshold = NULL, select = "negative", colorimages = NULL)
 }
 \arguments{
 \item{threshold}{Threshold for including particles. For a chosen 

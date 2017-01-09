@@ -17,10 +17,11 @@
 ##
 
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
-                     threshold=-0.1,pthreshold=NULL,select='negative',
+                     threshold=-0.1,pthreshold=NULL,select='dark',
                      nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
                      plotType='trajectories',L=20,R=2,name='animation',
-                     width=50,weight=c(1,1)) {
+                     width=50,weight=c(1,1,1),
+                     autoThres=FALSE,perFrame=FALSE,methodBg='mean') {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -40,14 +41,16 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
       cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
       direcPictures <- allDirec[i]
       allFullImages <- loadImages (direcPictures=direcPictures,nImages=nImages)
-      stillBack <- createBackground(allFullImages)
+      stillBack <- createBackground(allFullImages,method=methodBg)
       allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
       partIden <- identifyParticles(sbg=allImages,
                                     pthreshold=pthreshold,
                                     threshold=threshold,
                                     select=select,
                                     pixelRange=pixelRange,
-                                    colorimages=allFullImages)
+                                    colorimages=allFullImages,
+                                    autoThres=autoThres,
+                                    perFrame=perFrame)
       if (!is.null(nn)) {
         pca <- any(names(attributes(nn)) == 'pca')
         partIden <- update(partIden,nn,pca=pca,colorimages=allFullImages,
@@ -94,8 +97,9 @@ summary.TrDm <- function(x,incThres=10,...) {
   if (sum(class(x) == 'particles') > 0) {
     n <- 1:length(x)
     names(n) <- 1:length(n)
-    numbers <- sapply(n,function(X)
-                     length(x[[X]]$patchID))
+    #numbers <- sapply(n,function(X)
+    #                 length(x[[X]]$patchID))
+    numbers <- tapply(partIden$patchID,partIden$frame,length)                     
     mu <- mean(numbers)
     sdd <- sd(numbers)
     cv <- sdd/mu
@@ -200,7 +204,7 @@ print.TrDm <- function(x,...) {
 ## Plot TrDm objects
 ##' @export
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
-                      cl=1,path='~',name='animation',width=50,alpha=0.2,
+                      cl=1,path='~',name='animation',width=50,alpha=0.4,
                       lags=5,...) {
   #oldpar <- par('mar','mfrow')
   if (any(class(x) == 'colorimage')) {  
@@ -271,20 +275,20 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
             x2 <- c(ncol(colorimages),ncol(colorimages),1,1,x2)
             y2 <- c(nrow(colorimages),1,nrow(colorimages),1,y2)
             
-            counts <- as.numeric(scale(as.numeric(counts)))
+            #counts <- as.numeric(scale(as.numeric(counts)))
             out <- kriging(x2,y2,response=counts,lags=lags)
             mat <- matrix(out$map$pred,ncol=length(unique(out$map$x)),
                           nrow=length(unique(out$map$y)),byrow=FALSE)
             rownames(mat) <- unique(out$map$y)
             colnames(mat) <- unique(out$map$x)
  
-            plot(colorimages,frame=frame)
+            plot(colorimages,frame=(dim(colorimages)[4])/2)
             #points(x2/ncol(colorimages),1-y2/nrow(colorimages),cex=counts,col='blue')
             #points(records$trackRecord[,1,1]/ncol(colorimages),
              #      1-records$trackRecord[,1,2]/nrow(colorimages),col='red')
             image(x=as.numeric(colnames(mat)) / ncol(colorimages),
                 y=sort(1-as.numeric(rownames(mat)) / nrow(colorimages)), 
-                z=t(mat[nrow(mat):1,]),
+                z=log(t(mat[nrow(mat):1,])),
                 col=topo.colors(100,alpha=alpha),add=TRUE)
             
         } else if (type == 'animation') {
@@ -328,7 +332,8 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
     if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
                                                   envir=.GlobalEnv) }
     plot(colorimages,frame=frame)
-    points(x[[frame]]$x/ncol(colorimages),1-x[[frame]]$y/nrow(colorimages),
+    inc <- x$frame == frame
+    points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
            cex=1.2)
   }
   #par(oldpar)
