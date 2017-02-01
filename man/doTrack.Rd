@@ -5,8 +5,7 @@
 \title{Track particles
 \code{doTrack} is a function link particles using \code{\link{track}}}
 \usage{
-doTrack(particles, L = 50, backward = FALSE, sizeMeasure = "n.cell",
-  weight = weight, extractColor = FALSE)
+doTrack(particles, L = 50, sizeMeasure = "n.cell", weight = weight)
 }
 \arguments{
 \item{particles}{Object with class particleStatistics,
@@ -14,10 +13,10 @@ obtained using \code{\link{identifyParticles}}.}
 
 \item{L}{Cost for linking to dummy. Default set at 50.}
 
-\item{backward}{Reverse frames. Default is FALSE.}
-
 \item{sizeMeasure}{Measure for size (area, length, etc.).
 Currently not implemented.}
+
+\item{backward}{Reverse frames. Default is FALSE.}
 }
 \value{
 A list of class 'records'. Use 'summary' and 'plot'.

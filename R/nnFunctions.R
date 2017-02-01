@@ -29,11 +29,9 @@ manuallySelect <- function (particles,colorimages=NULL,
                        envir=.GlobalEnv)
   }
   if(is.null(frame)) {
-    n <- 1:length(particles)
-    n <- which(sapply(n,function(X) 
-               length(particles[[X]]$patchID))==
-               max(sapply(n,function(X) 
-               length(particles[[X]]$patchID))))[1]
+    n <- order(tapply(partIden$patchID,partIden$frame,length),
+               decreasing=TRUE)[1]
+    
   } else { n <- frame }
 
   totx <- ncol(colorimages)
@@ -45,8 +43,9 @@ manuallySelect <- function (particles,colorimages=NULL,
   buttons <- makeButtons()
   
   plot(colorimages,frame=n,bty='n')
-  points(particles[[n]]$x/totx,
-       1-particles[[n]]$y/toty,col='blue',cex=1.5)
+  inc <- particles$frame == n
+  points(particles[inc,]$x/totx,
+       1-particles[inc,]$y/toty,col='blue',cex=1.5)
   im <- par('usr','fig','plt','mfg') 
   
   options(locatorBell = FALSE)
@@ -92,10 +91,10 @@ manuallySelect <- function (particles,colorimages=NULL,
     } else if (pick$x > im$fig[1] & pick$x < im$fig[2] & 
                y > im$fig[3] & y < im$fig[4]) {
       par(mfg=c(2,1),usr=im$usr)
-      tmp <- (1-particles[[n]]$y/toty - pick$y)^2 + 
-              (particles[[n]]$x/totx - pick$x)^2
-      patches <- particles[[n]]$patchID[which(tmp == min(tmp))]
-      tmp <- particles[[n]][particles[[n]]$patchID %in% patches,]
+      tmp <- (1-particles[inc,]$y/toty - pick$y)^2 + 
+              (particles[inc,]$x/totx - pick$x)^2
+      patches <- particles[inc,]$patchID[which(tmp == min(tmp))]
+      tmp <- particles[inc,][particles[inc,]$patchID %in% patches,]
       points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
              cex=ifelse(status == 'rm',2.2,2),pch=5)
       if (status == 'g' | status == 'f') {
@@ -184,24 +183,26 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                                                   envir=.GlobalEnv) }
     if (is.null(frames)) frames <- 1:length(particles)
     
-    stat <- particles[frames] # Subset
+    stat <- particles[particles$frame %in% frames,] # Subset
     
     
     cat("\n")
   if ('intensity' %in% info) {
     cat('\t Extract intensity info')
-    getI <- lapply(1:length(stat),function(X)
-                    extractRGB(stat[[X]]$x,stat[[X]]$y,
-                             images=sbg[,,frames[X],]))
+    getI <- lapply(1:length(frames),function(X) {
+                    inc <- stat$frame == frames[X]
+                    extractRGB(stat[inc,]$x,stat[inc,]$y,
+                             images=sbg[,,frames[X],])})
     sapply(1:length(getI),function(X) 
 	              colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
   }
   if ('neighbors' %in% info) {
     cat('\r \t Extract neighbor info\t')
-    getNeighbor <- lapply(1:length(frames),function(X)
-	                         extractNeighbors(stat[[X]]$x,stat[[X]]$y,
-	                                        images=colorimages[,,,frames[X]]))
-    getNeighbor <- lapply(1:length(stat),function(X) 
+    getNeighbor <- lapply(1:length(frames),function(X) {
+                             inc <- stat$frame == frames[X]
+		                     extractNeighbors(stat[inc,]$x,stat[inc,]$y,
+	                                        images=colorimages[,,,frames[X]])})
+    getNeighbor <- lapply(1:length(frames),function(X) 
                         t(sapply(1:length(getNeighbor[[X]]),function(i) 
 		                  as.vector(getNeighbor[[X]][[i]])))) 
     sapply(1:length(getNeighbor),function(X) 
@@ -209,24 +210,26 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
   }
   if ('sd' %in% info) {
     cat('\r \t Extract variance particle info\t')
-    getVar <- lapply(1:length(frames),function(X)
-                  extractMean(stat[[X]]$patchID,
+    getVar <- lapply(1:length(frames),function(X) {
+		          inc <- stat$frame == frames[X]
+                  extractMean(stat[inc,]$patchID,
                               colorimages=colorimages[,,,X],
                               images=attributes(particles)$images[,,frames[X]],
-                              fun='sd'))
+                              fun='sd')})
                                            
     sapply(1:length(getVar),function(X) 
                    colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
   }  
 
   cat('\r \t Assembling datasets \t \n')
-  dat <- lapply(1:length(stat),function(X) {
-            dat <- stat[[X]]
+  dat <- lapply(1:length(frames),function(X) {
+            inc <- stat$frame == frames[X]
+            dat <- stat[inc,]
             if(exists('getI')) dat <- cbind(dat,getI[[X]])
             if(exists('getNeighbor')) dat <- cbind(dat,getNeighbor[[X]])
             if(exists('getMean')) dat <- cbind(dat,getMean[[X]])
             if(exists('getVar')) dat <- cbind(dat,getVar[[X]])
-            return(dat)
+            return(data.frame(dat))
           })
                  
   ## Make training data based on test data and manually identified objects
@@ -236,9 +239,10 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
 	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject$correct] <- 1
 	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject$wrong] <- 0
     }
-    dat <- do.call(rbind,dat)
   }
-  
+
+  dat <- do.call(rbind,dat)
+
   attr(dat,"background") <- attributes(particles)$background
   attr(dat,"originalImages") <- attributes(particles)$originalImages
   attr(dat,"originalDirec") <- attributes(particles)$originalDirec
@@ -388,26 +392,21 @@ update.particles <- function(particles,neuralnet,pca=TRUE,...) {
     
     particles <- extractInfo(particles,training=FALSE,...)
     
+    
     if (pca == TRUE) {
-       p <- lapply(1:length(particles),function(X) 
-                                      predict(attributes(neuralnet)$pca,
-                                              particles[[X]]))
+	   p <- predict(attributes(neuralnet)$pca,particles)
+       
     } else p <- particles
     
   pred <- neuralnet$bestNN$predictors
-  newParticleStats <- lapply(p,function(X) 
-                                      plogis(compute(neuralnet$bestNN$nn,
-                                             X[,pred])$net.result[,1]))
+  newParticleStats <- plogis(compute(neuralnet$bestNN$nn,
+                                             p[,pred])$net.result[,1])
 
-  tmp <- lapply(newParticleStats,function(X) X > neuralnet$bestNN$thr)
-  prob <- lapply(1:length(newParticleStats),function(X) 
-                                        newParticleStats[[X]][tmp[[X]]])
-  dat <- lapply(1:length(particles), function(X) 
-                          cbind(data.frame(
-                                    include=ifelse(tmp[[X]]==TRUE,1,0)), 
-                                data.frame(prob=newParticleStats[[X]]),
-                                    particles[[X]]))
-  dat <- lapply(1:length(dat), function(X) dat[[X]][dat[[X]]$include == 1,])
+  tmp <- newParticleStats > neuralnet$bestNN$thr
+  dat <- cbind(data.frame(include=ifelse(tmp,1,0),
+                    prob=newParticleStats),particles)
+                          
+  dat <- dat[dat$include == 1,]
   attr(dat, "class") <- c("TrDm","particles","list")
   attr(dat,"background") <- attributes(particles)$background
   attr(dat,"originalImages") <- attributes(particles)$originalImages

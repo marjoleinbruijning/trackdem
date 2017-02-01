@@ -6,7 +6,8 @@
 \code{calcCost} is a function to linking particle i to particle j,
 based on particle distance and size.}
 \usage{
-calcCost(x1, x2, y1, y2, s1, s2, weight = c(1, 1))
+calcCost(x1, x2, y1, y2, s1, s2, weight = c(1, 1, 1), predLoc = FALSE,
+  x0 = NULL, y0 = NULL)
 }
 \arguments{
 \item{x1}{x coordinates of particles in frame n.}

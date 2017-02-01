@@ -17,11 +17,11 @@
 ##
 
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
-                     threshold=-0.1,pthreshold=NULL,select='dark',
+                     threshold=-0.1,qthreshold=NULL,select='dark',
                      nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
                      plotType='trajectories',L=20,R=2,name='animation',
                      width=50,weight=c(1,1,1),
-                     autoThres=FALSE,perFrame=FALSE,methodBg='mean') {
+                     autoThres=FALSE,perFrame=FALSE,methodBg='mean',frames=NULL) {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -44,13 +44,14 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
       stillBack <- createBackground(allFullImages,method=methodBg)
       allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
       partIden <- identifyParticles(sbg=allImages,
-                                    pthreshold=pthreshold,
+                                    qthreshold=qthreshold,
                                     threshold=threshold,
                                     select=select,
                                     pixelRange=pixelRange,
                                     colorimages=allFullImages,
                                     autoThres=autoThres,
-                                    perFrame=perFrame)
+                                    perFrame=perFrame,
+                                    frames=frames)
       if (!is.null(nn)) {
         pca <- any(names(attributes(nn)) == 'pca')
         partIden <- update(partIden,nn,pca=pca,colorimages=allFullImages,
@@ -66,7 +67,8 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
-    }, error=function(e){})
+    }, error=function(e){message(paste('Error in',direcPictures,':',e))},
+    warning=function(w) {message(paste('Warning in',direcPictures,':',w))})
   }
   cat("\n")
   class(dat) <- c('TrDm','batch','data.frame')

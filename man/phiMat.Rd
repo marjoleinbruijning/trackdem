@@ -6,7 +6,8 @@
 \code{phiMat} is a function to create a cost matrix based on defined
 cost function \code{\link{calcCost}}.}
 \usage{
-phiMat(coords1, coords2, sizes1, sizes2, r = 1, L = 50, weight = weight)
+phiMat(coords1, coords2, sizes1, sizes2, r = 1, L = 50, weight = weight,
+  coords0 = NULL)
 }
 \arguments{
 \item{coords1}{Coordinates of particles in frame n.}

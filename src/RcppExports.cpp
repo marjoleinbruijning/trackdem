@@ -7,8 +7,8 @@
 using namespace Rcpp;
 
 // cb
-NumericVector cb(NumericVector m1, NumericVector m2, NumericVector m3, IntegerVector d);
-RcppExport SEXP trackdem_cb(SEXP m1SEXP, SEXP m2SEXP, SEXP m3SEXP, SEXP dSEXP) {
+NumericVector cb(NumericVector m1, NumericVector m2, NumericVector m3, IntegerVector d, IntegerVector e);
+RcppExport SEXP trackdem_cb(SEXP m1SEXP, SEXP m2SEXP, SEXP m3SEXP, SEXP dSEXP, SEXP eSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -16,7 +16,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< NumericVector >::type m2(m2SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type m3(m3SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
-    rcpp_result_gen = Rcpp::wrap(cb(m1, m2, m3, d));
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    rcpp_result_gen = Rcpp::wrap(cb(m1, m2, m3, d, e));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -49,15 +50,16 @@ BEGIN_RCPP
 END_RCPP
 }
 // sb
-NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d);
-RcppExport SEXP trackdem_sb(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP) {
+NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d, IntegerVector e);
+RcppExport SEXP trackdem_sb(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
     Rcpp::traits::input_parameter< NumericVector >::type bg(bgSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
-    rcpp_result_gen = Rcpp::wrap(sb(m1, bg, d));
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    rcpp_result_gen = Rcpp::wrap(sb(m1, bg, d, e));
     return rcpp_result_gen;
 END_RCPP
 }

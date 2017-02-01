@@ -194,8 +194,10 @@ linkTrajec <- function (recordsObject,particles,
   
   n <- unique(particles$frame)
   
+  cat("\t Link track segments: 0 %")
+  
   for (r in 1:R) {
-    A <- array(NA,dim=c(500,500,length(n)-r-1))
+    A <- array(NA,dim=c(1000,1000,length(n)-r-1))
     links <- list()
       
     for (i in 1:(dim(G)[3]-r)) {
@@ -269,6 +271,7 @@ linkTrajec <- function (recordsObject,particles,
           } 
         }                
       } 
+      cat("\r \t Link track segments: ",round(r / R * 100, 1),"%")
     }
   }
  
@@ -298,9 +301,11 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
   n <- unique(particles$frame)
   
-  G <- array(NA,dim=c(500,500,length(n)-1))
+  G <- array(NA,dim=c(1000,1000,length(n)-1))
   links <- list()
 
+  cat("\t Create track segments: ","0","%")
+  
   for (i in 1:(length(n)-1)) {
 	inc <- particles$frame == i
 	inc2 <- particles$frame == (i + 1)
@@ -322,7 +327,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
       # only succesful links
       tmp <- tmp[tmp > 1] - 1
       tmp <- tmp[names(tmp) > 1]
-      coords0 <- coords0[tmp,]
+      coords0 <- coords0[tmp,,drop=FALSE]
       rownames(coords0) <- as.numeric(names(tmp)) - 1 
 
     } else {coords0 <- NULL}
@@ -332,7 +337,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 	              sizes1=sizes1,
 	              sizes2=sizes2,
 	              L=L,r=1,weight=weight,
-	              coords0=NULL)
+	              coords0=coords0)
 
     gstart <- gMat(Phi)
     
@@ -349,8 +354,12 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
         allLinks <- merge(links[[i]],allLinks,by=paste('frame',i),
                           all.x=TRUE,all.y=TRUE,
                           suffixes=c('',paste0('.',i)))
-      }  
+    }  
+
+  cat("\r \t Create track segments: ",round(i / (length(n)-1) * 100, 1),"%")
+
   }
+
   ## Get coordinates
   tmp <- as.numeric(unlist(lapply(strsplit(unlist(lapply(
                       strsplit(names(allLinks),'.',fixed=TRUE),
@@ -396,8 +405,10 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 ##' \code{trackParticles} is a function link particles.
 ##' @param particles Object with class particles,
 ##' obtained using \code{\link{identifyParticles}}.
-##' @param L Cost for linking to dummy. Default set at 50.
-##' @param R Default is one; link to how many subsequent frames? Default set
+##' @param L Maximum cost for linking to particle. When the cost is larger, 
+##' particle will be not be linked (resulting in the begin or end of a segment).
+##'  Default set at 50.
+##' @param R Link to how many subsequent frames? Default set
 ##' at 2.
 ##' @param weight Vector containing weights to calculate costs. First number 
 ##' gives the weight for differences in x and y coordinates; second number 
@@ -414,9 +425,11 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 trackParticles <- function (particles,L=50,R=2,
                             sizeMeasure='n.cell',weight=c(1,1,1)) {
   records <- doTrack(particles=particles,L=L,weight=weight)
+  cat("\n")
   rec <- linkTrajec (recordsObject=records,
                         particles=particles,
                         R=R,L=L,weight=weight)
+  cat("\n")
   class(rec) <- c('TrDm','tracked')
   attr(rec,"background") <- attributes(particles)$background
   attr(rec,"originalImages") <- attributes(particles)$originalImages

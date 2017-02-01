@@ -5,8 +5,12 @@
 ##' be exported into a new directory called 'ImageSequences' created in the path.
 ##' For each movie, a new directory is created containing the recorded date and 
 ##' name of the movie.
-##' @param path Path path to location of (stem) directory containing the directory
+##' @param moviepath Path to location of (stem) directory containing the directory
 ##' in which the video files are located.
+##' @param imagepath Path to location of directory in which image sequences should
+##' be placed.
+##' @param path Path to location where temporary python file will be saved. Default 
+##' is working directory.
 ##' @param x Number of pixels in horizontal direction (ncol); default is 1915.
 ##' @param y Number of pixels in vertical direction (nrow); default is 1080.
 ##' @param fps Frames per second, default is 15.
@@ -98,15 +102,15 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
 ##' \code{loadImages} is a function to load png images as a three dimensional array.
 ##' The objects created through the function can be used for image analysis.
 ##' @param direcPictures The path of the folder where the images can be found.
-##' @param filenames Default is null. If not all files should be loaded, here specify
+##' @param filenames Default is NULL. If not all files should be loaded, here specify
 ##' which files to use.
-##' @param nImages The total number of images to load.
+##' @param nImages The total number of images to load; default is 1:30.
 ##' @param xranges Default all pixels are loaded; specify to subset the number of columns.
 ##' @param yranges Default all pixels are loaded; specify to subset the number of rows.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
+##' images <- loadImages(direcPictures='~/images1/',filenames=NULL,
 ##'	nImages=1:30,yranges=1:1080,xranges=1:1915)
 ##'	}
 ##' @return Array with all images.
@@ -146,6 +150,10 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 ##' containing all motionless, by taking
 ##' mean pixel values over all frames.
 ##' @param colorimages Array containing all frames, obtained by 
+##' @param method Use method='mean' to calculate the mean value for each pixel and color.
+##' Use 'method='mean2' to deflate dark values (note, this can only be 
+##' used for dark particles on a light background). Use method='filter' to 
+##' replace pixels in which movement has occurred with the mode of neighboring values.
 ##' \code{\link{loadImages}}
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
@@ -163,15 +171,63 @@ createBackground <- function(colorimages,method='mean') {
       A <- cb(colorimages[,,1,],
               colorimages[,,2,],
               colorimages[,,3,],
-              dim(colorimages[,,1,]))
+              dim(colorimages[,,1,]),
+              array(0,dim=dim(colorimages[,,,1])))
+
     } else if (method == 'mean2') {
       zz <- apply(colorimages[,,1,],c(1,2),function(x)  mean(x^50)^(1/50) )
       zz2 <- apply(colorimages[,,2,],c(1,2),function(x)  mean(x^50)^(1/50) )
       zz3 <- apply(colorimages[,,3,],c(1,2),function(x)  mean(x^50)^(1/50) )
       A <- array(0,c(dim(zz),3))
-      A[,,1]<-zz
-      A[,,2]<-zz2
-      A[,,3]<-zz3
+      A[,,1] <- zz
+      A[,,2] <- zz2
+      A[,,3] <- zz3
+
+    } else if (method == 'filter') {
+        rst <-  cb(colorimages[,,1,],
+              colorimages[,,2,],
+              colorimages[,,3,],
+              dim(colorimages[,,1,]),
+              array(0,dim=dim(colorimages[,,,1])))
+        class(rst) <- class(colorimages)
+        subs <- aperm(subtractBackground(bg=rst,colorimages),c(1,2,4,3))
+        class(subs) <- class(colorimages)
+        attributes(subs) <- attributes(colorimages)
+        SDs <- cb(subs[,,1,]^2,
+                 subs[,,2,]^2,
+                 subs[,,3,]^2,
+                 dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
+                    dim(colorimages)[4]/(dim(colorimages)[4]-1)
+        SD <- sqrt(SDs[,,1]^2+SDs[,,2]^2+SDs[,,3]^2)
+        Threshold <-
+         {
+	     optimize(function(a,i1){
+	     t1 <-(i1>a)
+	     sum((i1[t1]-mean(i1[t1]))^2)+
+	     sum((i1[!t1]-mean(i1[!t1]))^2)
+	     }
+	     ,c(0,max(SD)),i1=c(SD))$min	
+	     }
+  
+         rst[(SD>Threshold)] <- NA
+
+         A <- array(0,c(dim(colorimages)[1:2],3))
+
+         for (i in 1:3) {
+           r <- raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
+
+           f1 <- focal(r,w=matrix(1,31,31),fun=function(x){modal(x,na.rm=T)},
+                       NAonly=TRUE)
+           while((!all(is.finite(f1@data@values)))|any(is.na(f1@data@values))){
+             f1@data@values[!is.finite(f1@data@values)] <- NA
+             f1 <- focal(f1,w=matrix(1,31,31),fun=function(x){modal(x,na.rm=T)},
+                         NAonly=TRUE,pad=T)
+           }
+
+           A[,,i] <- matrix(f1[,,1],ncol=ncol(colorimages),
+                            nrow=nrow(colorimages),byrow=TRUE)
+         }
+        
     } else {stop('No valid method for creating background')}
 
     class(A) <- c('TrDm','colorimage','array')
@@ -211,7 +267,8 @@ subtractBackground <- function (bg,colorimages=NULL) {
     
     sb <- sapply(1:3, function(x) sb(colorimages[,,x,],
                                      bg[,,x],
-                                     dim(colorimages[,,x,])),
+                                     dim(colorimages[,,x,]),
+                                     array(0,dim=dim(colorimages))),
                  simplify='array')
     attr(sb,"background") <- deparse(substitute(bg))
     attr(sb,"originalImages") <- attributes(bg)$originalImages
@@ -225,13 +282,14 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' \code{identifyParticles} is a function to identify particles.
 ##' @param mSub Array containing images containing all moving particles,
 ##' as obtained by \code{\link{subtractBackground}}
-##' @param threshold Thresholds for including particles. For a chosen 
-##' threshold for each frame, use pthreshold. Either one value, or a value 
-##' per color layer.
+##' @param threshold Thresholds for including particles. Supply a vector
+##' containing three values; one for each color. Otherwise, supply one value 
+##' which is to be used for all three colors. For a chosen 
+##' threshold for each frame, use qthreshold.
 ##' @param pixelRange Default is NULL. Vector with minimum and maximum particle size, used as a
 ##' first filter to identify particles.
-##' @param pthreshold Default is NULL. If NULL, treshold is used for filter. If
-##' not zero, a threshold based on pthreshold quantile is calculated for each
+##' @param qthreshold Default is NULL. If NULL, treshold is used for filter. If
+##' not zero, a threshold based on qthreshold quantile is calculated for each
 ##' frame.
 ##' @param select Select dark particles ('dark'), light particles ('light'), or
 ##' both ('both'), compared to background. Default is dark.
@@ -239,18 +297,20 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' Default is FALSE.
 ##' @param perFrame If autoThres=TRUE, set at TRUE to calculate a threshold for 
 ##' each frame seperately. Default is FALSE.
+##' @param frames Specify if automated threshold should not be calculated based 
+##' on all frames.
 ##' @author Marjolein Bruijning & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'   trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
 ##'	}
-##' @return This function returns a list with two elements: (1) a list with
+##' @return This function returns a list with two elements: (1) a dataframe with
 ##' particle statistics with identified particles for each frame. (2) An array
 ##' containing all binary images.
 ##' @export
 
 identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
-                               pthreshold=NULL,select='dark',
+                               qthreshold=NULL,select='dark',
                                colorimages=NULL,autoThres=FALSE,
                                perFrame=FALSE,frames=NULL) {
 
@@ -274,12 +334,12 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
       threshold <- calcAutoThres(sbg[,,frames,],perFrame=perFrame)
 	}
     
-    if(!is.null(pthreshold)) {
+    if(!is.null(qthreshold)) {
         A <- array(NA,dim=dim(sbg))
         for (i in 1:3) {
             A[,,,i] <- sapply(1:dim(sbg)[3], function(x)
                 sbg[,,x,i] < quantile(sbg[,,x,i],
-                                       pthreshold),
+                                       qthreshold),
                 simplify='array')
         }
         

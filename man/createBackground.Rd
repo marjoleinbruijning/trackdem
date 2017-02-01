@@ -4,7 +4,7 @@
 \alias{createBackground}
 \title{Background detection}
 \usage{
-createBackground(colorimages)
+createBackground(colorimages, method = "mean")
 }
 \arguments{
 \item{colorimages}{Array containing all frames, obtained by 

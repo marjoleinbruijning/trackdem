@@ -4,13 +4,10 @@
 \alias{createImageSeq}
 \title{Create image sequence}
 \usage{
-createImageSeq(path = "~/Data/", x = 1915, y = 1080, fps = 15,
-  nsec = 2, ext = "mts")
+createImageSeq(moviepath, imagepath, x = 1915, y = 1080, fps = 15,
+  nsec = 2, ext = "MTS", path = getwd())
 }
 \arguments{
-\item{path}{Path path to location of directory containing directories
-'Movies' and 'ImageSequences'.}
-
 \item{x}{Number of pixels in horizontal direction (ncol); default is 1915.}
 
 \item{y}{Number of pixels in vertical direction (nrow); default is 1080.}
@@ -20,13 +17,16 @@ createImageSeq(path = "~/Data/", x = 1915, y = 1080, fps = 15,
 \item{nsec}{Duration of movie that is exported, default is 2 seconds.
 The middle nsec seconds of the movie are used.}
 
-\item{ext}{The extension of the video, in lower case. Default is 'mts'.}
+\item{ext}{The extension of the video. Default is 'MTS'.}
+
+\item{path}{Path path to location of (stem) directory containing the directory
+in which the video files are located.}
 }
 \description{
-\code{createImageSeq} is a function to create an image sequence (.png) using 
-videos file as input. All movies within a directory 'Movies' will
-be exported. A directory 'ImageSequences' must exist in path. For each
-movie, a new directory is created containing the recorded date and 
+\code{createImageSeq} is a function to create an image sequence (.png) using
+ video files as input. All movies within a directory will  
+be exported into a new directory called 'ImageSequences' created in the path.
+For each movie, a new directory is created containing the recorded date and 
 name of the movie.
 }
 \examples{

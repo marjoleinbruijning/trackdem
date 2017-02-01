@@ -5,11 +5,13 @@
 \title{Identify moving particles}
 \usage{
 identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
-  pthreshold = NULL, select = "negative", colorimages = NULL)
+  pthreshold = NULL, select = "dark", colorimages = NULL,
+  autoThres = FALSE, perFrame = FALSE, frames = NULL)
 }
 \arguments{
-\item{threshold}{Threshold for including particles. For a chosen 
-threshold for each frame, use pthreshold.}
+\item{threshold}{Thresholds for including particles. For a chosen 
+threshold for each frame, use pthreshold. Either one value, or a value 
+per color layer.}
 
 \item{pixelRange}{Default is NULL. Vector with minimum and maximum particle size, used as a
 first filter to identify particles.}
@@ -18,8 +20,14 @@ first filter to identify particles.}
 not zero, a threshold based on pthreshold quantile is calculated for each
 frame.}
 
-\item{select}{Use values smaller ('negative') or larger ('positive') then 
-threshold. Default is 'negative'.}
+\item{select}{Select dark particles ('dark'), light particles ('light'), or
+both ('both'), compared to background. Default is dark.}
+
+\item{autoThres}{TRUE to get an automated threshold for each color layer.
+Default is FALSE.}
+
+\item{perFrame}{If autoThres=TRUE, set at TRUE to calculate a threshold for 
+each frame seperately. Default is FALSE.}
 
 \item{mSub}{Array containing images containing all moving particles,
 as obtained by \code{\link{subtractBackground}}}

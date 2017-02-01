@@ -5,8 +5,8 @@
 \title{Track particles
 \code{trackParticles} is a function link particles.}
 \usage{
-trackParticles(particles, L = 50, R = 2, backward = FALSE,
-  sizeMeasure = "n.cell", weight = c(1, 1))
+trackParticles(particles, L = 50, R = 2, sizeMeasure = "n.cell",
+  weight = c(1, 1, 1))
 }
 \arguments{
 \item{particles}{Object with class particles,
@@ -17,10 +17,14 @@ obtained using \code{\link{identifyParticles}}.}
 \item{R}{Default is one; link to how many subsequent frames? Default set
 at 2.}
 
-\item{backward}{Reverse frames. Default is FALSE.}
-
 \item{sizeMeasure}{Measure for size (area, length, etc.).
 Currently not implemented.}
+
+\item{weight}{Vector containing weights to calculate costs. First number 
+gives the weight for differences in x and y coordinates; second number 
+gives the weight for particle size differences; third number gives the 
+difference bewteen the predicted location and the observed location. This 
+is calculated using the location of the identified particle in the previous frame.}
 }
 \value{
 A list of class 'records'. Use 'summary' and 'plot'.

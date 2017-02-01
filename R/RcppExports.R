@@ -2,8 +2,8 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 #' @export
-cb <- function(m1, m2, m3, d) {
-    .Call('trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d)
+cb <- function(m1, m2, m3, d, e) {
+    .Call('trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d, e)
 }
 
 #' Get coordinates of all particles
@@ -24,8 +24,8 @@ muP <- function(m, id, cm1, cm2, cm3, d) {
 }
 
 #' @export
-sb <- function(m1, bg, d) {
-    .Call('trackdem_sb', PACKAGE = 'trackdem', m1, bg, d)
+sb <- function(m1, bg, d, e) {
+    .Call('trackdem_sb', PACKAGE = 'trackdem', m1, bg, d, e)
 }
 
 #' @export
