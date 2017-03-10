@@ -407,7 +407,7 @@ update.particles <- function(particles,neuralnet,pca=TRUE,...) {
                     prob=newParticleStats),particles)
                           
   dat <- dat[dat$include == 1,]
-  attr(dat, "class") <- c("TrDm","particles","list")
+  attr(dat, "class") <- c("TrDm","particles","data.frame")
   attr(dat,"background") <- attributes(particles)$background
   attr(dat,"originalImages") <- attributes(particles)$originalImages
   attr(dat,"originalDirec") <- attributes(particles)$originalDirec

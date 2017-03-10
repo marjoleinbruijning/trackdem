@@ -7,7 +7,12 @@
 createBackground(colorimages, method = "mean")
 }
 \arguments{
-\item{colorimages}{Array containing all frames, obtained by 
+\item{colorimages}{Array containing all frames, obtained by}
+
+\item{method}{Use method='mean' to calculate the mean value for each pixel and color.
+Use 'method='mean2' to deflate dark values (note, this can only be 
+used for dark particles on a light background). Use method='filter' to 
+replace pixels in which movement has occurred with the mode of neighboring values.
 \code{\link{loadImages}}}
 }
 \value{

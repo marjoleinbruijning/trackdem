@@ -10,10 +10,10 @@ loadImages(direcPictures, filenames = NULL, nImages = 1:30,
 \arguments{
 \item{direcPictures}{The path of the folder where the images can be found.}
 
-\item{filenames}{Default is null. If not all files should be loaded, here specify
+\item{filenames}{Default is NULL. If not all files should be loaded, here specify
 which files to use.}
 
-\item{nImages}{The total number of images to load.}
+\item{nImages}{The total number of images to load; default is 1:30.}
 
 \item{xranges}{Default all pixels are loaded; specify to subset the number of columns.}
 
@@ -28,7 +28,7 @@ The objects created through the function can be used for image analysis.
 }
 \examples{
 \dontrun{
-loadAll <- loadImages(direcPictures='~/images1/',filenames=NULL,
+images <- loadImages(direcPictures='~/images1/',filenames=NULL,
 nImages=1:30,yranges=1:1080,xranges=1:1915)
 }
 }

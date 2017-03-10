@@ -6,18 +6,25 @@
 \usage{
 generateBackground(background = NULL, spots.density = 10, clustering = 0,
   blur = TRUE, blur.coef = 0.025, domain = c("square", "circle"),
-  plot = TRUE, sizes = runif(spots.density, 0.1, 1.5))
+  plot = FALSE, sizes = runif(spots.density, 0.1, 1.5))
+}
+\arguments{
+\item{background}{prevously loaded or generated background}
+
+\item{spots.density}{density of non-moving spots}
+
+\item{clustering}{spot clustering parameter}
+
+\item{blur}{do the spots look blurry? (TRUE or FALSE)}
+
+\item{blur.coef}{spot blurring coefficient}
+
+\item{domain}{want a specific domain? can be "square" of "circle".}
+
+\item{plot}{plot the background?  (TRUE or FALSE)}
 }
 \description{
 generates background, or otherwise plots an already generated background
-Function that saves simulated trajectories as png files
-param background prevously loaded or generated background 
-param spots.density density of non-moving spots
-param clustering spot clustering parameter
-param blur do the spots look burry?(TRUE or FALSE)
-param blur.coef spot blurring coefficient
-param domain want a specific domain? can be "square" of "circle".
-param plot plot the background?  (TRUE or FALSE)
 }
 \author{
 Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser

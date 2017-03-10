@@ -7,15 +7,23 @@
 addNoiseBg(nframe = 30, density = 40, size = 1, duration = 10,
   speed = 10, bg, col.range = c(0, 1))
 }
+\arguments{
+\item{nframe}{number of frames}
+
+\item{density}{number of noise particles (over all frames)}
+
+\item{size}{maximum size of noise in pixels}
+
+\item{duration}{the maximum number of frames any single generated noise
+particle is visible}
+
+\item{speed}{the maximum speed of the moving noise}
+
+\item{bg}{previously generated background}
+
+\item{col.range}{color intensity range of noise}
+}
 \description{
 generates noise (e.g. non-focal species, moving debris, light effects)
-param nframe number of frames
-param density number of noise particles (over all frames)
-param size maximum size of noise in pixels
-param duration the maximum number of frames any single generated noise
-particle is visible 
-param bg previously generated background 
-param speed the maximum speed of the moving noise
-param col.range color intensity range of noise
 }
 

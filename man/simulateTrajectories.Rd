@@ -32,7 +32,7 @@ sequence of certain number of frames (nframes) in length.
 }
 \examples{
 \dontrun{
-## ADD EXAMPLE
+   traj <- simulateTrajectories(nframes=30,h=0.01,rho=0.9)
 }
 }
 \author{

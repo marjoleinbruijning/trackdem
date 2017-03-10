@@ -4,14 +4,12 @@
 \alias{saveTrajectory}
 \title{saveTrajectory}
 \usage{
-saveTrajectory(traj, noise = FALSE, add.noise = FALSE,
-  name = "trajectory", axes = FALSE, background, pars = list(duration =
-  10, density = 10), ...)
+saveTrajectory(traj, add.noise = FALSE, name = "trajectory", axes = FALSE,
+  background, pars = list(duration = 10, density = 10), width = 480,
+  height = NULL, ...)
 }
 \arguments{
-\item{traj}{simulated trajectories from \code{simulateTracjectories}}
-
-\item{noise}{if TRUE, background noise is added
+\item{traj}{simulated trajectories from \code{simulateTracjectories} 
 #param add.noise if TRUE, moving noise is added}
 
 \item{name}{stem of the filename}
@@ -19,8 +17,9 @@ saveTrajectory(traj, noise = FALSE, add.noise = FALSE,
 \item{axes}{if TRUE, axes are included}
 
 \item{background}{use if you have a predifined background image of the
-format returned by \code{generateBackground}.
-#param pars parameters used to generate moving noise
+format returned by \code{generateBackground}.}
+
+\item{pars}{parameters used to generate moving noise
 these include the density (per image) of noise particles and their duration
 (in n frames)}
 }

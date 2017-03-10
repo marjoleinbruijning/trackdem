@@ -12,9 +12,11 @@ trackParticles(particles, L = 50, R = 2, sizeMeasure = "n.cell",
 \item{particles}{Object with class particles,
 obtained using \code{\link{identifyParticles}}.}
 
-\item{L}{Cost for linking to dummy. Default set at 50.}
+\item{L}{Maximum cost for linking to particle. When the cost is larger, 
+particle will be not be linked (resulting in the begin or end of a segment).
+ Default set at 50.}
 
-\item{R}{Default is one; link to how many subsequent frames? Default set
+\item{R}{Link to how many subsequent frames? Default set
 at 2.}
 
 \item{sizeMeasure}{Measure for size (area, length, etc.).

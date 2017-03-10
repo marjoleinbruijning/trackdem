@@ -21,7 +21,8 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                      nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
                      plotType='trajectories',L=20,R=2,name='animation',
                      width=50,weight=c(1,1,1),
-                     autoThres=FALSE,perFrame=FALSE,methodBg='mean',frames=NULL) {
+                     autoThres=FALSE,perFrame=FALSE,methodBg='mean',
+                     frames=NULL,saveAll=FALSE) {
   if (is.null(direcnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
   } else {allDirec <- paste0(path,'/',direcnames,'/')}
@@ -58,7 +59,7 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                            sbg=allImages)
       }
       records <- trackParticles(partIden,L=L,R=R,weight=weight)
-      results[[i]] <- records
+      if (saveAll) results[[i]] <- records
       dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
                                                  sum(!is.na(x))) > incThres)
       if (plotOutput == TRUE) {
@@ -73,7 +74,7 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
   cat("\n")
   class(dat) <- c('TrDm','batch','data.frame')
   attr(dat,"path") <- path
-  attr(dat,"results") <- results
+  if (saveAll) attr(dat,"results") <- results
   return(dat)
 }
 
@@ -186,7 +187,7 @@ print.TrDm <- function(x,...) {
     d <- dim(x)
     cat("\t Trackdem subtracted background image. \n")
     cat(paste("\t Images with size:",d[1],'x',d[2],' pixels. \n'))
-    cat(paste("\t Total of",d[3],"images, with",d[4],"color layers. \n\n"))
+    cat(paste("\t Total of",d[4],"images, with",d[3],"color layers. \n\n"))
   } else if (sum(class(x) == 'particles') > 0) {
     cat("\t Trackdem list with identified particles (without tracking). \n\n")
   } else if (sum(class(x) == 'tracked') > 0) {
@@ -254,45 +255,6 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
             lines(x[i,,1]/ncol(colorimages),1-x[i,,2]/nrow(colorimages),
                   col=paste0(jet.colors(nrow(x))[i],'99'),lwd=1.5)
             }
-        } else if (type == 'heatmap') {
-            #x <- x$trackRecord[incLabels,,,drop=FALSE]
-            xsave <- x
-            a <- x$trackRecord
-            x <- as.vector(a[incLabels,,1])
-            x <- x[!is.na(x)]
-            y <- as.vector(a[incLabels,,2])
-            y <- y[!is.na(y)]
-            l1 <- seq(0,ncol(colorimages)*1.1,width)
-            l2 <- seq(0,nrow(colorimages)*1.1,width)
-            x1 <- cut(x,l1,
-                      labels=seq(width/2,ncol(colorimages),length.out=length(l1)-1))
-            y1 <- cut(y,l2,
-                      labels=seq(width/2,nrow(colorimages),length.out=length(l2)-1))
-            counts <- table(paste(x1,y1))
-            
-            x2 <- as.numeric(unlist(lapply(strsplit(names(counts),' '),function(x) x[[1]])))
-            y2 <- as.numeric(unlist(lapply(strsplit(names(counts),' '),function(x) x[[2]])))
-            
-            counts <- c(0,0,0,0,counts)
-            x2 <- c(ncol(colorimages),ncol(colorimages),1,1,x2)
-            y2 <- c(nrow(colorimages),1,nrow(colorimages),1,y2)
-            
-            #counts <- as.numeric(scale(as.numeric(counts)))
-            out <- kriging(x2,y2,response=counts,lags=lags)
-            mat <- matrix(out$map$pred,ncol=length(unique(out$map$x)),
-                          nrow=length(unique(out$map$y)),byrow=FALSE)
-            rownames(mat) <- unique(out$map$y)
-            colnames(mat) <- unique(out$map$x)
- 
-            plot(colorimages,frame=(dim(colorimages)[4])/2)
-            #points(x2/ncol(colorimages),1-y2/nrow(colorimages),cex=counts,col='blue')
-            #points(records$trackRecord[,1,1]/ncol(colorimages),
-             #      1-records$trackRecord[,1,2]/nrow(colorimages),col='red')
-            image(x=as.numeric(colnames(mat)) / ncol(colorimages),
-                y=sort(1-as.numeric(rownames(mat)) / nrow(colorimages)), 
-                z=log(t(mat[nrow(mat):1,])),
-                col=topo.colors(100,alpha=alpha),add=TRUE)
-            
         } else if (type == 'animation') {
             oldwd <- getwd()
             setwd(path)
@@ -326,7 +288,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
          xlab='Identified',ylab='Probability based on neural network',...)
     abline(h=x$thr,lty=2,lwd=2)
   } else if (any(class(x) == 'sbg')) {
-    image(x[,,frame,cl])
+    image(x[,,cl,frame])
   } else if (any(class(x) == 'batch')) {
     plot(x$date,x$Size,type='b',lwd=2,ylab='Population size',xlab='Date',
          ...)

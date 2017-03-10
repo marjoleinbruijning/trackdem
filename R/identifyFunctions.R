@@ -270,6 +270,7 @@ subtractBackground <- function (bg,colorimages=NULL) {
                                      dim(colorimages[,,x,]),
                                      array(0,dim=dim(colorimages))),
                  simplify='array')
+    sb <- aperm(sb, c(1,2,4,3))
     attr(sb,"background") <- deparse(substitute(bg))
     attr(sb,"originalImages") <- attributes(bg)$originalImages
     attr(sb,"originalDirec") <- attributes(bg)$originalDirec
@@ -319,7 +320,13 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     }
     if(is.null(colorimages)) { colorimages <- get(attributes(sbg)$originalImages,
                                                   envir=.GlobalEnv) }
-                                                      
+
+    tmp <- attributes(sbg)
+    sbg <- aperm(sbg, c(1,2,4,3))
+    attributes(sbg)$background <- tmp$background
+    attributes(sbg)$originalImages <- tmp$originalImages
+    attributes(sbg)$originalDirec <- tmp$originalDirec
+        
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
     cat("\r \t Particle Identification: Thresholding (1 of 5) \t")

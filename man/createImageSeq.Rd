@@ -8,6 +8,12 @@ createImageSeq(moviepath, imagepath, x = 1915, y = 1080, fps = 15,
   nsec = 2, ext = "MTS", path = getwd())
 }
 \arguments{
+\item{moviepath}{Path to location of (stem) directory containing the directory
+in which the video files are located.}
+
+\item{imagepath}{Path to location of directory in which image sequences should
+be placed.}
+
 \item{x}{Number of pixels in horizontal direction (ncol); default is 1915.}
 
 \item{y}{Number of pixels in vertical direction (nrow); default is 1080.}
@@ -19,8 +25,8 @@ The middle nsec seconds of the movie are used.}
 
 \item{ext}{The extension of the video. Default is 'MTS'.}
 
-\item{path}{Path path to location of (stem) directory containing the directory
-in which the video files are located.}
+\item{path}{Path to location where temporary python file will be saved. Default 
+is working directory.}
 }
 \description{
 \code{createImageSeq} is a function to create an image sequence (.png) using

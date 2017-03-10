@@ -15,7 +15,7 @@
 ##' nIndividuals
 ##' @examples
 ##' \dontrun{
-##' ## ADD EXAMPLE
+##'    traj <- simulateTrajectories(nframes=30,h=0.01,rho=0.9)
 ##'	}
 ##' @author Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser
 ##' @export
@@ -93,7 +93,7 @@ simulateTrajectories <- function(nframes=20,nIndividuals=10,
     res<-as.data.frame(res)
     res$size=sizes[res$id]
     attr(res,"domain")<-domain
-    class(res) <- "simtrajectory"
+    class(res) <- c("simtrajectory","data.frame")
     return(res)
 }
 
@@ -139,8 +139,8 @@ plot.simtrajectory<-function(traj,noise=FALSE,axes=FALSE,...){
     if(lim==-1){
         lines(cos(seq(0,2*pi,l=300)),sin(seq(0,2*pi,l=300)),lty=3)
     }
-    tapply(1:nrow(traj),traj$id,function(i){
-	lines(traj[i,c("x","y")],col=sample(colors()[-1],1))
+    sapply(1:length(unique(traj$id)),function(i){
+	  lines(traj$x[traj$id==i],traj$y[traj$id==i],col=sample(colors()[-1],1))
     })
     invisible(NULL)
 }
@@ -188,26 +188,28 @@ makeOrg<-function(length=30,size=.05,phi=0,x=0,y=0){
 ##'
 ##' Function that saves simulated trajectories as png files
 ##' @param traj simulated trajectories from \code{simulateTracjectories} 
-##' @param noise if TRUE, background noise is added
 ##' #param add.noise if TRUE, moving noise is added
 ##' @param name stem of the filename 
 ##' @param axes if TRUE, axes are included
 ##' @param background use if you have a predifined background image of the
 ##' format returned by \code{generateBackground}.
-##' #param pars parameters used to generate moving noise
+##' @param pars parameters used to generate moving noise
 ##' these include the density (per image) of noise particles and their duration
 ##' (in n frames)
 ##' @author Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser
 ##' @export
-saveTrajectory<-function(traj,noise=FALSE,add.noise=FALSE,name="trajectory",
-                          axes=FALSE,background,pars=list(duration=10,density=10),...){
+saveTrajectory<-function(traj,add.noise=FALSE,name="trajectory",
+                          axes=FALSE,background,pars=list(duration=10,density=10),
+                          width=480,height=NULL,...){
 
     z=max(traj$t)
     lim<- ifelse(attr(traj,"domain")=="circle",-1,0)
 
-    if(noise){ 
+    noise <- TRUE
+    
+    #if(noise){ 
 	xx <- background$blured.x
-    }
+    #}
     
     if(add.noise){
         noisep<-addNoiseBg(bg=background,density=pars$density,duration=pars$duration)
@@ -218,7 +220,8 @@ saveTrajectory<-function(traj,noise=FALSE,add.noise=FALSE,name="trajectory",
     for(i in 1:z){
 
         Name=paste(name,formatC(i,width=nchar(z),flag="0"),sep="_")
-        png(paste(Name,".png",sep=""))
+        if (is.null(height)) height <- width
+        png(paste(Name,".png",sep=""),width=width,height=height)
 
         plot(0,type="n",xlim=c(lim,1),ylim=c(lim,1),xlab="",ylab="",asp=1,axes=axes)
         if(noise){
@@ -227,24 +230,25 @@ saveTrajectory<-function(traj,noise=FALSE,add.noise=FALSE,name="trajectory",
         ##f(noise){generate.background(...,domain=attr(traj,"domain"))}
         ## add dynamic noise	
         if(add.noise&noise){
-            for(mb in 1:nrow(noisep[[1]])){
+            for(mb in 1:nrow(loc)){
                 if (!is.na(loc[mb,i,2])) {
                     points(loc[mb,i,2],loc[mb,i,1],pch=16,cex=part$size[mb],col=part$color[mb])
                 }
                 ##ext(x=loc[mb,i,2],y=loc[mb,i,1],labels=mb,cex=2)		
             }	
-            
+        }    
             if(lim==-1){
 		lines(cos(seq(0,2*pi,l=300)),sin(seq(0,2*pi,l=300)),lty=3)
             }
             ii<-which(traj$t==i)
             for(j in ii){
-		polygon(
-                    makeOrg(30,traj[j,"size"],phi= ifelse(is.na(traj[j,"phi"]),
-                                       tapply(traj$phi,traj$id,mean,na.rm=T)[j==ii],traj[j,"phi"]),x=traj[j,"x"],y=traj[j,"y"]),col="red",border=NA)
+		polygon(makeOrg(30,traj[j,"size"],phi= ifelse(is.na(traj[j,"phi"]),
+                        tapply(traj$phi,traj$id,mean,na.rm=T)[j==ii],
+                        traj[j,"phi"]),x=traj[j,"x"],y=traj[j,"y"]),
+               col="red",border=NA)
             }
 
-        }
+        
         dev.off()
     }
 
@@ -254,39 +258,27 @@ saveTrajectory<-function(traj,noise=FALSE,add.noise=FALSE,name="trajectory",
 ##' generate a background 
 ##'
 ##' generates background, or otherwise plots an already generated background
-##' Function that saves simulated trajectories as png files
-##' param background prevously loaded or generated background 
-##' param spots.density density of non-moving spots
-##' param clustering spot clustering parameter
-##' param blur do the spots look burry?(TRUE or FALSE)
-##' param blur.coef spot blurring coefficient
-##' param domain want a specific domain? can be "square" of "circle".
-##' param plot plot the background?  (TRUE or FALSE)
+##' @param background prevously loaded or generated background 
+##' @param spots.density density of non-moving spots
+##' @param clustering spot clustering parameter
+##' @param blur do the spots look blurry? (TRUE or FALSE)
+##' @param blur.coef spot blurring coefficient
+##' @param domain want a specific domain? can be "square" of "circle".
+##' @param plot plot the background?  (TRUE or FALSE)
 ##' @author Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser
 ##' @export
 generateBackground<- function(background=NULL,spots.density=10,clustering=0,
                                blur=TRUE,blur.coef=.025,domain=c("square","circle"),
-                               plot=TRUE,sizes=runif(spots.density,.1,1.5)){
+                               plot=FALSE,sizes=runif(spots.density,.1,1.5)){
 
 
     domain=domain[1]
     if(domain=="circle") { lim=-1; area=2*pi; offset=0 }
     if(domain=="square") { lim=0; area=1; offset=.5 }
 
-    if(is.null(background)){
+    if(plot) plot(100,100,xlim=c(0,1),ylim=c(0,1),xlab='',ylab='')
 
-        ##if(gradient.density){
-        ##parsd<-structure(runif(gradient.complexity+3),names=letters[1:(gradient.complexity+3)])
-        ##x=y=seq(lim,1,l=reso)
-        ##EG<-expand.grid(x=x,y=y)
-        ##X<-with(EG,cbind(1,x,y,x*y,x^2,y^2,x^2*y^2,x^3,y^3,x^3*x^4))
-        ##xt<- xtabs(I(X[,1:length(parsd)]%*%parsd)~x+y,EG)
-        ##class(xt)<-"matrix"
-        ##if(domain=="circle"){
-        ##xt[with(EG,sqrt(x^2+y^2)>1)]<-NA
-        ##}
-        ##image(x,y,xt,add=TRUE,col=grey.colors(132)[-(1:64)])
-        ##}
+    if(is.null(background)){
 
 	if(spots.density>0){
             n<-round(spots.density)
@@ -342,14 +334,14 @@ generateBackground<- function(background=NULL,spots.density=10,clustering=0,
 ##' generate moving "noise" to simulate noise in a video sequence
 ##'
 ##' generates noise (e.g. non-focal species, moving debris, light effects)
-##' param nframe number of frames
-##' param density number of noise particles (over all frames)
-##' param size maximum size of noise in pixels
-##' param duration the maximum number of frames any single generated noise
+##' @param nframe number of frames
+##' @param density number of noise particles (over all frames)
+##' @param size maximum size of noise in pixels
+##' @param duration the maximum number of frames any single generated noise
 ##' particle is visible 
-##' param bg previously generated background 
-##' param speed the maximum speed of the moving noise
-##' param col.range color intensity range of noise
+##' @param bg previously generated background 
+##' @param speed the maximum speed of the moving noise
+##' @param col.range color intensity range of noise
 addNoiseBg <- function(nframe=30,density=40,size=1,duration=10,speed=10,bg,
                       col.range=c(0,1)){
 

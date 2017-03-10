@@ -48,12 +48,11 @@ require(trackdem)
 ## This function requires Python, Libav and ExifTool.
 ## Alternatively, if images are already made, this
 ## step can be skipped.
-
 createImageSeq(moviepath='Dropbox/Github/trackdem/Test/Movies',
                imagepath='Dropbox/Github/trackdem/Test/ImageSequences')
 
 ## Load images
-direcPictures <- '~/Dropbox/Github/trackdem/Test/ImageSequences/20150406_50/'
+direcPictures <- 'Test/ImageSequences/002/'
 allFullImages <- loadImages (direcPictures=direcPictures,nImages=1:30)
 
 ## Create background and subtract
@@ -62,8 +61,8 @@ allImages <- subtractBackground(bg=stillBack)
 
 ## Identify particles
 partIden <- identifyParticles(sbg=allImages,
-                              pthreshold=0.0041, # chosen threshold
-                              pixelRange=c(10,500)) # min and max size
+                              threshold=-0.05, # chosen threshold
+                              pixelRange=c(1,500)) # min and max size
 summary(partIden)
 
 ## Track (without machine learning steps)
@@ -72,9 +71,7 @@ records <- trackParticles(partIden)
 ## Obtain results
 incT <- 10
 summary(records,incThres=incT)
-pdf('resultsNN.pdf')
 plot(records,incThres=incT)
-dev.off()
 
 
 #########################################################################

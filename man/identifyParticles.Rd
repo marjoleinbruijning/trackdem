@@ -5,19 +5,20 @@
 \title{Identify moving particles}
 \usage{
 identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
-  pthreshold = NULL, select = "dark", colorimages = NULL,
+  qthreshold = NULL, select = "dark", colorimages = NULL,
   autoThres = FALSE, perFrame = FALSE, frames = NULL)
 }
 \arguments{
-\item{threshold}{Thresholds for including particles. For a chosen 
-threshold for each frame, use pthreshold. Either one value, or a value 
-per color layer.}
+\item{threshold}{Thresholds for including particles. Supply a vector
+containing three values; one for each color. Otherwise, supply one value 
+which is to be used for all three colors. For a chosen 
+threshold for each frame, use qthreshold.}
 
 \item{pixelRange}{Default is NULL. Vector with minimum and maximum particle size, used as a
 first filter to identify particles.}
 
-\item{pthreshold}{Default is NULL. If NULL, treshold is used for filter. If
-not zero, a threshold based on pthreshold quantile is calculated for each
+\item{qthreshold}{Default is NULL. If NULL, treshold is used for filter. If
+not zero, a threshold based on qthreshold quantile is calculated for each
 frame.}
 
 \item{select}{Select dark particles ('dark'), light particles ('light'), or
@@ -29,11 +30,14 @@ Default is FALSE.}
 \item{perFrame}{If autoThres=TRUE, set at TRUE to calculate a threshold for 
 each frame seperately. Default is FALSE.}
 
+\item{frames}{Specify if automated threshold should not be calculated based 
+on all frames.}
+
 \item{mSub}{Array containing images containing all moving particles,
 as obtained by \code{\link{subtractBackground}}}
 }
 \value{
-This function returns a list with two elements: (1) a list with
+This function returns a list with two elements: (1) a dataframe with
 particle statistics with identified particles for each frame. (2) An array
 containing all binary images.
 }
