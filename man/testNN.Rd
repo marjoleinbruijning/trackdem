@@ -11,6 +11,9 @@ testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1, 1),
 \arguments{
 \item{dat}{a previously constructed dataset}
 
+\item{stat}{Fit statistic. May be \code{"precision"}, \code{"recall"}, or
+\code{"F"} for the harmonic mean of precision and recall.}
+
 \item{maxH}{maximum number of hidden layers to test
 note that more layers will require more time to fit.}
 
@@ -21,12 +24,16 @@ for the neural network's training.}
 c(training, validation,test).}
 
 \item{predictors}{Optional. A set of custom predictors
-for the neural network. Default uses all columns in dat.}
+for the neural network. Default uses all columns in \code{dat}.}
 
-\item{fits}{statistic. May be "precision", "recall", or
-"F" for the harmonic mean of precision and recall.}
+\item{pca}{Logical. \code{TRUE} by default. Principal component analysis on predictors.}
+
+\item{thr}{Threshold for pca.}
 
 \item{\dots}{additional parameters, passed to neuralnet.}
+}
+\value{
+Returns trained artificial neural net.
 }
 \description{
 The function fits multiple neural networks to
@@ -51,5 +58,14 @@ measure of accuracy. F1 scores considers both the precision
 and the recall. A F1 score may be seen as a weighted average
 (harmonic mean) of the precision and recall.
 Precision, recall and F1 scores are at best 1 and at worst 0.
+}
+\examples{
+\dontrun{
+finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
+summary(finalNN)
+}
+}
+\author{
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

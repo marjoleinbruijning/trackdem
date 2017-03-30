@@ -2,44 +2,81 @@
 % Please edit documentation in R/resultsFunctions.R
 \name{runBatch}
 \alias{runBatch}
-\title{Batch analysis
-\code{runBatch} is a function to analyze all image sequences in a specified
-directory.}
+\title{Batch analysis}
 \usage{
 runBatch(path, direcnames = NULL, nImages = 1:30, pixelRange = NULL,
   threshold = -0.1, qthreshold = NULL, select = "dark", nn = NULL,
-  incThres = 10, date = TRUE, plotOutput = FALSE,
-  plotType = "trajectories", L = 20, R = 2, name = "animation",
-  width = 50, weight = c(1, 1, 1), autoThres = FALSE, perFrame = FALSE,
-  methodBg = "mean", frames = NULL, saveAll = FALSE)
+  incThres = NULL, plotOutput = FALSE, plotType = "trajectories",
+  L = 20, R = 2, weight = c(1, 1, 1), autoThres = FALSE,
+  perFrame = FALSE, methodBg = "mean", frames = NULL, saveAll = FALSE)
 }
 \arguments{
-\item{path}{A character vector of path name.}
+\item{path}{A character vector of path name that contains all directories with
+image sequences.}
 
-\item{direcnames}{Default is NULL. If not all image sequences should be
-analyzed, specificy which files to use.}
+\item{direcnames}{If not all image sequences should be
+analyzed, specificy which files to use as a character string.}
+
+\item{nImages}{See \code{\link{loadImages}}}
+
+\item{pixelRange}{See \code{\link{identifyParticles}}}
+
+\item{threshold}{See \code{\link{identifyParticles}}}
+
+\item{qthreshold}{See \code{\link{identifyParticles}}}
+
+\item{select}{See \code{\link{identifyParticles}}}
 
 \item{nn}{Name of artifical neural net if apply it to images. Default
-is NULL, resulting in no neural net being applied.}
+is \code{NULL}, resulting in no neural net being applied.}
 
-\item{plotOutput}{Plot results?}
+\item{incThres}{Minimum number of frames that a particle must be
+present. By default, automated estimate is used.}
 
-\item{plotType}{Default is 'trajectories'.}
+\item{plotOutput}{Default is \code{FALSE}. Set \code{TRUE} to plot results.}
+
+\item{plotType}{Default is 'trajectories'. Other options are 'sizes' and 'animation'.}
+
+\item{L}{See \code{\link{trackParticles}}}
+
+\item{R}{See \code{\link{trackParticles}}}
+
+\item{weight}{See \code{\link{trackParticles}}}
+
+\item{autoThres}{See \code{\link{identifyParticles}}}
+
+\item{perFrame}{See \code{\link{identifyParticles}}}
+
+\item{methodBg}{See \code{\link{createBackground}}}
+
+\item{frames}{See \code{\link{identifyParticles}}}
+
+\item{saveAll}{Logical. Set \code{TRUE} to save for each image sequence the full object obtained from
+\code{\link{loadImages}}. Default is FALSE.}
 }
 \value{
 Dataframe with estimated population size for each image sequence.
 }
 \description{
-Batch analysis
 \code{runBatch} is a function to analyze all image sequences in a specified
-directory.
+directory. Use this function when settings have been optimized.
+}
+\examples{
+\dontrun{
+results <- runBatch(path='images',
+                    nImages=1:30,threshold=0.2,select='both',
+                    pixelRange=c(1,100),L=50,R=3,
+                    incThres=1,plotOutput=TRUE,plotType='trajectories',
+                    weight=c(1,0,1))
+results
+}
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 \seealso{
 \code{\link{loadImages}}, \code{\link{createBackground}},
-\code{\link{subtractBackground}},\code{\link{identifyParticles}},
+\code{\link{subtractBackground}}, \code{\link{identifyParticles}},
 \code{\link{trackParticles}}.
 }
 

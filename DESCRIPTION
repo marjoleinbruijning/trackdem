@@ -1,34 +1,25 @@
 Package: trackdem
 Type: Package
-Title: Particle tracking and demography
+Title: Particle Tracking and Demography
 Version: 0.1
-Date: 2016-07-18
-Author: Marjolein Bruijning, Marco D. Visser
+Date: 2017-03-24
+Author: Marjolein Bruijning, Marco D. Visser, Caspar A. Hallmann, Eelke Jongejans
 Maintainer: Marjolein Bruijning <m.bruijning@science.ru.nl>
-Description: Use video footage to follow moving
-    particles over multiple frames, and it suitable for 
-    laboratoy settings. This package contains
-    functions to create image sequences from videos (requiring
-    Python, Libav and ExitTool), background detection and 
-    subtraction, and particle tracking. Machine learning is 
-    implemented to filter noise. It provides particle counts 
-    and size structure.
+Description: Obtain population density and body size stucture, using video material or image sequences as input. It is meant to assist in evolutionary and ecological studies, which often rely on accurate estimates of population size, structure and/or individual behavior. This package contains functions to create image sequences from videos, background detection and subtraction, particle identification and tracking. An artificial neural network can be trained for noise filtering.
 License: GPL-2
 URL: https://github.com/marjoleinbruijning/trackdem
 BugReports: https://github.com/marjoleinbruijning/trackdem/issues
 Depends:
+Imports:
     png,
     SDMTools,
     neuralnet,
-    neuralnet,
     raster,
-    R.utils,
-    sp
-Imports:
-    compiler
+    Rcpp,
+    MASS
 LinkingTo: 
     Rcpp,
-    RcppArmadillo
+    RcppArmadillo,
 RoxygenNote: 5.0.1
 SystemRequirements:
     Python 2.7,

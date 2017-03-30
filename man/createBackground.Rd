@@ -7,28 +7,29 @@
 createBackground(colorimages, method = "mean")
 }
 \arguments{
-\item{colorimages}{Array containing all frames, obtained by}
+\item{colorimages}{Array of class 'TrDm' containing all images, obtained by 
+\code{\link{loadImages}}.}
 
-\item{method}{Use method='mean' to calculate the mean value for each pixel and color.
-Use 'method='mean2' to deflate dark values (note, this can only be 
-used for dark particles on a light background). Use method='filter' to 
-replace pixels in which movement has occurred with the mode of neighboring values.
-\code{\link{loadImages}}}
+\item{method}{Use \code{method='mean'} to calculate the mean value for each pixel and color.
+Use \code{method='mean2'} to deflate dark values (note, this can only be 
+used for dark particles on a light background). Use \code{method='filter'} to 
+replace pixels in which movement has occurred with the mode of neighboring values.}
 }
 \value{
-Array with still background.
+Array of class 'TrDm' and 'colorimage' containing detected background.
 }
 \description{
-\code{createBackground} is a function to create a still background,
-containing all motionless, by taking
-mean pixel values over all frames.
+\code{createBackground} is a function to detect a still background,
+containing all motionless particles. Three different methods to detect
+the background can be used.
 }
 \examples{
 \dontrun{
 stillBack <- createBackground (allFullImages)
+plot(stillBack)
 }
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

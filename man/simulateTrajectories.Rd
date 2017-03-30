@@ -6,29 +6,31 @@
 \usage{
 simulateTrajectories(nframes = 20, nIndividuals = 10, h = 0.05, rho = 0,
   domain = c("square", "circle"), correct.boundary = TRUE,
-  sizes = runif(nIndividuals) * 0.012 + 0.01, ...)
+  sizes = runif(nIndividuals) * 0.012 + 0.01)
 }
 \arguments{
-\item{nframes}{number of time frames(steps)}
+\item{nframes}{Number of time frames(steps).}
 
-\item{nIndividuals}{number of individual trajectories}
+\item{nIndividuals}{Number of individual trajectories.}
 
-\item{h}{displacement speed in pixels.}
+\item{h}{Displacement speed in pixels.}
 
-\item{rho}{correlation parameter for angle of displacement}
+\item{rho}{Correlation parameter for angle of displacement.}
 
-\item{domain}{one of "square" or "circle", imposing a [0-1,0-1] rectangle
+\item{domain}{One of \code{"square"} or \code{"circle"}, imposing a [0-1,0-1] rectangle
 domain, or a circlular domain of radius 1, respectively.
 correct boundary ensure individual trajectories do not cross the domain}
 
+\item{correct.boundary}{Logical. \code{TRUE} to make sure that individuals cannot leave the image.}
+
 \item{sizes}{Vector of sizes for each simulated particle of length
-nIndividuals}
+nIndividuals.}
 }
 \description{
 \code{simulateTracjectories} simulates movement trajectories within a 
-bounded space, movements are set with speed (h) and may be correlated
-in direction (rho). Function simulates movement of particles in a video 
-sequence of certain number of frames (nframes) in length.
+bounded space, movements are set with speed (\code{h}) and may be correlated
+in direction (\code{rho}). Function simulates movement of particles in a video 
+sequence of certain number of frames (\code{nframes}) in length.
 }
 \examples{
 \dontrun{

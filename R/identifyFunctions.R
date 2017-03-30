@@ -2,26 +2,20 @@
 ##'
 ##' \code{createImageSeq} is a function to create an image sequence (.png) using
 ##'  video files as input. All movies within a directory will  
-##' be exported into a new directory called 'ImageSequences' created in the path.
+##' be converted into an image sequence.
 ##' For each movie, a new directory is created containing the recorded date and 
 ##' name of the movie.
-##' @param moviepath Path to location of (stem) directory containing the directory
-##' in which the video files are located.
+##' @param moviepath Path to directory containing the video files.
 ##' @param imagepath Path to location of directory in which image sequences should
-##' be placed.
-##' @param path Path to location where temporary python file will be saved. Default 
-##' is working directory.
-##' @param x Number of pixels in horizontal direction (ncol); default is 1915.
-##' @param y Number of pixels in vertical direction (nrow); default is 1080.
+##' be saved.
+##' @param x Number of pixels in horizontal direction; default is 1915.
+##' @param y Number of pixels in vertical direction; default is 1080.
 ##' @param fps Frames per second, default is 15.
 ##' @param nsec Duration of movie that is exported, default is 2 seconds.
-##' The middle nsec seconds of the movie are used.
-##' @param ext The extension of the video. Default is 'MTS'.
-##' @examples
-##' \dontrun{
-##' createImageSeq(path='~/Data/',ext='mp4')
-##'	}
-##' @author Marjolein Bruijning & Marco D. Visser
+##' @param ext The extension of the video. Default is \code{'MTS'}.
+##' @param path Path to location where temporary python file will be saved. Default 
+##' is working directory.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 createImageSeq <- function (moviepath,imagepath,x=1915,
                             y=1080,fps=15,nsec=2,ext='MTS',path=getwd()) {
@@ -51,8 +45,6 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
         
         paste("movieDir = os.path.abspath(movieDirname)"),
         paste("sequenceParentDir = os.path.abspath(sequenceParentDirname)"),
-        #paste("movieDir = os.path.abspath(os.path.join(startDir, movieDirname))"),
-        #paste("sequenceParentDir = os.path.abspath(os.path.join(startDir, sequenceParentDirname))"),
         paste("movieNames = []"),
         paste("for filename in os.listdir(movieDir):"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
@@ -102,18 +94,22 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
 ##' \code{loadImages} is a function to load png images as a three dimensional array.
 ##' The objects created through the function can be used for image analysis.
 ##' @param direcPictures The path of the folder where the images can be found.
-##' @param filenames Default is NULL. If not all files should be loaded, here specify
-##' which files to use.
-##' @param nImages The total number of images to load; default is 1:30.
-##' @param xranges Default all pixels are loaded; specify to subset the number of columns.
-##' @param yranges Default all pixels are loaded; specify to subset the number of rows.
-##' @author Marjolein Bruijning & Marco D. Visser
+##' @param filenames Default is \code{NULL}. If not all files should be loaded, here specify
+##' which files to use, as a character string.
+##' @param nImages Numeric vector specifying which images in the directory 
+##' should be loaded; default is \code{1:30}.
+##' @param xranges By default full image is loaded; specify to subset the number of columns.
+##' @param yranges By default full image is loaded; specify to subset the number of rows.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' images <- loadImages(direcPictures='~/images1/',filenames=NULL,
-##'	nImages=1:30,yranges=1:1080,xranges=1:1915)
+##' images <- loadImages(direcPictures='~/images1/',
+##'	                     nImages=1:30,yranges=1:1080,xranges=1:1915)
+##' plot(images)
+##' images
 ##'	}
-##' @return Array with all images.
+##' @return Array of class 'TrDm' and 'colorimages' containing all loaded images.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 
 loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
@@ -130,7 +126,7 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
     else {filenames <- filenames[nImages]}	
     # Load all images
     allFullImages <- sapply(1:length(nImages),
-                            function(x) readPNG(file.path(direcPictures,allFiles[x])),
+                            function(x) png::readPNG(file.path(direcPictures,allFiles[x])),
                             simplify='array')
     # Subset
     if (!is.null(xranges) | !is.null(yranges)) {
@@ -146,21 +142,22 @@ loadImages <- function (direcPictures,filenames=NULL,nImages=1:30,
 
 ##' Background detection
 ##'
-##' \code{createBackground} is a function to create a still background,
-##' containing all motionless, by taking
-##' mean pixel values over all frames.
-##' @param colorimages Array containing all frames, obtained by 
-##' @param method Use method='mean' to calculate the mean value for each pixel and color.
-##' Use 'method='mean2' to deflate dark values (note, this can only be 
-##' used for dark particles on a light background). Use method='filter' to 
+##' \code{createBackground} is a function to detect a still background,
+##' containing all motionless particles. Three different methods to detect
+##' the background can be used.
+##' @param colorimages Array of class 'TrDm' containing all images, obtained by 
+##' \code{\link{loadImages}}.
+##' @param method Use \code{method='mean'} to calculate the mean value for each pixel and color.
+##' Use \code{method='mean2'} to deflate dark values (note, this can only be 
+##' used for dark particles on a light background). Use \code{method='filter'} to 
 ##' replace pixels in which movement has occurred with the mode of neighboring values.
-##' \code{\link{loadImages}}
-##' @author Marjolein Bruijning & Marco D. Visser
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##' stillBack <- createBackground (allFullImages)
+##' plot(stillBack)
 ##'	}
-##' @return Array with still background.
+##' @return Array of class 'TrDm' and 'colorimage' containing detected background.
 ##' @export
 
 createBackground <- function(colorimages,method='mean') {
@@ -214,13 +211,13 @@ createBackground <- function(colorimages,method='mean') {
          A <- array(0,c(dim(colorimages)[1:2],3))
 
          for (i in 1:3) {
-           r <- raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
+           r <- raster::raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
 
-           f1 <- focal(r,w=matrix(1,31,31),fun=function(x){modal(x,na.rm=T)},
+           f1 <- raster::focal(r,w=matrix(1,31,31),fun=function(x){raster::modal(x,na.rm=T)},
                        NAonly=TRUE)
            while((!all(is.finite(f1@data@values)))|any(is.na(f1@data@values))){
              f1@data@values[!is.finite(f1@data@values)] <- NA
-             f1 <- focal(f1,w=matrix(1,31,31),fun=function(x){modal(x,na.rm=T)},
+             f1 <- raster::focal(f1,w=matrix(1,31,31),fun=function(x){raster::modal(x,na.rm=T)},
                          NAonly=TRUE,pad=T)
            }
 
@@ -247,13 +244,14 @@ createBackground <- function(colorimages,method='mean') {
 ##' @param bg Array containing still background, as returned from
 ##' \code{\link{createBackground}}.
 ##' @param colorimages Array containing all frames, obtained by 
-##' \code{\link{loadImages}}. Default is NULL, in case the original images
-##' are used.
-##' @author Marjolein Bruijning & Marco D. Visser
+##' \code{\link{loadImages}}. Default is \code{NULL}, in this case the original images
+##' are used from the global environment.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##' allImages <- subtractBackground(stillBack) }
-##' @return Returns array with same size as images, subtracted from background.
+##' @return Returns array of class 'TrDm' and 'sbg' with same size as images, 
+##' subtracted from background.
 ##' @export
 
 subtractBackground <- function (bg,colorimages=NULL) {
@@ -280,34 +278,40 @@ subtractBackground <- function (bg,colorimages=NULL) {
 
 ##' Identify moving particles
 ##'
-##' \code{identifyParticles} is a function to identify particles.
-##' @param mSub Array containing images containing all moving particles,
-##' as obtained by \code{\link{subtractBackground}}
-##' @param threshold Thresholds for including particles. Supply a vector
+##' \code{identifyParticles} is a function to identify particles using the 
+##' subtracted images obtained from \code{\link{subtractBackground}}.
+##' @param sbg Array containing images containing all moving particles,
+##' as obtained by \code{\link{subtractBackground}}.
+##' @param threshold Thresholds for including particles. A numeric vector
 ##' containing three values; one for each color. Otherwise, supply one value 
-##' which is to be used for all three colors. For a chosen 
-##' threshold for each frame, use qthreshold.
-##' @param pixelRange Default is NULL. Vector with minimum and maximum particle size, used as a
+##' which is to be used for all three colors. For a chosen quantile
+##' for each frame, use qthreshold. Default is \code{threshold=-0.1}.
+##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and maximum particle size, used as a
 ##' first filter to identify particles.
-##' @param qthreshold Default is NULL. If NULL, treshold is used for filter. If
-##' not zero, a threshold based on qthreshold quantile is calculated for each
-##' frame.
-##' @param select Select dark particles ('dark'), light particles ('light'), or
-##' both ('both'), compared to background. Default is dark.
-##' @param autoThres TRUE to get an automated threshold for each color layer.
-##' Default is FALSE.
-##' @param perFrame If autoThres=TRUE, set at TRUE to calculate a threshold for 
-##' each frame seperately. Default is FALSE.
-##' @param frames Specify if automated threshold should not be calculated based 
+##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding based on
+##' quantile. Quantile is calculated for each
+##' frame seperately.
+##' @param select Select dark particles (\code{'dark'}), light particles (\code{'light'}), or
+##' both (\code{'both'}), compared to background. Default is \code{'dark'}.
+##' @param colorimages Array containing original color images. By default, the original
+##' color images are obtained from global environment.
+##' @param autoThres Logical. \code{TRUE} to get an automated threshold for each color layer.
+##' Default is \code{FALSE}.
+##' @param perFrame Logical. If \code{autoThres=TRUE}, set at \code{TRUE}
+##'  to calculate a threshold for 
+##' each frame seperately. Default is \code{FALSE}. Note that is can be computationally intensive 
+##' to calculate a threshold for each frame.
+##' @param frames Supply a numeric vector to specifify if automated threshold should not be calculated based 
 ##' on all frames.
-##' @author Marjolein Bruijning & Marco D. Visser
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
 ##'   trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
+##'  plot(trackObject)
+##'  summary(trackObject)
 ##'	}
-##' @return This function returns a list with two elements: (1) a dataframe with
-##' particle statistics with identified particles for each frame. (2) An array
-##' containing all binary images.
+##' @return Returns a dataframe of class 'TrDm' and 'particles', containing
+##' particle statistics with identified particles for each frame
 ##' @export
 
 identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
@@ -320,7 +324,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     }
     if(is.null(colorimages)) { colorimages <- get(attributes(sbg)$originalImages,
                                                   envir=.GlobalEnv) }
-
+    namesbg <- deparse(substitute(sbg)) ## save for return
     tmp <- attributes(sbg)
     sbg <- aperm(sbg, c(1,2,4,3))
     attributes(sbg)$background <- tmp$background
@@ -373,7 +377,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     sumRGB <- sumRGB > 0
 
     cat("\r \t Particle Identification: Labeling (2 out of 5) \t")
-    A <- sapply(n, function (x) ConnCompLabel(sumRGB[,,x]),simplify='array')
+    A <- sapply(n, function (x) SDMTools::ConnCompLabel(sumRGB[,,x]),simplify='array')
     
     cat("\r \t Particle Identification: Size filtering (3 out of 5) \t")
     if (!is.null(pixelRange)) {
@@ -387,45 +391,40 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     }
 
     cat("\r \t Particle Identification: Particle statistics (4 out of 5) \t")
-    particleStats <- lapply(n,function(x) PatchStat(A[,,x])[-1,])
+    
+    for (i in n) {
+       ps <- SDMTools::PatchStat(A[,,i])[-1,]
+       getMean <- extractMean(ps$patchID,
+                              colorimages=colorimages[,,,i],
+                              images=A[,,i])
+	   colnames(getMean) <- paste0('mu',c('R','G','B'))
+       coords <- getCoords(m=A[,,i],d=dim(A[,,i]))
+       rows <- tapply(coords[,1],A[,,i][A[,,i]>0],mean)
+       cols <- tapply(coords[,2],A[,,i][A[,,i]>0],mean)
+       ps <- cbind(ps,data.frame(x=cols,y=rows,frame=i),
+                   getMean)
+       if (i == 1) particleStats <- ps
+       if (i > 1) particleStats <- rbind(particleStats,ps)
+    }    
 
-    getMean <- lapply(1:length(particleStats),function(X)
-                  extractMean(particleStats[[X]]$patchID,
-                             colorimages=colorimages[,,,X],
-                             images=A[,,X]))
-	                         
-    sapply(1:length(getMean),function(X) 
-                   colnames(getMean[[X]]) <<- paste0('mu',c('R','G','B')))
-
-    cat("\r \t Particle Identification: Coordinates calculation (5 out of 5) \n ")
-    coords <- lapply(1:dim(A)[3],function(x) getCoords(m=A[,,x],d=dim(A[,,x])))
-
-    particleStats <- lapply(n,function(x) {
-        rows <- tapply(coords[[x]][,1],A[,,x][A[,,x]>0],mean)
-        cols <- tapply(coords[[x]][,2],A[,,x][A[,,x]>0],mean)
-        particleStats[[x]] <- cbind(particleStats[[x]],
-                                    data.frame(x=cols,y=rows,frame=x),
-                                    getMean[[x]])
-        return(particleStats[[x]])
-       } )
-
-    particleStats <- do.call(rbind,particleStats)
-
+    cat("\r \t Particle Identification: Finalizing (5 out of 5) \n ")
+    
     attr(particleStats,"images") <- A
     attr(particleStats, "class") <- c("TrDm","particles","data.frame")
     attr(particleStats,"threshold") <- threshold
     attr(particleStats,"background") <- attributes(sbg)$background
     attr(particleStats,"originalImages") <- attributes(sbg)$originalImages
     attr(particleStats,"originalDirec") <- attributes(sbg)$originalDirec
-    attr(particleStats,"subtractedImages") <- deparse(substitute(sbg))
+    attr(particleStats,"subtractedImages") <- namesbg
     attr(particleStats,"nn") <- FALSE
     
     return(particleStats)
 }
 
-##' Calculate automated threshold.
-##'
-##' @export
+## Calculate automated threshold.
+##
+## @param sbg Array of class 'TrDm' containing subtracted images.
+## @param perFrame If TRUE, threshold is calculated for each frame. Default is FALSE. 
 
 calcAutoThres <- function(sbg,perFrame=FALSE){
 

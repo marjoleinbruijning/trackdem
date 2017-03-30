@@ -2,43 +2,41 @@
 % Please edit documentation in R/trackFunctions.R
 \name{trackParticles}
 \alias{trackParticles}
-\title{Track particles
-\code{trackParticles} is a function link particles.}
+\title{Track particles}
 \usage{
-trackParticles(particles, L = 50, R = 2, sizeMeasure = "n.cell",
-  weight = c(1, 1, 1))
+trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1))
 }
 \arguments{
-\item{particles}{Object with class particles,
+\item{particles}{Object of class 'particles',
 obtained using \code{\link{identifyParticles}}.}
 
-\item{L}{Maximum cost for linking to particle. When the cost is larger, 
+\item{L}{Numeric. Maximum cost for linking to particle to another particle. When the cost is larger, 
 particle will be not be linked (resulting in the begin or end of a segment).
- Default set at 50.}
+ Default set at \code{50}.}
 
-\item{R}{Link to how many subsequent frames? Default set
-at 2.}
-
-\item{sizeMeasure}{Measure for size (area, length, etc.).
-Currently not implemented.}
+\item{R}{Integer. Link to how many subsequent frames? Default set
+at \code{2}.}
 
 \item{weight}{Vector containing weights to calculate costs. First number 
 gives the weight for differences in x and y coordinates; second number 
 gives the weight for particle size differences; third number gives the 
-difference bewteen the predicted location and the observed location. This 
+difference bewteen the predicted location and the observed location. The latter 
 is calculated using the location of the identified particle in the previous frame.}
 }
 \value{
-A list of class 'records'. Use 'summary' and 'plot'.
+A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 }
 \description{
-Track particles
-\code{trackParticles} is a function link particles.
+\code{trackParticles} is a function reconstruct trajectories by linking particles.
+}
+\examples{
+\dontrun{
+   records <- trackParticles(particles)
+   summary(records)
+   plot(records,type='trajectories')
+}
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
-}
-\seealso{
-\code{\link{doTrack}}, \code{\link{linkTrajec}},
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

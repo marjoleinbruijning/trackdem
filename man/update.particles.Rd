@@ -2,19 +2,34 @@
 % Please edit documentation in R/nnFunctions.R
 \name{update.particles}
 \alias{update.particles}
-\title{Apply trained artificial neural network to particleStat object.}
+\title{Update identified particles.}
 \usage{
-update.particles(particles, neuralnet, pca = TRUE, ...)
+\method{update}{particles}(object, neuralnet, pca = TRUE, ...)
 }
 \arguments{
-\item{nnTrackdemObject}{Object of class nnTrackdemObject.}
+\item{object}{Object of class 'nnTrackdemObject'.}
 
-\item{particleStatObject}{Object of class particleStatObject.}
+\item{neuralnet}{Trained neural net obtained from \code{\link{testNN}}}
+
+\item{pca}{Logical. By default \code{TRUE}, indicating that a principal component analysis is 
+performed on the predictors.}
+
+\item{\dots}{Other arguments passed to \code{\link{extractInfo}}}
 }
 \value{
-A list of class particleStatObject.
+Data frame class 'particles', containing updated 
+particle statistics (excluding 
+particles that have been filtered out by the neural net).
 }
 \description{
 Apply trained artificial neural network to particleStat object.
+}
+\examples{
+\dontrun{
+update(particles=partIden,finalNN)
+}
+}
+\author{
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

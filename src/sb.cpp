@@ -3,7 +3,6 @@
 using namespace Rcpp;
 using namespace arma;
 
-//' @export
 // [[Rcpp::export]] 
 NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d,
                  IntegerVector e) {

@@ -10,17 +10,18 @@ loadImages(direcPictures, filenames = NULL, nImages = 1:30,
 \arguments{
 \item{direcPictures}{The path of the folder where the images can be found.}
 
-\item{filenames}{Default is NULL. If not all files should be loaded, here specify
-which files to use.}
+\item{filenames}{Default is \code{NULL}. If not all files should be loaded, here specify
+which files to use, as a character string.}
 
-\item{nImages}{The total number of images to load; default is 1:30.}
+\item{nImages}{Numeric vector specifying which images in the directory 
+should be loaded; default is \code{1:30}.}
 
-\item{xranges}{Default all pixels are loaded; specify to subset the number of columns.}
+\item{xranges}{By default full image is loaded; specify to subset the number of columns.}
 
-\item{yranges}{Default all pixels are loaded; specify to subset the number of rows.}
+\item{yranges}{By default full image is loaded; specify to subset the number of rows.}
 }
 \value{
-Array with all images.
+Array of class 'TrDm' and 'colorimages' containing all loaded images.
 }
 \description{
 \code{loadImages} is a function to load png images as a three dimensional array.
@@ -28,11 +29,15 @@ The objects created through the function can be used for image analysis.
 }
 \examples{
 \dontrun{
-images <- loadImages(direcPictures='~/images1/',filenames=NULL,
-nImages=1:30,yranges=1:1080,xranges=1:1915)
+images <- loadImages(direcPictures='~/images1/',
+                     nImages=1:30,yranges=1:1080,xranges=1:1915)
+plot(images)
+images
 }
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

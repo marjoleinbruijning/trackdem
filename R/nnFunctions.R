@@ -3,16 +3,17 @@
 ##' \code{manuallySelect} is a function to to create training data that
 ##' by manually selecting false and true positives. The created training
 ##' data can be implemented in a neural net.
-##' @param particleStats A list with particle statistics for each frame,
+##' @param particles A data frame of class 'TrDm' with particle statistics for each frame,
 ##' obtained by \code{\link{identifyParticles}}.
 ##' @param colorimages An array with the original full color images, in order to plot
-##' on the original images.
+##' on the original images. If \code{NULL}, the original color images are used, obtained
+##'  from the global environment.
 ##' @param frame A number defining the frame that should be used. Default
-##' is NULL; in that case the frame with the maximum number of identified particles is used.
-##' @author Marjolein Bruijning & Marco D. Visser
+##' is \code{NULL}; in that case the frame with the maximum number of identified particles is used.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' manuallySelect(particleStats=trackObject$particleStats,frame=1)
+##' manuallySelect(particles=partIden,frame=1)
 ##'	}
 ##' @return List containing three elements: true positives, false positives,
 ##' and the evaluated frame.
@@ -29,7 +30,7 @@ manuallySelect <- function (particles,colorimages=NULL,
                        envir=.GlobalEnv)
   }
   if(is.null(frame)) {
-    n <- order(tapply(partIden$patchID,partIden$frame,length),
+    n <- order(tapply(particles$patchID,particles$frame,length),
                decreasing=TRUE)[1]
     
   } else { n <- frame }
@@ -122,7 +123,7 @@ manuallySelect <- function (particles,colorimages=NULL,
   return(res)
 }
 
-##' Make buttons
+## Make buttons
 makeButtons <- function () {
   par(mfg=c(1,1))
   plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
@@ -156,22 +157,35 @@ makeButtons <- function () {
 
 
 ##' Extract info
+##' 
 ##' \code{extractInfo} creates a dataframe as preparation for 
-##' applying a neural net (\code{\link{runNN}}). For all particles over all
+##' applying a neural net (\code{\link{testNN}}). For all particles over all
 ##' frames, it collects information on color intensities and neighbor pixels.
-##' @param particleStatObject A list with particle statistics for each frame,
+##' @param particles A data frame with particle statistics for each frame,
 ##' as obtained by \code{\link{identifyParticles}}.
-##' @param images An array with the original full color images, in order to plot
-##' on the original images, obtained by \code{\link{loadImages}}.
-##' @param mSub Images subtracted from background, as obtained by 
-##' \code{\link{subtractBackground}}.
-##' @param frame A number defining the frame that should be used. Default
-##' is NULL, in that case all frames are used.
+##' @param info Character string specififying which info should be extracted.
+##' @param colorimages An array with the original full color images, in order to plot
+##' on the original images, obtained by \code{\link{loadImages}}. By default 
+##' the original color images are used.
+##' @param sbg Images subtracted from background, as obtained by 
+##' \code{\link{subtractBackground}}. By default, the original subtracted images 
+##' are used.
+##' @param frames A number defining the frame that should be used. Default
+##' is \code{NULL}, in that case all frames are used.
 ##' @param training Logical. Should identified false and true positives 
-##' be combined to this dataframe? Default is FALSE.
-##' @param mIdObject If training=TRUE, provide a list with true and false positives, 
+##' be combined to this dataframe? Default is \code{FALSE}.
+##' @param mIdObject If \code{training=TRUE}, provide a list with true and false positives, 
 ##' returned from \code{\link{manuallySelect}}, for each frame.
-##' @author Marjolein Bruijning & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' extractInfo(particles=partIden,training=TRUE,
+##'             frames=1,
+##'             mIdObject=mId)
+##'	}
+##' @return Data frame of class 'TrDm' and 'particles' containing original 
+##' particle statistics, combined with
+##' additional extracted information.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                          colorimages=NULL,sbg=NULL,
@@ -184,7 +198,9 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
     if (is.null(frames)) frames <- 1:length(particles)
     
     stat <- particles[particles$frame %in% frames,] # Subset
-    
+
+    sbg <- aperm(sbg, c(1,2,4,3))
+
     
     cat("\n")
   if ('intensity' %in% info) {
@@ -227,7 +243,6 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
             dat <- stat[inc,]
             if(exists('getI')) dat <- cbind(dat,getI[[X]])
             if(exists('getNeighbor')) dat <- cbind(dat,getNeighbor[[X]])
-            if(exists('getMean')) dat <- cbind(dat,getMean[[X]])
             if(exists('getVar')) dat <- cbind(dat,getVar[[X]])
             return(data.frame(dat))
           })
@@ -253,27 +268,26 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
   return(dat)
 }
 
-##' Create neural net
-##' \code{runNN} traines an artificial neural network.
-##' @param predictors Vector containing predictors of interest, present 
-##' as column names in TrainingData.
-##' @param trainingData Dataframe containing the variables of the neural
-##' network.
-##' @param hidden A vector of integers specifying the number of hidden neurons
-##' in each layer (see also \code{\link{neuralnet}}). Default is 3.
-##' @param reps The number of repetitions. Default is 5.
-##' @param stat The statistic to be optimized to calculate the threshold.
-##' Either 'accuray', 'recall', or 'F' (F-measure). Default is 'F'.
-##' @return An object of class 'nnTrackdem', containing the trained neural
-##' net. 'Summary' can be used to obtain a summary of the results. 'Plot' 
-##' can be used to plot the results.
-##' @seealso \code{\link{neuralnet}}, \code{\link{compute}}
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @export
+## Create neural net
+## \code{runNN} traines an artificial neural network.
+## @param predictors Vector containing predictors of interest, present 
+## as column names in TrainingData.
+## @param trainingData Dataframe containing the variables of the neural
+## network.
+## @param hidden A vector of integers specifying the number of hidden neurons
+## in each layer (see also \code{\link{neuralnet}}). Default is 3.
+## @param reps The number of repetitions. Default is 5.
+## @param stat The statistic to be optimized to calculate the threshold.
+## Either 'accuray', 'recall', or 'F' (F-measure). Default is 'F'.
+## @return An object of class 'nnTrackdem', containing the trained neural
+## net. 'Summary' can be used to obtain a summary of the results. 'Plot' 
+## can be used to plot the results.
+## @seealso \code{\link{neuralnet}}, \code{\link{compute}}
+## @author Marjolein Bruijning & Marco D. Visser
 runNN <- function(predictors,trainingData,validationData,hidden=3,reps=5,stat='F',...) {
-  n <- neuralnet(as.formula(paste("trY ~ ", paste(predictors, collapse= "+"))),
+  n <- neuralnet::neuralnet(as.formula(paste("trY ~ ", paste(predictors, collapse= "+"))),
                  data=trainingData,hidden=hidden,rep=reps,...)
-  nCom <- compute(n,validationData[,predictors])
+  nCom <- neuralnet::compute(n,validationData[,predictors])
   thr <- optThr(trY=validationData$trY,stat=stat,
                 nnP=plogis(nCom$net.result))$maximum # find threshold
   res <- list(nn=n,thr=thr,predicted=nCom,trainingData=validationData,
@@ -282,34 +296,31 @@ runNN <- function(predictors,trainingData,validationData,hidden=3,reps=5,stat='F
   return(res)
 }
 
-##' Optimize threshold based on precision, recall or F-measure.
-##'
-##' Precision is the number of correct positive results divided by the
-##' number of all positive predictions. Recall is the number of correct
-##' positive results divided by the number of positive results that
-##' could have been returned if the algoritm was perfect.
-##' In binary classification, a F1 score (F-score/ F-measure) is statistical
-##' measure of accuracy. F1 scores considers both the precision
-##' and the recall. A F1 score may be seen as a weighted average
-##' (harmonic mean) of the precision and recall.
-##' Precision and F1 scores are at best 1 and at worst 0.
-##' 
-##' @param stat The statistic to be optimized to calculate the threshold.
-##' Either 'accuray', 'recall', or 'F' (F-measure).
-##' nnP Vector containing probabilities.
-##' trY Vector containing trained response values (either 0 or 1).
-##' @return Returns a threshold probability.
-##' @seealso \code{\link{neuralnet}}, \code{\link{compute}}
-##' @export
-optThr <- function(trY=trainingData$trY,nnP=plogis(nCom$net.result),
+## Optimize threshold based on precision, recall or F-measure.
+##
+## Precision is the number of correct positive results divided by the
+## number of all positive predictions. Recall is the number of correct
+## positive results divided by the number of positive results that
+## could have been returned if the algoritm was perfect.
+## In binary classification, a F1 score (F-score/ F-measure) is statistical
+## measure of accuracy. F1 scores considers both the precision
+## and the recall. A F1 score may be seen as a weighted average
+## (harmonic mean) of the precision and recall.
+## Precision and F1 scores are at best 1 and at worst 0.
+## 
+## @param stat The statistic to be optimized to calculate the threshold.
+## Either 'accuray', 'recall', or 'F' (F-measure).
+## nnP Vector containing probabilities.
+## trY Vector containing trained response values (either 0 or 1).
+## @return Returns a threshold probability.
+## @seealso \code{\link{neuralnet}}, \code{\link{compute}}
+optThr <- function(trY,nnP,
                    stat="accuracy"){
 
   ln <- function(param,D=trY,P=nnP){
     temp <- data.frame(Y=factor(D,levels=c(0,1)),
                        P=factor(as.numeric(P>param),levels=c(0,1)))
     conf <- table(temp)
-
-    #conf <- table(data.frame(Y=as.logical(D),P=P>param))
     
     if(length(attr(conf,"dimnames")$P)<2){
       num <- 1+as.logical(attr(conf,"dimnames")$P)
@@ -325,9 +336,7 @@ optThr <- function(trY=trainingData$trY,nnP=plogis(nCom$net.result),
   optimize(ln,c(0,1),maximum = flipper)
 }
 
-##' Calculate different statistics for trained neural network.
-##' @param confusion Confusion matrix
-##' @export
+## Calculate different statistics for trained neural network.
 confuStats <- function(confusion){
   accuracy <- sum(diag(confusion))/sum(confusion) # correct predictions
   recall <-  diag(confusion)[2]/sum(confusion[,2])# false positive rate
@@ -352,10 +361,7 @@ confuStats <- function(confusion){
         TN=TN, FN=FN, precision=precision, F=F)
 }
 
-##' Calculate a confusion matrix for trained neural network.
-##' @param Y true values
-##' @param P predictions from NN
-##' @param stat the statistic of interest
+## Calculate a confusion matrix for trained neural network.
 getConfMat <- function(Y,P,thr,stat="F"){
 
     temp <- data.frame(Y=factor(Y,levels=c(0,1)),
@@ -377,50 +383,59 @@ getConfMat <- function(Y,P,thr,stat="F"){
 
 }
 
+##' Update identified particles.
+##' 
 ##' Apply trained artificial neural network to particleStat object.
-##' @param nnTrackdemObject Object of class nnTrackdemObject.
-##' @param particleStatObject Object of class particleStatObject.
-##' @return A list of class particleStatObject.
+##' @param object Object of class 'nnTrackdemObject'.
+##' @param neuralnet Trained neural net obtained from \code{\link{testNN}}
+##' @param pca Logical. By default \code{TRUE}, indicating that a principal component analysis is 
+##' performed on the predictors.
+##' @param \dots Other arguments passed to \code{\link{extractInfo}}
+##' @examples
+##' \dontrun{
+##' update(particles=partIden,finalNN)
+##'	}
+##' @return Data frame class 'particles', containing updated 
+##' particle statistics (excluding 
+##' particles that have been filtered out by the neural net).
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-update.particles <- function(particles,neuralnet,pca=TRUE,...) {
+update.particles <- function(object,neuralnet,pca=TRUE,...) {
     if(!is.TrDm(neuralnet)){
         stop("Input does not appear to be of the class \"TrDm\"")
     }
-    if(!is.TrDm(particles)){
+    if(!is.TrDm(object)){
         stop("Input does not appear to be of the class \"TrDm\"")
     }
     
-    particles <- extractInfo(particles,training=FALSE,...)
+    object <- extractInfo(object,training=FALSE,...)
     
     
     if (pca == TRUE) {
-	   p <- predict(attributes(neuralnet)$pca,particles)
+	   p <- predict(attributes(neuralnet)$pca,object)
        
-    } else p <- particles
+    } else p <- object
     
   pred <- neuralnet$bestNN$predictors
-  newParticleStats <- plogis(compute(neuralnet$bestNN$nn,
+  newParticleStats <- plogis(neuralnet::compute(neuralnet$bestNN$nn,
                                              p[,pred])$net.result[,1])
 
   tmp <- newParticleStats > neuralnet$bestNN$thr
   dat <- cbind(data.frame(include=ifelse(tmp,1,0),
-                    prob=newParticleStats),particles)
+                    prob=newParticleStats),object)
                           
   dat <- dat[dat$include == 1,]
   attr(dat, "class") <- c("TrDm","particles","data.frame")
-  attr(dat,"background") <- attributes(particles)$background
-  attr(dat,"originalImages") <- attributes(particles)$originalImages
-  attr(dat,"originalDirec") <- attributes(particles)$originalDirec
-  attr(dat,"subtractedImages") <- attributes(particles)$subtractedImages
+  attr(dat,"background") <- attributes(object)$background
+  attr(dat,"originalImages") <- attributes(object)$originalImages
+  attr(dat,"originalDirec") <- attributes(object)$originalDirec
+  attr(dat,"subtractedImages") <- attributes(object)$subtractedImages
   attr(dat,"neuralnet") <- deparse(substitute(neuralnet))
   attr(dat,"nn") <- TRUE
   return(dat)
 }
 
-##' Find values for R, G and B layer for specified coordinates.
-##' @param x Vector containing x coordinates.
-##' @param y Vector containing y coordinates.
-##' @param images Three dimensional array.
+## Find values for R, G and B layer for specified coordinates.
 extractRGB <- function(x,y,images){
   coords <- cbind(x,y)
   RGBmat <- t(apply(coords,1,function(X) images[round(X[2]),round(X[1]),]))
@@ -429,11 +444,7 @@ extractRGB <- function(x,y,images){
 }
 
 
-##' Find mean and sd particle values
-##' @param ID Particle ID.
-##' @param colorimages Original color images.
-##' @param images Array containing identified particles with ID.
-##' @export
+## Find mean and sd particle values
 extractMean <- function(ID,colorimages,images,fun='mean') {
    if (fun=='mean') {
      A <- muP(m=images,id=ID,
@@ -451,11 +462,11 @@ extractMean <- function(ID,colorimages,images,fun='mean') {
   return(A)
 }
 
-##' Get R, G and B values for specified coordinates, and its eight neighbor 
-##' pixels.
-##' @param x Vector containing x coordinates.
-##' @param y Vector containing y coordinates.
-##' @param Three dimensional array.
+## Get R, G and B values for specified coordinates, and its eight neighbor 
+## pixels.
+## @param x Vector containing x coordinates.
+## @param y Vector containing y coordinates.
+## @param Three dimensional array.
 extractNeighbors <- function(x,y,images){
   x <- round(x)
   y <- round(y)
@@ -471,15 +482,15 @@ extractNeighbors <- function(x,y,images){
          images[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
 
-##' Make a test, validate and training dataset
-##'
-##' datasets are randomly assigned to each
-##' category
-##' 
-##' @param dat a previously constructed dataset
-##' @param prop the proportion for each class
-##' c(training, validation,test).
-##'
+## Make a test, validate and training dataset
+##
+## datasets are randomly assigned to each
+## category
+## 
+## @param dat a previously constructed dataset
+## @param prop the proportion for each class
+## c(training, validation,test).
+##
 makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 
     ## force proportions
@@ -524,8 +535,8 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' Precision, recall and F1 scores are at best 1 and at worst 0.
 ##'
 ##' @param dat a previously constructed dataset
-##' @param fits statistic. May be "precision", "recall", or
-##' "F" for the harmonic mean of precision and recall. 
+##' @param stat Fit statistic. May be \code{"precision"}, \code{"recall"}, or
+##' \code{"F"} for the harmonic mean of precision and recall. 
 ##' @param maxH maximum number of hidden layers to test
 ##'  note that more layers will require more time to fit.
 ##' @param repetitions the number of repetitions
@@ -533,8 +544,17 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' @param prop the proportion or ratio for each class
 ##' c(training, validation,test).
 ##' @param predictors Optional. A set of custom predictors
-##' for the neural network. Default uses all columns in dat.
+##' for the neural network. Default uses all columns in \code{dat}.
+##' @param pca Logical. \code{TRUE} by default. Principal component analysis on predictors.
+##' @param thr Threshold for pca. 
 ##' @param \dots additional parameters, passed to neuralnet.
+##' @return Returns trained artificial neural net.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
+##' summary(finalNN)
+##'	}
 ##' @export
 testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
                    predictors=NULL,pca=TRUE,thr=0.95, ...) {
@@ -586,9 +606,9 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
     cat("\n\n")
     
     ## get predictions from each neural network
-    testNNs <- lapply(results, function(X) compute(X$nn,Te[,predictors]))
-    valiNNs <- lapply(results, function(X) compute(X$nn,Va[,predictors]))
-    trainNNs <- lapply(results, function(X) compute(X$nn,Tr[,predictors]))
+    testNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Te[,predictors]))
+    valiNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Va[,predictors]))
+    trainNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Tr[,predictors]))
     
     ## get optimized prediction/classification thresholds
     thrNNs <- lapply(results, function(X) X$thr)

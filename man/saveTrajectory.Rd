@@ -6,25 +6,30 @@
 \usage{
 saveTrajectory(traj, add.noise = FALSE, name = "trajectory", axes = FALSE,
   background, pars = list(duration = 10, density = 10), width = 480,
-  height = NULL, ...)
+  height = NULL)
 }
 \arguments{
-\item{traj}{simulated trajectories from \code{simulateTracjectories} 
-#param add.noise if TRUE, moving noise is added}
+\item{traj}{Simulated trajectories from \code{simulateTracjectories}.}
 
-\item{name}{stem of the filename}
+\item{add.noise}{Logical. If \code{TRUE}, moving noise is added.}
 
-\item{axes}{if TRUE, axes are included}
+\item{name}{Stem of the filename.}
 
-\item{background}{use if you have a predifined background image of the
+\item{axes}{Logical. If \code{TRUE}, axes are included}
+
+\item{background}{Use if you have a predefined background image of the
 format returned by \code{generateBackground}.}
 
-\item{pars}{parameters used to generate moving noise
+\item{pars}{Parameters used to generate moving noise
 these include the density (per image) of noise particles and their duration
-(in n frames)}
+(in n frames).}
+
+\item{width}{of created png image. By default 480.}
+
+\item{height}{of create png image. If \code{NULL}, \code{width} is used.}
 }
 \description{
-Function that saves simulated trajectories as png files
+Function that saves simulated trajectories as png files.
 }
 \author{
 Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser

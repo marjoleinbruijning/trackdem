@@ -8,22 +8,20 @@ createImageSeq(moviepath, imagepath, x = 1915, y = 1080, fps = 15,
   nsec = 2, ext = "MTS", path = getwd())
 }
 \arguments{
-\item{moviepath}{Path to location of (stem) directory containing the directory
-in which the video files are located.}
+\item{moviepath}{Path to directory containing the video files.}
 
 \item{imagepath}{Path to location of directory in which image sequences should
-be placed.}
+be saved.}
 
-\item{x}{Number of pixels in horizontal direction (ncol); default is 1915.}
+\item{x}{Number of pixels in horizontal direction; default is 1915.}
 
-\item{y}{Number of pixels in vertical direction (nrow); default is 1080.}
+\item{y}{Number of pixels in vertical direction; default is 1080.}
 
 \item{fps}{Frames per second, default is 15.}
 
-\item{nsec}{Duration of movie that is exported, default is 2 seconds.
-The middle nsec seconds of the movie are used.}
+\item{nsec}{Duration of movie that is exported, default is 2 seconds.}
 
-\item{ext}{The extension of the video. Default is 'MTS'.}
+\item{ext}{The extension of the video. Default is \code{'MTS'}.}
 
 \item{path}{Path to location where temporary python file will be saved. Default 
 is working directory.}
@@ -31,16 +29,11 @@ is working directory.}
 \description{
 \code{createImageSeq} is a function to create an image sequence (.png) using
  video files as input. All movies within a directory will  
-be exported into a new directory called 'ImageSequences' created in the path.
+be converted into an image sequence.
 For each movie, a new directory is created containing the recorded date and 
 name of the movie.
 }
-\examples{
-\dontrun{
-createImageSeq(path='~/Data/',ext='mp4')
-}
-}
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

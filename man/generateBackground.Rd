@@ -2,29 +2,32 @@
 % Please edit documentation in R/simulationFunctions.R
 \name{generateBackground}
 \alias{generateBackground}
-\title{generate a background}
+\title{Generate a background}
 \usage{
 generateBackground(background = NULL, spots.density = 10, clustering = 0,
   blur = TRUE, blur.coef = 0.025, domain = c("square", "circle"),
-  plot = FALSE, sizes = runif(spots.density, 0.1, 1.5))
+  plot = FALSE, sizes = NULL)
 }
 \arguments{
-\item{background}{prevously loaded or generated background}
+\item{background}{previously loaded or generated background.}
 
-\item{spots.density}{density of non-moving spots}
+\item{spots.density}{density of non-moving spots.}
 
-\item{clustering}{spot clustering parameter}
+\item{clustering}{spot clustering parameter.}
 
-\item{blur}{do the spots look blurry? (TRUE or FALSE)}
+\item{blur}{do the spots look blurry? (\code{TRUE} or \code{FALSE}).}
 
-\item{blur.coef}{spot blurring coefficient}
+\item{blur.coef}{spot blurring coefficient.}
 
-\item{domain}{want a specific domain? can be "square" of "circle".}
+\item{domain}{want a specific domain? can be \code{"square"} of \code{"circle"}.}
 
-\item{plot}{plot the background?  (TRUE or FALSE)}
+\item{plot}{Plot the background?  (\code{TRUE} or \code{FALSE}).}
+
+\item{sizes}{Size of noise particles.}
 }
 \description{
-generates background, or otherwise plots an already generated background
+Simulates a background which can contain noise, after generating the trajectories
+using \code{\link{simulateTrajectories}}.
 }
 \author{
 Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser

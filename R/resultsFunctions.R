@@ -1,26 +1,52 @@
 ##' Batch analysis
+##' 
 ##' \code{runBatch} is a function to analyze all image sequences in a specified
-##' directory.
-##' @param path A character vector of path name.
-##' @param direcnames Default is NULL. If not all image sequences should be
-##' analyzed, specificy which files to use.
+##' directory. Use this function when settings have been optimized.
+##' @param path A character vector of path name that contains all directories with
+##' image sequences.
+##' @param direcnames If not all image sequences should be
+##' analyzed, specificy which files to use as a character string.
+##' @param nImages See \code{\link{loadImages}}
+##' @param pixelRange See \code{\link{identifyParticles}}
+##' @param threshold See \code{\link{identifyParticles}}
+##' @param qthreshold See \code{\link{identifyParticles}}
+##' @param select See \code{\link{identifyParticles}}
+##' @param autoThres See \code{\link{identifyParticles}}
+##' @param perFrame See \code{\link{identifyParticles}}
+##' @param frames See \code{\link{identifyParticles}}
 ##' @param nn Name of artifical neural net if apply it to images. Default
-##' is NULL, resulting in no neural net being applied.
-##' @param plotOutput Plot results?
-##' @param plotType Default is 'trajectories'.
+##' is \code{NULL}, resulting in no neural net being applied.
+##' @param L See \code{\link{trackParticles}}
+##' @param R See \code{\link{trackParticles}}
+##' @param plotOutput Default is \code{FALSE}. Set \code{TRUE} to plot results.
+##' @param plotType Default is 'trajectories'. Other options are 'sizes' and 'animation'.
+##' @param weight See \code{\link{trackParticles}}
+##' @param methodBg See \code{\link{createBackground}}
+##' @param saveAll Logical. Set \code{TRUE} to save for each image sequence the full object obtained from
+##' \code{\link{loadImages}}. Default is FALSE.
+##' @param incThres Minimum number of frames that a particle must be
+##' present. By default, automated estimate is used.
 ##' @seealso \code{\link{loadImages}}, \code{\link{createBackground}},
-##' \code{\link{subtractBackground}},\code{\link{identifyParticles}},
+##' \code{\link{subtractBackground}}, \code{\link{identifyParticles}},
 ##' \code{\link{trackParticles}}.
-##' @author Marjolein Bruijning & Marco D. Visser
 ##' @return Dataframe with estimated population size for each image sequence.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' results <- runBatch(path='images',
+##'                     nImages=1:30,threshold=0.2,select='both',
+##'                     pixelRange=c(1,100),L=50,R=3,
+##'                     incThres=1,plotOutput=TRUE,plotType='trajectories',
+##'                     weight=c(1,0,1))
+##' results
+##'	}
 ##' @export
 ##
-
 runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                      threshold=-0.1,qthreshold=NULL,select='dark',
-                     nn=NULL,incThres=10,date=TRUE,plotOutput=FALSE,
-                     plotType='trajectories',L=20,R=2,name='animation',
-                     width=50,weight=c(1,1,1),
+                     nn=NULL,incThres=NULL,plotOutput=FALSE,
+                     plotType='trajectories',L=20,R=2,
+                     weight=c(1,1,1),
                      autoThres=FALSE,perFrame=FALSE,methodBg='mean',
                      frames=NULL,saveAll=FALSE) {
   if (is.null(direcnames)) {
@@ -34,7 +60,6 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
     dat$Directory <- list.dirs(path,recursive=FALSE,full.names=FALSE)
   } else {dat$Directory <- direcnames}
   
-  if (date == TRUE) dat$date <- as.Date(substr(dat$Directory,1,8),format='%Y%m%d')
   results <- vector('list',length(allDirec))
   cat("\n")
   for (i in 1:length(allDirec)) {
@@ -64,7 +89,7 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
                                                  sum(!is.na(x))) > incThres)
       if (plotOutput == TRUE) {
         plot(records,type=plotType,colorimages=allFullImages,name=i,
-             path=path,incThres=incThres,width=width)
+             path=path,incThres=incThres)
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
@@ -78,31 +103,31 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
   return(dat)
 }
 
-#' is.TrDm
-#'
-#' Generic lower-level function to test whether an object
-#' is an TrackDem object.
-
-#' @param object Object to test
-#' @export
+# is.TrDm
+#
+# Generic lower-level function to test whether an object
+# is an TrackDem object.
 is.TrDm <- function(object) {
   inherits(object, "TrDm")
 }
 
 
-##' @export
-jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
-"#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
-
 ## Summary TrDm objects
+##' 
+##' \code{summary} methods for class 'TrDm'.
+##' @param object an object of class 'TrDm'.
+##' @param incThres Minimum length of tracked segments for particles to be included.
+##' By default an automated threshold is calculated. Only for 'tracked' objects.
+##' @param funSize Statistic to be calculated to obtain particle sizes. By default 
+##' \code{median} is used.
+##' @param \dots further arguments passed to or from other methods.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-summary.TrDm <- function(x,incThres=10,...) {
-  if (sum(class(x) == 'particles') > 0) {
-    n <- 1:length(x)
+summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
+  if (sum(class(object) == 'particles') > 0) {
+    n <- 1:length(object)
     names(n) <- 1:length(n)
-    #numbers <- sapply(n,function(X)
-    #                 length(x[[X]]$patchID))
-    numbers <- tapply(partIden$patchID,partIden$frame,length)                     
+    numbers <- tapply(object$patchID,object$frame,length)                     
     mu <- mean(numbers)
     sdd <- sd(numbers)
     cv <- sdd/mu
@@ -118,20 +143,29 @@ summary.TrDm <- function(x,incThres=10,...) {
         as.numeric(round(res$particles[3],2)))
     cat("\n\t Range of particles for each frame ( 1-", length(res$n),"):",
         range(res$n)[1],"-",range(res$n)[2],"\n")
-    cat(ifelse(attributes(x)$nn==TRUE,'\t With neural network.\n',
+    cat(ifelse(attributes(object)$nn==TRUE,'\t With neural network.\n',
         '\t Without neural network.\n'))
     invisible(res)
-  } else if (sum(class(x) == 'tracked') > 0) {
-    incLabels <- apply(x$trackRecord[,,1],1,function(x) 
+  } else if (sum(class(object) == 'tracked') > 0) {
+    
+    if (is.null(incThres)) {
+      dist <- apply(object$trackRecord[,,1],1,function(x) 
+                    sum(!is.na(x)))
+      mod <- kmeans(dist,2)
+      incLabels <- mod$cluster == which.max(mod$centers)
+      incThres <- max(dist[!incLabels])
+    } else {
+      incLabels <- apply(object$trackRecord[,,1],1,function(x) 
                                                sum(!is.na(x))) > incThres
-    tr <- x$trackRecord[incLabels,,,drop=FALSE]
-    sr <- x$sizeRecord[incLabels,,drop=FALSE]
-    cr <- x$colorRecord[incLabels,,,drop=FALSE]
+    }
+    tr <- object$trackRecord[incLabels,,,drop=FALSE]
+    sr <- object$sizeRecord[incLabels,,drop=FALSE]
+    cr <- object$colorRecord[incLabels,,,drop=FALSE]
     # Distance
     dr <- t(sapply(1:nrow(tr),function (x) 
                                sqrt(diff(tr[x,,1])^2 + diff(tr[x,,2])^2)))
 
-    perID <- apply(sr,1,mean,na.rm=T)
+    perID <- apply(sr,1,funSize,na.rm=T)
     sdd <- apply(sr,1,sd,na.rm=T)
     muD <- apply(dr,1,sum,na.rm=T) # total movement
     muC <- apply(cr,c(1,3),mean,na.rm=T) # mean colors
@@ -145,33 +179,41 @@ summary.TrDm <- function(x,incThres=10,...) {
                 sizerecord=sr,
                 distrecord=dr,
                 colorrecord=cr,
-                presence=incThres)
+                presence=incThres,
+                area=100 * sum(perID) / 
+                     (nrow(attributes(object)$images)*ncol(attributes(object)$images))
+                )
     class(res) <- 'summary.records'
     cat("\t Summary of Linked particles: \n\n")
-    cat(paste("\t Total of",res$N,"Identified particles:\n"))
     print(tab)
-    cat(paste("\t Minimum presence is set at",res$presence,"frames) \n",sep=' '))
+    cat(paste("\t Total of",res$N,"Identified particles.\n"))
+    cat(paste("\t Particles have a total area  of",round(res$area,4),"%\n"))
+    cat(paste("\t Minimum presence is set at",res$presence,"frames \n",sep=' '))
         
     invisible(list(res=res,tab=tab))
-  } else if (sum(class(x) == 'tfp') > 0) {
+  } else if (sum(class(object) == 'tfp') > 0) {
     cat("\t Summary of manually identified false and true positives.\n")
-    cat(paste("\t True positives:",length(x$wrong),'\n'))
-    cat(paste("\t False positives:",length(x$correct),'\n\n'))
-  } else if (sum(class(x) == 'neuralnet') > 0) {
+    cat(paste("\t True positives:",length(object$wrong),'\n'))
+    cat(paste("\t False positives:",length(object$correct),'\n\n'))
+  } else if (sum(class(object) == 'neuralnet') > 0) {
     cat("\t Summary of trained neural network: \n")
     cat("\t Confusion table: \n")
-    print.default(format(x$confusion,digits = 3)
+    print.default(format(object$confusion,digits = 3)
                  ,print.gap = 2L, 
                   quote = FALSE)
     
-    cat("\t F-score:",round(x$fscore,2),'\n')
-    cat("\t",x$bestNN$reps," repetitions.\n")
-    cat("\t",x$bestNN$hidden," hidden layer(s).\n")
+    cat("\t F-score:",round(object$fscore,2),'\n')
+    cat("\t",object$bestNN$reps," repetitions.\n")
+    cat("\t",object$bestNN$hidden," hidden layer(s).\n")
 
   } else {cat("\t No summary available for this object.\n\n")}
 } 
 
 ## Print TrDm objects
+##' \code{print} methods for class 'TrDm'.
+##' @param x Object of class 'TrDm'.
+##' @param\dots Further arguments passed to or from other methods.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 print.TrDm <- function(x,...) {
   if (sum(class(x) == 'colorimage') > 0) {
@@ -205,22 +247,52 @@ print.TrDm <- function(x,...) {
 }
 
 ## Plot TrDm objects
+##' \code{plot} methods for class 'TrDm'.
+##' @param x An object of class 'TrDm'.
+##' @param frame Choose which frame to be plotted. By default, \code{frame=1}.
+##' @param type Only for 'tracked' objects. By default, both trajectories and size 
+##' distribution are plotted. Choose
+##' \code{'trajectories'} to plot only trajectories on the original color image. 
+##' Choose \code{'sizes'} 
+##' to only plot the particle size distribution. Choose \code{'animation'} to create an .mp4 animation.
+##' Here, images are temporarily saved in \code{path}. Set name of file with argument \code{name}.
+##' @param incThres Minimum length of tracked segments for particles to be included.
+##' By default an automated threshold is calculated. Only for 'tracked' objects.
+##' @param colorimages Original color images. By default, original color images 
+##' are obtained from the global environment.
+##' @param cl When plotting a subtracted background image, choose which color layer
+##' is plotted. By default, \code{cl=1}.
+##' @param path When creating an animation, choose directory in which images
+##' are saved temporarily, and where the animation should be saved.
+##' @param name of animation; by default \code{'animation'}.
+##' @param \dots further arguments passed to \code{\link[raster]{plotRGB}}
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
-                      cl=1,path='~',name='animation',width=50,alpha=0.4,
-                      lags=5,...) {
-  #oldpar <- par('mar','mfrow')
-  if (any(class(x) == 'colorimage')) {  
+plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
+                      cl=1,path='~',name='animation',...) {
+
+  jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+                                 "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
+  
+   if (any(class(x) == 'colorimage')) {  
     if (length(dim(x)) > 3) {
-      x <- brick(x[,,,frame])
+      x <- raster::brick(x[,,,frame])
     } else if (length(dim(x)) == 3) {
       class(x) <- 'array'
-      x <- brick(x)
+      x <- raster::brick(x)
     }
-    plotRGB(x,scale=1,asp=nrow(x)/ncol(x),...)
+    raster::plotRGB(x,scale=1,asp=nrow(x)/ncol(x),...)
   } else if (any(class(x) == 'tracked')) {
+    if (is.null(incThres)) {
+      dist <- apply(x$trackRecord[,,1],1,function(x) 
+                    sum(!is.na(x)))
+      mod <- kmeans(dist,2)
+      incLabels <- mod$cluster == which.max(mod$centers)
+      incThres <- max(dist[!incLabels])
+    } else {
       incLabels <- apply(x$trackRecord[,,1],1,function(x) 
-                                             sum(!is.na(x))) > incThres
+                                               sum(!is.na(x))) > incThres
+    }
       if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
                                                     envir=.GlobalEnv) }
       if (is.null(type)) {
@@ -273,7 +345,6 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
                      1-x[,i,2]/height,
                      col=rainbow(nrow(x))[as.numeric(rownames(x))],
                      cex=2,lwd=2)
-                     #cex=y[,i]/50,lwd=4)
               cat("\r \t Animation:",i,"out of",ncol(x))
               dev.off()
            }
@@ -300,5 +371,4 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=10,colorimages=NULL,
     points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
            cex=1.2)
   }
-  #par(oldpar)
 }

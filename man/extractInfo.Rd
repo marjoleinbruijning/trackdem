@@ -2,41 +2,53 @@
 % Please edit documentation in R/nnFunctions.R
 \name{extractInfo}
 \alias{extractInfo}
-\title{Extract info
-\code{extractInfo} creates a dataframe as preparation for 
-applying a neural net (\code{\link{runNN}}). For all particles over all
-frames, it collects information on color intensities and neighbor pixels.}
+\title{Extract info}
 \usage{
 extractInfo(particles, info = c("intensity", "neighbors", "sd"),
   colorimages = NULL, sbg = NULL, frames = NULL, mIdObject = NULL,
   training = FALSE)
 }
 \arguments{
-\item{mIdObject}{If training=TRUE, provide a list with true and false positives, 
+\item{particles}{A data frame with particle statistics for each frame,
+as obtained by \code{\link{identifyParticles}}.}
+
+\item{info}{Character string specififying which info should be extracted.}
+
+\item{colorimages}{An array with the original full color images, in order to plot
+on the original images, obtained by \code{\link{loadImages}}. By default 
+the original color images are used.}
+
+\item{sbg}{Images subtracted from background, as obtained by 
+\code{\link{subtractBackground}}. By default, the original subtracted images 
+are used.}
+
+\item{frames}{A number defining the frame that should be used. Default
+is \code{NULL}, in that case all frames are used.}
+
+\item{mIdObject}{If \code{training=TRUE}, provide a list with true and false positives, 
 returned from \code{\link{manuallySelect}}, for each frame.}
 
 \item{training}{Logical. Should identified false and true positives 
-be combined to this dataframe? Default is FALSE.}
-
-\item{particleStatObject}{A list with particle statistics for each frame,
-as obtained by \code{\link{identifyParticles}}.}
-
-\item{images}{An array with the original full color images, in order to plot
-on the original images, obtained by \code{\link{loadImages}}.}
-
-\item{mSub}{Images subtracted from background, as obtained by 
-\code{\link{subtractBackground}}.}
-
-\item{frame}{A number defining the frame that should be used. Default
-is NULL, in that case all frames are used.}
+be combined to this dataframe? Default is \code{FALSE}.}
+}
+\value{
+Data frame of class 'TrDm' and 'particles' containing original 
+particle statistics, combined with
+additional extracted information.
 }
 \description{
-Extract info
 \code{extractInfo} creates a dataframe as preparation for 
-applying a neural net (\code{\link{runNN}}). For all particles over all
+applying a neural net (\code{\link{testNN}}). For all particles over all
 frames, it collects information on color intensities and neighbor pixels.
 }
+\examples{
+\dontrun{
+extractInfo(particles=partIden,training=TRUE,
+            frames=1,
+            mIdObject=mId)
+}
+}
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

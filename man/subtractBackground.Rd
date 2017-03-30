@@ -11,11 +11,12 @@ subtractBackground(bg, colorimages = NULL)
 \code{\link{createBackground}}.}
 
 \item{colorimages}{Array containing all frames, obtained by 
-\code{\link{loadImages}}. Default is NULL, in case the original images
-are used.}
+\code{\link{loadImages}}. Default is \code{NULL}, in this case the original images
+are used from the global environment.}
 }
 \value{
-Returns array with same size as images, subtracted from background.
+Returns array of class 'TrDm' and 'sbg' with same size as images, 
+subtracted from background.
 }
 \description{
 \code{subtractBackground} is a function to subtract each
@@ -28,6 +29,6 @@ pixels.
 allImages <- subtractBackground(stillBack) }
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

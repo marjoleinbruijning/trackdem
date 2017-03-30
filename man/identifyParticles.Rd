@@ -9,47 +9,54 @@ identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
   autoThres = FALSE, perFrame = FALSE, frames = NULL)
 }
 \arguments{
-\item{threshold}{Thresholds for including particles. Supply a vector
-containing three values; one for each color. Otherwise, supply one value 
-which is to be used for all three colors. For a chosen 
-threshold for each frame, use qthreshold.}
+\item{sbg}{Array containing images containing all moving particles,
+as obtained by \code{\link{subtractBackground}}.}
 
-\item{pixelRange}{Default is NULL. Vector with minimum and maximum particle size, used as a
+\item{threshold}{Thresholds for including particles. A numeric vector
+containing three values; one for each color. Otherwise, supply one value 
+which is to be used for all three colors. For a chosen quantile
+for each frame, use qthreshold. Default is \code{threshold=-0.1}.}
+
+\item{pixelRange}{Default is \code{NULL}. Numeric vector with minimum and maximum particle size, used as a
 first filter to identify particles.}
 
-\item{qthreshold}{Default is NULL. If NULL, treshold is used for filter. If
-not zero, a threshold based on qthreshold quantile is calculated for each
-frame.}
+\item{qthreshold}{Default is \code{NULL}. Supply a value, to do thresholding based on
+quantile. Quantile is calculated for each
+frame seperately.}
 
-\item{select}{Select dark particles ('dark'), light particles ('light'), or
-both ('both'), compared to background. Default is dark.}
+\item{select}{Select dark particles (\code{'dark'}), light particles (\code{'light'}), or
+both (\code{'both'}), compared to background. Default is \code{'dark'}.}
 
-\item{autoThres}{TRUE to get an automated threshold for each color layer.
-Default is FALSE.}
+\item{colorimages}{Array containing original color images. By default, the original
+color images are obtained from global environment.}
 
-\item{perFrame}{If autoThres=TRUE, set at TRUE to calculate a threshold for 
-each frame seperately. Default is FALSE.}
+\item{autoThres}{Logical. \code{TRUE} to get an automated threshold for each color layer.
+Default is \code{FALSE}.}
 
-\item{frames}{Specify if automated threshold should not be calculated based 
+\item{perFrame}{Logical. If \code{autoThres=TRUE}, set at \code{TRUE}
+ to calculate a threshold for 
+each frame seperately. Default is \code{FALSE}. Note that is can be computationally intensive 
+to calculate a threshold for each frame.}
+
+\item{frames}{Supply a numeric vector to specifify if automated threshold should not be calculated based 
 on all frames.}
-
-\item{mSub}{Array containing images containing all moving particles,
-as obtained by \code{\link{subtractBackground}}}
 }
 \value{
-This function returns a list with two elements: (1) a dataframe with
-particle statistics with identified particles for each frame. (2) An array
-containing all binary images.
+Returns a dataframe of class 'TrDm' and 'particles', containing
+particle statistics with identified particles for each frame
 }
 \description{
-\code{identifyParticles} is a function to identify particles.
+\code{identifyParticles} is a function to identify particles using the 
+subtracted images obtained from \code{\link{subtractBackground}}.
 }
 \examples{
 \dontrun{
   trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
+ plot(trackObject)
+ summary(trackObject)
 }
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

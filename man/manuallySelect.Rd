@@ -7,14 +7,15 @@
 manuallySelect(particles, colorimages = NULL, frame = NULL)
 }
 \arguments{
+\item{particles}{A data frame of class 'TrDm' with particle statistics for each frame,
+obtained by \code{\link{identifyParticles}}.}
+
 \item{colorimages}{An array with the original full color images, in order to plot
-on the original images.}
+on the original images. If \code{NULL}, the original color images are used, obtained
+ from the global environment.}
 
 \item{frame}{A number defining the frame that should be used. Default
-is NULL; in that case the frame with the maximum number of identified particles is used.}
-
-\item{particleStats}{A list with particle statistics for each frame,
-obtained by \code{\link{identifyParticles}}.}
+is \code{NULL}; in that case the frame with the maximum number of identified particles is used.}
 }
 \value{
 List containing three elements: true positives, false positives,
@@ -27,10 +28,10 @@ data can be implemented in a neural net.
 }
 \examples{
 \dontrun{
-manuallySelect(particleStats=trackObject$particleStats,frame=1)
+manuallySelect(particles=partIden,frame=1)
 }
 }
 \author{
-Marjolein Bruijning & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
 

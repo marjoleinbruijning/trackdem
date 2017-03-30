@@ -1,14 +1,13 @@
-##' Track particles
-##' \code{track} is a function to track particles over subsequent frames.
-##' Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).
-##' @param Phi Cost matrix.
-##' @param g Start identify matrix.
-##' @param L Cost to link to dummy particle.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @return List two elements: first contains array with all images,
-##' subset when relevant. Second element contains all original color images as array.
-##' @export
+## Track particles
+## \code{track} is a function to track particles over subsequent frames.
+## Based on tracking algorithm by Sbalzarini and Koumoutsakos (2005).
+## @param Phi Cost matrix.
+## @param g Start identify matrix.
+## @param L Cost to link to dummy particle.
+## @author Marjolein Bruijning & Marco D. Visser
+## @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
+## @return List two elements: first contains array with all images,
+## subset when relevant. Second element contains all original color images as array.
 ## 
 track <- function (Phi, g, L=50) {
   totCost <- sum(g*Phi,na.rm=T)
@@ -72,18 +71,17 @@ track <- function (Phi, g, L=50) {
   }
   return(g)
 }
-##' Calculate costs
-##' \code{calcCost} is a function to linking particle i to particle j,
-##' based on particle distance and size.
-##' @param x1 x coordinates of particles in frame n.
-##' @param x2 x coordinates of particles in frame n+1.
-##' @param y1 y coordinates of particles in frame n.
-##' @param y2 y coordinates of particles in frame n+1.
-##' @param s1 particle sizes in frame n.
-##' @param s2 particle sizes in frame n+1.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @export
+## Calculate costs
+## \code{calcCost} is a function to linking particle i to particle j,
+## based on particle distance and size.
+## @param x1 x coordinates of particles in frame n.
+## @param x2 x coordinates of particles in frame n+1.
+## @param y1 y coordinates of particles in frame n.
+## @param y2 y coordinates of particles in frame n+1.
+## @param s1 particle sizes in frame n.
+## @param s2 particle sizes in frame n+1.
+## @author Marjolein Bruijning & Marco D. Visser
+## @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ## 
 calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
                      x0=NULL,y0=NULL) {
@@ -102,19 +100,17 @@ calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
   }
 }
 
-##' Create cost matrix
-##' \code{phiMat} is a function to create a cost matrix based on defined
-##' cost function \code{\link{calcCost}}.
-##' @param coords1 Coordinates of particles in frame n.
-##' @param coords2 Coordinates of particles in frame n+1.
-##' @param sizes1 Sizes of particles in frame n.
-##' @param sizes2 Sizes of particles in frame n+1.
-##' @param r Default is one; scaling parameter.
-##' @param L Cost of linking to dummy variable.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @return Cost matrix linking particles.
-##' @export
+## Create cost matrix
+## \code{phiMat} is a function to create a cost matrix based on defined
+## cost function \code{\link{calcCost}}.
+## @param coords1 Coordinates of particles in frame n.
+## @param coords2 Coordinates of particles in frame n+1.
+## @param sizes1 Sizes of particles in frame n.
+## @param sizes2 Sizes of particles in frame n+1.
+## @param r Default is one; scaling parameter.
+## @param L Cost of linking to dummy variable.
+## @author Marjolein Bruijning & Marco D. Visser
+## @return Cost matrix linking particles.
 ## 
 phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
                     coords0=NULL) {
@@ -143,14 +139,12 @@ phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
   return(Phi)
 }
 
-##' Create random start g matrix
-##' \code{gMat} is a function to create a random G-matrix, that
-##' can be implemented in \code{\link{doTrack}}.
-##' @param Phi Cost matrix.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @return Random G-matrix
-##' @export
+## Create random start g matrix
+## \code{gMat} is a function to create a random G-matrix, that
+## can be implemented in \code{\link{doTrack}}.
+## @param Phi Cost matrix.
+## @author Marjolein Bruijning & Marco D. Visser
+## @return Random G-matrix
 ## 
 gMat <- function (Phi) {
   g <- matrix(0,nrow=nrow(Phi),ncol=ncol(Phi))
@@ -161,23 +155,21 @@ gMat <- function (Phi) {
   return(g)
 }
 
-##' Link created track segments
-##'
-##' \code{linkTrajec} is a function to merge track segments, based on 
-##' distance and size of particles, using a record object 
-##' provided by \code{\link{doTrack}}.
-##' recordsObject Object of class records.
-##' particles Object of class particleStatistics.
-##' @param R Default is one; link to how many subsequent frames?
-##' @param L Cost of linking to dummy variable, default is 50.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}
-##' @return Returns a list of class 'records', containing all merged
-##' track segments. See 'summary' and 'plot'.
-##' @export
+## Link created track segments
+##
+## \code{linkTrajec} is a function to merge track segments, based on 
+## distance and size of particles
+## recordsObject Object of class records.
+## particles Object of class particleStatistics.
+## @param R Default is one; link to how many subsequent frames?
+## @param L Cost of linking to dummy variable, default is 50.
+## @author Marjolein Bruijning & Marco D. Visser
+## @return Returns a list of class 'records', containing all merged
+## track segments. See 'summary' and 'plot'.
+## @export
 ## 
 linkTrajec <- function (recordsObject,particles,
-                        L=50,R=1,incThres=10,weight=weight) {
+                        L=50,R=1,weight=weight) {
  
   trackRecord <- recordsObject$trackRecord
   sizeRecord <- recordsObject$sizeRecord
@@ -284,18 +276,15 @@ linkTrajec <- function (recordsObject,particles,
   return(res) 
 }
 
-##' Track particles
-##' \code{doTrack} is a function link particles using \code{\link{track}}
-##' @param particles Object with class particleStatistics,
-##' obtained using \code{\link{identifyParticles}}.
-##' @param L Cost for linking to dummy. Default set at 50.
-##' @param backward Reverse frames. Default is FALSE.
-##' @param sizeMeasure Measure for size (area, length, etc.).
-##' Currently not implemented.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @return A list of class 'records'. Use 'summary' and 'plot'.
-##' @export
+## Track particles
+## \code{doTrack} is a helper function link particles using \code{\link{track}}
+## @param particles Object with class particleStatistics,
+## obtained using \code{\link{identifyParticles}}.
+## @param L Cost for linking to dummy. Default set at 50.
+## @param sizeMeasure Measure for size (area, length, etc.).
+## Currently not implemented.
+## @author Marjolein Bruijning & Marco D. Visser
+## @return A list of class 'records'. Use 'summary' and 'plot'.
 ## 
 doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
@@ -402,28 +391,32 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
 
 ##' Track particles
-##' \code{trackParticles} is a function link particles.
-##' @param particles Object with class particles,
+##' 
+##' \code{trackParticles} is a function reconstruct trajectories by linking particles.
+##' @param particles Object of class 'particles',
 ##' obtained using \code{\link{identifyParticles}}.
-##' @param L Maximum cost for linking to particle. When the cost is larger, 
+##' @param L Numeric. Maximum cost for linking to particle to another particle. When the cost is larger, 
 ##' particle will be not be linked (resulting in the begin or end of a segment).
-##'  Default set at 50.
-##' @param R Link to how many subsequent frames? Default set
-##' at 2.
+##'  Default set at \code{50}.
+##' @param R Integer. Link to how many subsequent frames? Default set
+##' at \code{2}.
 ##' @param weight Vector containing weights to calculate costs. First number 
 ##' gives the weight for differences in x and y coordinates; second number 
 ##' gives the weight for particle size differences; third number gives the 
-##' difference bewteen the predicted location and the observed location. This 
+##' difference bewteen the predicted location and the observed location. The latter 
 ##' is calculated using the location of the identified particle in the previous frame.
-##' @param sizeMeasure Measure for size (area, length, etc.).
-##' Currently not implemented.
-##' @author Marjolein Bruijning & Marco D. Visser
-##' @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
-##' @return A list of class 'records'. Use 'summary' and 'plot'.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##'    records <- trackParticles(particles)
+##'    summary(records)
+##'    plot(records,type='trajectories')
+##'	}
+##' @return A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 ##' @export
 ## 
 trackParticles <- function (particles,L=50,R=2,
-                            sizeMeasure='n.cell',weight=c(1,1,1)) {
+                            weight=c(1,1,1)) {
   records <- doTrack(particles=particles,L=L,weight=weight)
   cat("\n")
   rec <- linkTrajec (recordsObject=records,
@@ -434,6 +427,8 @@ trackParticles <- function (particles,L=50,R=2,
   attr(rec,"background") <- attributes(particles)$background
   attr(rec,"originalImages") <- attributes(particles)$originalImages
   attr(rec,"subtractedImages") <- attributes(particles)$subtractedImages
+  attr(rec,"images") <- attributes(particles)$images
+
   return(rec)
 }
 
