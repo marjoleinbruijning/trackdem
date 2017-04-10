@@ -9,11 +9,11 @@ Particle tracking and demography
 This package is currently being developed and tested.
 
 ## Abstract
-The aim of **Trackdem** is to obtain unbiased automated estimates of population 
+The aim of **trackdem** is to obtain unbiased automated estimates of population 
 densities and body size distributions, using video material or image 
 sequences as input. It is meant to assist in evolutionary and ecological studies, which 
 often rely on accurate estimates of population size, structure and/or 
-individual behaviour. The main functionality of **Trackdem** 
+individual behaviour. The main functionality of **trackdem** 
 includes a set of functions to convert a short video into an image sequence, 
 background detection, particle identification and linking, and 
 the training of an artifical neural network for noise filtering.
@@ -47,39 +47,70 @@ A guide for Mac and Windows users will follow asap.
 ## Load package
 require(trackdem)
 
-## Create image sequence from movie.
-## This function requires Python, Libav and ExifTool.
-## Alternatively, if images are already made, this
-## step can be skipped.
-createImageSeq(moviepath='Dropbox/Github/trackdem/Test/Movies',
-               imagepath='Dropbox/Github/trackdem/Test/ImageSequences')
-
-
+########################################################################
 ## Simulate image sequence
-dir.create("images")
+########################################################################
+dir.create('images')
 a <- getwd()
-setwd("images")
-traj <- simulTrajec(nframes=30,nIndividuals=10,h=0.01,rho=0.9)
+setwd('images')
+set.seed(1000)
+traj <- simulTrajec(nframes=30,nIndividuals=10,domain='square',h=0.01,rho=0.9)
 setwd(a)
 
+########################################################################
+## Analyze image sequence
+########################################################################
 ## Load images
-dirPictures <- 'images'
-allFullImages <- loadImages (dirPictures=direcPictures,nImages=1:30)
+dir <- 'images'
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+allFullImages
+class(allFullImages)
 plot(allFullImages,frame=1)
-stillBack <- createBackground(allFullImages,method='filter')
+
+## Detect background
+stillBack <- createBackground(allFullImages,method='powerroot')
+stillBack
 class(stillBack)
 plot(stillBack)
+
+## Subtract background
 allImages <- subtractBackground(bg=stillBack)
+allImages
+
+## Identify moving particles
 partIden <- identifyParticles(sbg=allImages,
-                              pixelRange=c(1,500),
-                              autoThres=FALSE)
-attributes(partIden)$threshold
+                              pixelRange=c(30,500),
+                              autoThres=FALSE,threshold=-0.1)
+attributes(partIden)$threshold # calculated threshold
 summary(partIden)
-records <- trackParticles(partIden,L=20,R=3)
+attributes(partIden)$threshold
+plot(partIden,frame=10)
+
+## Reconstruct trajectories
+records <- trackParticles(partIden,L=60,R=3)
 summary(records)
-summary(records)$res$N
-summary(records)$tab[,'Size']+1
+summary(records)$N # population count
+summary(records)$particles[,'Size'] # body size distribution
+summary(records)$particles[,'Total movement'] # movement distribution
+summary(records)$area # area covered by particles
+summary(records)$presence # minimum presence
+dim(records$trackRecord)
+dim(records$sizeRecord)
+dim(records$colorRecord)
+
+## Obtain results
+## Size distribution
+par(mfrow=c(1,2))
+plot(sort(unique(traj$size)),cex=2,pch=16,xlab='',ylab='Size')
+plot(records,type='sizes')
+## Trajectories
+par(mfrow=c(1,1))
 plot(records,type='trajectories')
+sapply(1:length(unique(traj$id)),function(i){
+	  lines(traj$x[traj$id==i],traj$y[traj$id==i],col="grey",
+	  lty=2,lwd=2)
+    })
+
 
 
 #########################################################################
