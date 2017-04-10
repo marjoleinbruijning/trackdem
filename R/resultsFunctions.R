@@ -1,10 +1,15 @@
 ##' Batch analysis
 ##' 
-##' \code{runBatch} is a function to analyze all image sequences in a specified
-##' directory. Use this function when settings have been optimized.
+##' \code{runBatch} analyzes all image sequences in a specified
+##' directory. Use this function when settings have been optimized 
+##' previously on a single or selection of movies/image sequences.
 ##' @param path A character vector of path name that contains all directories with
 ##' image sequences.
-##' @param direcnames If not all image sequences should be
+##' @param settings Object of class 'tracked' containing all optimized settings
+##' in attributes,
+##' as obtained from \code{\link{trackParticles}}.
+##' Alternatively, settings can be specified using arguments described below.
+##' @param dirnames If not all image sequences should be
 ##' analyzed, specificy which files to use as a character string.
 ##' @param nImages See \code{\link{loadImages}}
 ##' @param pixelRange See \code{\link{identifyParticles}}
@@ -42,31 +47,46 @@
 ##'	}
 ##' @export
 ##
-runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
+runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,pixelRange=NULL,
                      threshold=-0.1,qthreshold=NULL,select='dark',
                      nn=NULL,incThres=NULL,plotOutput=FALSE,
                      plotType='trajectories',L=20,R=2,
                      weight=c(1,1,1),
                      autoThres=FALSE,perFrame=FALSE,methodBg='mean',
                      frames=NULL,saveAll=FALSE) {
-  if (is.null(direcnames)) {
+  if (is.null(dirnames)) {
     allDirec <- paste0(list.dirs(path,recursive=FALSE),'/')
-  } else {allDirec <- paste0(path,'/',direcnames,'/')}
-  
+  } else {allDirec <- paste0(path,'/',dirnames,'/')}
+
+  if (!is.null(settings)) {
+    settings <- attributes(settings)$settings
+    nImages <- settings$nImages
+    threshold <- settings$threshold
+    pixelRange <- settings$pixelRange
+    qthreshold <- settings$qthreshold
+    select <- settings$select
+    autoThres <- settings$autoThres
+    perFrame <- settings$perFrame
+    frames <- settings$frames
+    R <- settings$R
+    L <- settings$L
+    weight <- settings$weight
+    methodBg <- settings$BgMethod
+  }  
   dat <- data.frame(Directory=rep(NA,length(allDirec)),
-                    Size=NA)
+                    Count=NA)
                     
-  if (is.null(direcnames)) {
+  if (is.null(dirnames)) {
     dat$Directory <- list.dirs(path,recursive=FALSE,full.names=FALSE)
-  } else {dat$Directory <- direcnames}
+  } else {dat$Directory <- dirnames}
   
   results <- vector('list',length(allDirec))
   cat("\n")
   for (i in 1:length(allDirec)) {
     tryCatch ({
       cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
-      direcPictures <- allDirec[i]
-      allFullImages <- loadImages (direcPictures=direcPictures,nImages=nImages)
+      dirPictures <- allDirec[i]
+      allFullImages <- loadImages (dirPictures=dirPictures,nImages=nImages)
       stillBack <- createBackground(allFullImages,method=methodBg)
       allImages <- subtractBackground(bg=stillBack,colorimages=allFullImages)
       partIden <- identifyParticles(sbg=allImages,
@@ -85,19 +105,21 @@ runBatch <- function(path,direcnames=NULL,nImages=1:30,pixelRange=NULL,
       }
       records <- trackParticles(partIden,L=L,R=R,weight=weight)
       if (saveAll) results[[i]] <- records
-      dat$Size[i] <- sum(apply(records$trackRecord[,,1],1,function(x) 
-                                                 sum(!is.na(x))) > incThres)
+      
+      dat$Count[i] <- summary(records,incThres=incThres)$N
+
       if (plotOutput == TRUE) {
         plot(records,type=plotType,colorimages=allFullImages,name=i,
              path=path,incThres=incThres)
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
-    }, error=function(e){message(paste('Error in',direcPictures,':',e))},
-    warning=function(w) {message(paste('Warning in',direcPictures,':',w))})
+    }, error=function(e){message(paste('Error in',dirPictures,':',e))},
+    warning=function(w) {message(paste('Warning in',dirPictures,':',w))})
   }
   cat("\n")
   class(dat) <- c('TrDm','batch','data.frame')
+  attr(dat,"settings") <- settings
   attr(dat,"path") <- path
   if (saveAll) attr(dat,"results") <- results
   return(dat)
@@ -131,21 +153,12 @@ summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
     mu <- mean(numbers)
     sdd <- sd(numbers)
     cv <- sdd/mu
+    thr <- attributes(object)$threshold
     tab <- cbind(Mean=mu,SD=sdd,CV=cv)
     res <- list(particles=tab,
-                n=numbers)
-    class(res) <- 'TrDm'
-    cat("\t Summary of identified particles (unlinked): \n\n")
-    cat("\t Average number of identified particles: ",
-        as.numeric(round(res$particles[1],2)) , "( sd =",
-        as.numeric(round(res$particles[2],2)), ")\n",
-        "\t Coefficient of variation: ",
-        as.numeric(round(res$particles[3],2)))
-    cat("\n\t Range of particles for each frame ( 1-", length(res$n),"):",
-        range(res$n)[1],"-",range(res$n)[2],"\n")
-    cat(ifelse(attributes(object)$nn==TRUE,'\t With neural network.\n',
-        '\t Without neural network.\n'))
-    invisible(res)
+                n=numbers,thr=thr)
+    class(res) <- c('summaryTrDm','particles')
+    return(res)
   } else if (sum(class(object) == 'tracked') > 0) {
     
     if (is.null(incThres)) {
@@ -183,31 +196,63 @@ summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
                 area=100 * sum(perID) / 
                      (nrow(attributes(object)$images)*ncol(attributes(object)$images))
                 )
-    class(res) <- 'summary.records'
-    cat("\t Summary of Linked particles: \n\n")
-    print(tab)
-    cat(paste("\t Total of",res$N,"Identified particles.\n"))
-    cat(paste("\t Particles have a total area  of",round(res$area,4),"%\n"))
-    cat(paste("\t Minimum presence is set at",res$presence,"frames \n",sep=' '))
-        
-    invisible(list(res=res,tab=tab))
+    class(res) <- c('summaryTrDm','tracked')
+    return(res)
+
   } else if (sum(class(object) == 'tfp') > 0) {
-    cat("\t Summary of manually identified false and true positives.\n")
-    cat(paste("\t True positives:",length(object$wrong),'\n'))
-    cat(paste("\t False positives:",length(object$correct),'\n\n'))
+      class(object) <- c('summaryTrDm','tfp')
+      return(object)
   } else if (sum(class(object) == 'neuralnet') > 0) {
+      class(object) <- c('summaryTrDm','neuralnet')
+      return(object)
+  } else {cat("\t No summary available for this object.\n\n")}
+} 
+
+## Print TrDm summary objects
+##' \code{print} methods for class 'TrDm'.
+##' @param x Object of class 'summaryTrDm'.
+##' @param\dots Further arguments passed to or from other methods.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @export
+print.summaryTrDm <- function(x,...) {
+  if (sum(class(x) == 'particles') > 0) {
+    cat("\t Summary of identified particles (unlinked): \n\n")
+    cat("\t Average number of identified particles: ",
+        as.numeric(round(x$particles[1],2)) , "( sd =",
+        as.numeric(round(x$particles[2],2)), ")\n",
+        "\t Coefficient of variation: ",
+        as.numeric(round(x$particles[3],2)))
+    cat("\n\t Range of particles for each frame ( 1-", length(x$n),"):",
+        range(x$n)[1],"-",range(x$n)[2])
+    cat("\n\t Threshold values:", round(x$thr,3),"\n")
+    cat(ifelse(attributes(x)$nn==TRUE,'\t With neural network.\n',
+        '\t Without neural network.\n'))
+    
+  } else if (sum(class(x) == 'tracked') > 0) {
+    cat("\t Summary of Linked particles: \n\n")
+    print(x$particles)
+    cat(paste("\t Total of",x$N,"Identified particles.\n"))
+    cat(paste("\t Particles have a total area  of",round(x$area,4),"%\n"))
+    cat(paste("\t Minimum presence is set at",x$presence,"frames \n",sep=' '))
+        
+  } else if (sum(class(x) == 'tfp') > 0) {
+    cat("\t Summary of manually identified false and true positives.\n")
+    cat(paste("\t True positives:",length(x$wrong),'\n'))
+    cat(paste("\t False positives:",length(x$correct),'\n\n'))
+  } else if (sum(class(x) == 'neuralnet') > 0) {
     cat("\t Summary of trained neural network: \n")
     cat("\t Confusion table: \n")
-    print.default(format(object$confusion,digits = 3)
+    print.default(format(x$confusion,digits = 3)
                  ,print.gap = 2L, 
                   quote = FALSE)
     
-    cat("\t F-score:",round(object$fscore,2),'\n')
-    cat("\t",object$bestNN$reps," repetitions.\n")
-    cat("\t",object$bestNN$hidden," hidden layer(s).\n")
+    cat("\t F-score:",round(x$fscore,2),'\n')
+    cat("\t",x$bestNN$reps," repetitions.\n")
+    cat("\t",x$bestNN$hidden," hidden layer(s).\n")
 
   } else {cat("\t No summary available for this object.\n\n")}
 } 
+
 
 ## Print TrDm objects
 ##' \code{print} methods for class 'TrDm'.
@@ -354,15 +399,8 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
            cat('\n')
         }
      }  
-  } else if (any(class(x) == 'neuralnet')) {
-    plot(cbind(x$trainingData$trY,plogis(x$predicted$net.result)),
-         xlab='Identified',ylab='Probability based on neural network',...)
-    abline(h=x$thr,lty=2,lwd=2)
   } else if (any(class(x) == 'sbg')) {
     image(x[,,cl,frame])
-  } else if (any(class(x) == 'batch')) {
-    plot(x$date,x$Size,type='b',lwd=2,ylab='Population size',xlab='Date',
-         ...)
   } else if (any(class(x) == 'particles')) {
     if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
                                                   envir=.GlobalEnv) }
@@ -370,5 +408,6 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
     inc <- x$frame == frame
     points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
            cex=1.2)
-  }
+  } 
 }
+

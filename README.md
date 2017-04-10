@@ -9,11 +9,14 @@ Particle tracking and demography
 This package is currently being developed and tested.
 
 ## Abstract
-
-
-## Dependencies
-
-Final dependencies will be listed here.
+The aim of **Trackdem** is to obtain unbiased automated estimates of population 
+densities and body size distributions, using video material or image 
+sequences as input. It is meant to assist in evolutionary and ecological studies, which 
+often rely on accurate estimates of population size, structure and/or 
+individual behaviour. The main functionality of **Trackdem** 
+includes a set of functions to convert a short video into an image sequence, 
+background detection, particle identification and linking, and 
+the training of an artifical neural network for noise filtering.
 
 
 ## Installation
@@ -51,27 +54,32 @@ require(trackdem)
 createImageSeq(moviepath='Dropbox/Github/trackdem/Test/Movies',
                imagepath='Dropbox/Github/trackdem/Test/ImageSequences')
 
+
+## Simulate image sequence
+dir.create("images")
+a <- getwd()
+setwd("images")
+traj <- simulTrajec(nframes=30,nIndividuals=10,h=0.01,rho=0.9)
+setwd(a)
+
 ## Load images
-direcPictures <- 'Test/ImageSequences/002/'
-allFullImages <- loadImages (direcPictures=direcPictures,nImages=1:30)
-
-## Create background and subtract
-stillBack <- createBackground(allFullImages)
+dirPictures <- 'images'
+allFullImages <- loadImages (dirPictures=direcPictures,nImages=1:30)
+plot(allFullImages,frame=1)
+stillBack <- createBackground(allFullImages,method='filter')
+class(stillBack)
+plot(stillBack)
 allImages <- subtractBackground(bg=stillBack)
-
-## Identify particles
 partIden <- identifyParticles(sbg=allImages,
-                              threshold=-0.05, # chosen threshold
-                              pixelRange=c(1,500)) # min and max size
+                              pixelRange=c(1,500),
+                              autoThres=FALSE)
+attributes(partIden)$threshold
 summary(partIden)
-
-## Track (without machine learning steps)
-records <- trackParticles(partIden)
-
-## Obtain results
-incT <- 10
-summary(records,incThres=incT)
-plot(records,incThres=incT)
+records <- trackParticles(partIden,L=20,R=3)
+summary(records)
+summary(records)$res$N
+summary(records)$tab[,'Size']+1
+plot(records,type='trajectories')
 
 
 #########################################################################
@@ -79,29 +87,23 @@ plot(records,incThres=incT)
 #########################################################################
 ## Create training data set
 mId <- list()
-trainingData <- list()
 n <- 5 # top n frames
-frames <- order(sapply(1:length(partIden),function(X) nrow(partIden[[X]])),
-                decreasing=TRUE)[1:n]
+frames <- frames <- order(tapply(partIden$patchID,partIden$frame,length),
+                          decreasing=TRUE)[1:n]
+                
 for (i in 1:n) {
   mId[[i]] <- manuallySelect(particles=partIden,frame=frames[i])
-  trainingData[[i]] <- extractInfo(particles=partIden,
-                                   training=TRUE,
-                                   frames=mId[[i]]$frame,
-                                   mIdObject=mId[[i]])
 }
-trainingData <- do.call(rbind,trainingData)
 
-finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
+finalNN <- testNN(dat=mId,repetitions=5,maxH=4,prop=c(4,3,3))
 partIden2 <- update(partIden,finalNN) # update with neural net
 
 ## Track (with machine learning steps)
 records2 <- trackParticles(partIden2)
 
 ## Obtain results
-incT <- 10
-summary(records2,incThres=incT)
-plot(records2,incThres=incT)
+summary(records2)
+plot(records2)
 
 
 ```

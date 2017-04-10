@@ -1,8 +1,8 @@
-##' Manual selection of true and false positives.
+##' Manually identify true and false positives with a GUI.
 ##'
-##' \code{manuallySelect} is a function to to create training data that
-##' by manually selecting false and true positives. The created training
-##' data can be implemented in a neural net.
+##' \code{manuallySelect} opens a graphic user iterface to create
+##'  training data for a neural net by manually selecting true and
+##'  false positives (respectively, correctly identified particles and noise). 
 ##' @param particles A data frame of class 'TrDm' with particle statistics for each frame,
 ##' obtained by \code{\link{identifyParticles}}.
 ##' @param colorimages An array with the original full color images, in order to plot
@@ -62,7 +62,7 @@ manuallySelect <- function (particles,colorimages=NULL,
     b1 <- (im$usr[4] - im$usr[3]) / im$fig[4]
     y <- (pick$y-b0) / b1
     
-    cols <- c('green','red','black')
+    cols <- c('green','orange','black')
     names(cols) <- c('g','f','rm')
     ## true positives  
     if (pick$x > buttons$g$fig[1] & pick$x < buttons$g$fig[2] & 
@@ -113,11 +113,18 @@ manuallySelect <- function (particles,colorimages=NULL,
   }
   dev.off()
 
+
   res <- list(wrong=id[st=='f'],correct=id[st=='g'],frame=n)
   attr(res,"background") <- attributes(particles)$background
   attr(res,"originalImages") <- attributes(particles)$originalImages
   attr(res,"originalDirec") <- attributes(particles)$originalDirec
   attr(res,"subtractedImages") <- attributes(particles)$subtractedImages
+  
+  dat <- extractInfo(particles=particles,training=TRUE,
+              frames=n,mIdObject=res)
+
+  res[[4]] <- dat
+  names(res) <- c('wrong','correct','frame','trainingData')
   
   class(res) <- c("TrDm","tfp","list")
   return(res)
@@ -156,37 +163,36 @@ makeButtons <- function () {
 }
 
 
-##' Extract info
-##' 
-##' \code{extractInfo} creates a dataframe as preparation for 
-##' applying a neural net (\code{\link{testNN}}). For all particles over all
-##' frames, it collects information on color intensities and neighbor pixels.
-##' @param particles A data frame with particle statistics for each frame,
-##' as obtained by \code{\link{identifyParticles}}.
-##' @param info Character string specififying which info should be extracted.
-##' @param colorimages An array with the original full color images, in order to plot
-##' on the original images, obtained by \code{\link{loadImages}}. By default 
-##' the original color images are used.
-##' @param sbg Images subtracted from background, as obtained by 
-##' \code{\link{subtractBackground}}. By default, the original subtracted images 
-##' are used.
-##' @param frames A number defining the frame that should be used. Default
-##' is \code{NULL}, in that case all frames are used.
-##' @param training Logical. Should identified false and true positives 
-##' be combined to this dataframe? Default is \code{FALSE}.
-##' @param mIdObject If \code{training=TRUE}, provide a list with true and false positives, 
-##' returned from \code{\link{manuallySelect}}, for each frame.
-##' @examples
-##' \dontrun{
-##' extractInfo(particles=partIden,training=TRUE,
-##'             frames=1,
-##'             mIdObject=mId)
-##'	}
-##' @return Data frame of class 'TrDm' and 'particles' containing original 
-##' particle statistics, combined with
-##' additional extracted information.
-##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
-##' @export
+## Extract info
+## 
+## \code{extractInfo} creates a dataframe as preparation for 
+## applying a neural net (\code{\link{testNN}}). For all particles over all
+## frames, it collects information on color intensities and neighbor pixels.
+## @param particles A data frame with particle statistics for each frame,
+## as obtained by \code{\link{identifyParticles}}.
+## @param info Character string specififying which info should be extracted.
+## @param colorimages An array with the original full color images, in order to plot
+## on the original images, obtained by \code{\link{loadImages}}. By default 
+## the original color images are used.
+## @param sbg Images subtracted from background, as obtained by 
+## \code{\link{subtractBackground}}. By default, the original subtracted images 
+## are used.
+## @param frames A number defining the frame that should be used. Default
+## is \code{NULL}, in that case all frames are used.
+## @param training Logical. Should identified false and true positives 
+## be combined to this dataframe? Default is \code{FALSE}.
+## @param mIdObject If \code{training=TRUE}, provide a list with true and false positives, 
+## returned from \code{\link{manuallySelect}}, for each frame.
+## @examples
+## \dontrun{
+## extractInfo(particles=partIden,training=TRUE,
+##             frames=1,
+##             mIdObject=mId)
+##	}
+## @return Data frame of class 'TrDm' and 'particles' containing original 
+## particle statistics, combined with
+## additional extracted information.
+## @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                          colorimages=NULL,sbg=NULL,
                          frames=NULL,mIdObject=NULL,training=FALSE) {
@@ -390,7 +396,7 @@ getConfMat <- function(Y,P,thr,stat="F"){
 ##' @param neuralnet Trained neural net obtained from \code{\link{testNN}}
 ##' @param pca Logical. By default \code{TRUE}, indicating that a principal component analysis is 
 ##' performed on the predictors.
-##' @param \dots Other arguments passed to \code{\link{extractInfo}}
+##' @param \dots further arguments passed to or from other methods.
 ##' @examples
 ##' \dontrun{
 ##' update(particles=partIden,finalNN)
@@ -408,7 +414,7 @@ update.particles <- function(object,neuralnet,pca=TRUE,...) {
         stop("Input does not appear to be of the class \"TrDm\"")
     }
     
-    object <- extractInfo(object,training=FALSE,...)
+    object <- extractInfo(object,training=FALSE)
     
     
     if (pca == TRUE) {
@@ -512,8 +518,8 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' Train, validate and test artificial
 ##' neural networks
 ##'
-##' The function fits multiple neural networks to
-##' a dataset that has been randomly assigned to each
+##' Fits multiple neural networks to
+##' a dataset; data set has been randomly assigned to each
 ##' of three catergories: train, validate and test.
 ##' A final neural net is selected based on a fit statistic
 ##' (either precision, recall or the F1-score). All neural networks
@@ -522,7 +528,7 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' based on the validation data, and then the final neural network
 ##' is selected based on the test data.
 ##'
-##' The neural networks may be selcted based on precision, recall or
+##' The neural networks may be selected based on precision, recall or
 ##' a F1-score (default).
 ##' In binary classification, precision is the number of correct positive
 ##' results divided by the number of all positive predictions. Recall is
@@ -534,7 +540,8 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' (harmonic mean) of the precision and recall.
 ##' Precision, recall and F1 scores are at best 1 and at worst 0.
 ##'
-##' @param dat a previously constructed dataset
+##' @param dat a previously constructed dataset obtained from 
+##' \code{manuallySelect}.
 ##' @param stat Fit statistic. May be \code{"precision"}, \code{"recall"}, or
 ##' \code{"F"} for the harmonic mean of precision and recall. 
 ##' @param maxH maximum number of hidden layers to test
@@ -545,8 +552,12 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' c(training, validation,test).
 ##' @param predictors Optional. A set of custom predictors
 ##' for the neural network. Default uses all columns in \code{dat}.
-##' @param pca Logical. \code{TRUE} by default. Principal component analysis on predictors.
-##' @param thr Threshold for pca. 
+##' @param pca Logical. \code{TRUE} by default. Should the 
+##' set of predictors be compressed to the most informative? In short, 
+##' should a principal component analysis be conducted to select axis that
+##' explain at least a fraction \code{thr} (see below) 
+##' of the variance in the full set of predictors?  
+##' @param thr Threshold for pca (above). 
 ##' @param \dots additional parameters, passed to neuralnet.
 ##' @return Returns trained artificial neural net.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
@@ -561,6 +572,11 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
 
     datOrig <- dat
     attributes(datOrig) <- attributes(dat)
+
+    if (any(class(dat[[1]]) == 'list')) {
+      dat <- lapply(dat,function(x) x$trainingData)
+      dat <- do.call(rbind,dat)
+    } else {dat <- dat$trainingData}
         
     if(is.null(predictors)){
         predictors <- colnames(dat)
@@ -639,7 +655,7 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
     
     cat("\t Neural Net #", bestNN, " selected \n")
     
-   conf <- tryCatch(getConfMat(Te$trY,testNNs[[bestNN]]$net.result,
+    conf <- tryCatch(getConfMat(Te$trY,testNNs[[bestNN]]$net.result,
                       results[[bestNN]]$thr,stat='confusion'),
                     error=function(e) Te)
 
@@ -650,7 +666,7 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
     attr(res,"originalImages") <- attributes(datOrig)$originalImages
     attr(res,"originalDirec") <- attributes(datOrig)$originalDirec
     attr(res,"subtractedImages") <- attributes(datOrig)$subtractedImages
-    attr(res,"trainingData") <- deparse(substitute(datOrig))
+    #attr(res,"trainingData") <- deparse(substitute(datOrig))
     attr(res,"data") <- dat
     if(exists('pc.cr')) attr(res,"pca") <- pc.cr
     

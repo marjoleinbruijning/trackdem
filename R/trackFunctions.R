@@ -392,16 +392,21 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
 ##' Track particles
 ##' 
-##' \code{trackParticles} is a function reconstruct trajectories by linking particles.
+##' \code{trackParticles} attempts to reconstruct trajectories by linking particles.
 ##' @param particles Object of class 'particles',
 ##' obtained using \code{\link{identifyParticles}}.
-##' @param L Numeric. Maximum cost for linking to particle to another particle. When the cost is larger, 
-##' particle will be not be linked (resulting in the begin or end of a segment).
+##' @param L Numeric. Maximum cost for linking a particle to another particle. When the cost is larger, 
+##' particles will be not be linked (resulting in the begin or end of a segment).
 ##'  Default set at \code{50}.
 ##' @param R Integer. Link to how many subsequent frames? Default set
 ##' at \code{2}.
-##' @param weight Vector containing weights to calculate costs. First number 
-##' gives the weight for differences in x and y coordinates; second number 
+##' @param weight Vector containing 3 weights to calculate costs. Depending 
+##' on the study system user may want to value certain elements over others.
+##' For instance, when individuals can vary in size over frames
+##' (which happens when objects move away or towards a camera)
+##' the "size" weight may be decreased. Weights are ordered as follows; 
+##' first number gives the weight for differences in x and y coordinates;
+##' second number 
 ##' gives the weight for particle size differences; third number gives the 
 ##' difference bewteen the predicted location and the observed location. The latter 
 ##' is calculated using the location of the identified particle in the previous frame.
@@ -428,7 +433,8 @@ trackParticles <- function (particles,L=50,R=2,
   attr(rec,"originalImages") <- attributes(particles)$originalImages
   attr(rec,"subtractedImages") <- attributes(particles)$subtractedImages
   attr(rec,"images") <- attributes(particles)$images
-
+  attr(rec,"settings") <- c(attributes(particles)$settings,
+                            list(R=R,L=L,weight=weight))
   return(rec)
 }
 
