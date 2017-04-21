@@ -84,7 +84,7 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,pixelRange=NU
   cat("\n")
   for (i in 1:length(allDirec)) {
     tryCatch ({
-      cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t")
+      cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t \n")
       dirPictures <- allDirec[i]
       allFullImages <- loadImages (dirPictures=dirPictures,nImages=nImages)
       stillBack <- createBackground(allFullImages,method=methodBg)
@@ -319,6 +319,8 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
   jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
                                  "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
   
+  oldPar <- par()
+
    if (any(class(x) == 'colorimage')) {  
     if (length(dim(x)) > 3) {
       x <- raster::brick(x[,,,frame])
@@ -409,5 +411,6 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
     points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
            cex=1.2)
   } 
+  par(oldPar[c('mar','oma','mfrow')])
 }
 

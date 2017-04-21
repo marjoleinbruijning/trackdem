@@ -53,8 +53,11 @@ require(trackdem)
 dir.create('images')
 a <- getwd()
 setwd('images')
-set.seed(1000)
-traj <- simulTrajec(nframes=30,nIndividuals=10,domain='square',h=0.01,rho=0.9)
+set.seed(100)
+## Create image sequence (this takes a moment)
+traj <- simulTrajec(nframes=30,nIndividuals=20,domain='square',
+                    h=0.01,rho=0.9,staticNoise=TRUE,
+                    sizes=runif(20,0.004,0.006))
 setwd(a)
 
 ########################################################################
@@ -68,7 +71,7 @@ class(allFullImages)
 plot(allFullImages,frame=1)
 
 ## Detect background
-stillBack <- createBackground(allFullImages,method='powerroot')
+stillBack <- createBackground(allFullImages,method='filter')
 stillBack
 class(stillBack)
 plot(stillBack)
@@ -79,7 +82,7 @@ allImages
 
 ## Identify moving particles
 partIden <- identifyParticles(sbg=allImages,
-                              pixelRange=c(30,500),
+                              pixelRange=c(1,500),
                               autoThres=FALSE,threshold=-0.1)
 attributes(partIden)$threshold # calculated threshold
 summary(partIden)
@@ -99,42 +102,13 @@ dim(records$sizeRecord)
 dim(records$colorRecord)
 
 ## Obtain results
-## Size distribution
-par(mfrow=c(1,2))
-plot(sort(unique(traj$size)),cex=2,pch=16,xlab='',ylab='Size')
-plot(records,type='sizes')
 ## Trajectories
-par(mfrow=c(1,1))
 plot(records,type='trajectories')
-sapply(1:length(unique(traj$id)),function(i){
-	  lines(traj$x[traj$id==i],traj$y[traj$id==i],col="grey",
-	  lty=2,lwd=2)
-    })
-
-
-
-#########################################################################
-## Artificial neural network ############################################
-#########################################################################
-## Create training data set
-mId <- list()
-n <- 5 # top n frames
-frames <- frames <- order(tapply(partIden$patchID,partIden$frame,length),
-                          decreasing=TRUE)[1:n]
-                
-for (i in 1:n) {
-  mId[[i]] <- manuallySelect(particles=partIden,frame=frames[i])
+for (i in 1:length(unique(traj$id))) {
+  lines(traj$x[traj$id==i],traj$y[traj$id==i],col="grey",
+	    lty=2,lwd=2)
 }
 
-finalNN <- testNN(dat=mId,repetitions=5,maxH=4,prop=c(4,3,3))
-partIden2 <- update(partIden,finalNN) # update with neural net
-
-## Track (with machine learning steps)
-records2 <- trackParticles(partIden2)
-
-## Obtain results
-summary(records2)
-plot(records2)
 
 
 ```

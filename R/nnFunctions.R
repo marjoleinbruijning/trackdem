@@ -43,7 +43,10 @@ manuallySelect <- function (particles,colorimages=NULL,
   par(mar=c(0,0,0,0))
   buttons <- makeButtons()
   
-  plot(colorimages,frame=n,bty='n')
+  x <- raster::brick(colorimages[,,,frame])
+  raster::plotRGB(x,scale=1,asp=nrow(x)/ncol(x),bty='n')
+
+  #plot(colorimages,frame=n,bty='n')
   inc <- particles$frame == n
   points(particles[inc,]$x/totx,
        1-particles[inc,]$y/toty,col='blue',cex=1.5)
@@ -210,7 +213,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
     
     cat("\n")
   if ('intensity' %in% info) {
-    cat('\t Extract intensity info')
+    cat('\t Extract intensity info \t \t \t')
     getI <- lapply(1:length(frames),function(X) {
                     inc <- stat$frame == frames[X]
                     extractRGB(stat[inc,]$x,stat[inc,]$y,
@@ -219,7 +222,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
 	              colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
   }
   if ('neighbors' %in% info) {
-    cat('\r \t Extract neighbor info\t')
+    cat('\r \t Extract neighbor info \t \t \t')
     getNeighbor <- lapply(1:length(frames),function(X) {
                              inc <- stat$frame == frames[X]
 		                     extractNeighbors(stat[inc,]$x,stat[inc,]$y,
@@ -231,7 +234,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                       colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
   }
   if ('sd' %in% info) {
-    cat('\r \t Extract variance particle info\t')
+    cat('\r \t Extract variance particle info \t \t \t \t')
     getVar <- lapply(1:length(frames),function(X) {
 		          inc <- stat$frame == frames[X]
                   extractMean(stat[inc,]$patchID,
@@ -243,7 +246,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                    colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
   }  
 
-  cat('\r \t Assembling datasets \t \n')
+  cat('\r \t Assembling datasets \t \t \t \t \n')
   dat <- lapply(1:length(frames),function(X) {
             inc <- stat$frame == frames[X]
             dat <- stat[inc,]
@@ -582,6 +585,9 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
         predictors <- colnames(dat)
         predictors <- predictors[predictors != 'trY']
         predictors <- predictors[predictors != 'patchID']
+        predictors <- predictors[predictors != 'frame']
+        predictors <- predictors[predictors != 'frac.dim.index']
+
     }
     
     if (pca == TRUE) {

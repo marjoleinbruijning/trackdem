@@ -138,7 +138,7 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
 
     attr(allFullImages,"settings") <- list(nImages=nImages)
     attr(allFullImages, "class") <- c('TrDm','colorimage','array')
-    attr(allFullImages, "originalDirec") <- get(deparse(substitute(dirPictures)))
+    attr(allFullImages, "originalDirec") <- dirPictures#get(deparse(substitute(dirPictures)))
     return(allFullImages)
 }
 
@@ -388,7 +388,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0
 
-    cat("\r \t Particle Identification: Labeling (2 out of 5) \t")
+    cat("\r \t Particle Identification: Labeling (2 out of 5) \t \t \t")
     A <- sapply(n, function (x) SDMTools::ConnCompLabel(sumRGB[,,x]),simplify='array')
     
     cat("\r \t Particle Identification: Size filtering (3 out of 5) \t \t \t")
@@ -419,7 +419,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
        if (i > 1) particleStats <- rbind(particleStats,ps)
     }    
 
-    cat("\r \t Particle Identification: Finalizing (5 out of 5) \n ")
+    cat("\r \t Particle Identification: Finalizing (5 out of 5) \t \t \t \t \t \n ")
     
     attr(particleStats,"images") <- A
     attr(particleStats, "class") <- c("TrDm","particles","data.frame")
