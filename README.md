@@ -4,7 +4,7 @@
 Particle tracking and demography
 ---
 
-<img src="images/animation2.gif" width="200">
+<img src="images/animation2.gif" width="350"> <img src="images/animation.gif" width="350">
 
 ![](images/animation2.gif) ![](images/animation.gif)
 
