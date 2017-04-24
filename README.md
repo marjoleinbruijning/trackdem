@@ -4,9 +4,9 @@
 Particle tracking and demography
 ---
 
-![](images/animation.gif)
+![](images/animation2.gif)
 
-This package is currently being developed and tested.
+A test version of this package has been released (0.1 on CRAN), bug reports and comments are welcome. Post these ![here](https://github.com/marjoleinbruijning/trackdem/issues).
 
 ## Abstract
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
@@ -21,10 +21,13 @@ the training of an artifical neural network for noise filtering.
 
 ## Installation
 
-We are aiming to have a release on CRAN soon,
-however to install the developmental version from github use the **devtools** package to install the current development version from R.
+**trackdem** can now be installed from ![CRAN](https://cran.r-project.org/web/packages/trackdem/index.html) or from github.
 
 ```r
+## Install from CRAN
+install.packages('trackdem')
+
+## Install from Github
 ## devtools is required
 require(devtools)
 install_github("marjoleinbruijning/trackdem")
@@ -56,7 +59,7 @@ setwd('images')
 set.seed(100)
 ## Create image sequence (this takes a moment)
 traj <- simulTrajec(nframes=30,nIndividuals=20,domain='square',
-                    h=0.01,rho=0.9,staticNoise=TRUE,
+                    h=0.01,rho=0.9,staticNoise=FALSE,
                     sizes=runif(20,0.004,0.006))
 setwd(a)
 
@@ -83,8 +86,7 @@ allImages
 ## Identify moving particles
 partIden <- identifyParticles(sbg=allImages,
                               pixelRange=c(1,500),
-                              autoThres=FALSE,threshold=-0.1)
-attributes(partIden)$threshold # calculated threshold
+                              autoThres=FALSE,threshold=-0.05)
 summary(partIden)
 attributes(partIden)$threshold
 plot(partIden,frame=10)
@@ -113,6 +115,7 @@ for (i in 1:length(unique(traj$id))) {
 
 ```
 ## Examples of output
+![](images/animation2.gif)
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
 
