@@ -4,6 +4,8 @@
 Particle tracking and demography
 ---
 
+<img src="images/animation2.gif" width="200">
+
 ![](images/animation2.gif) ![](images/animation.gif)
 
 A test version of this package has been released (0.1 on CRAN), bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
