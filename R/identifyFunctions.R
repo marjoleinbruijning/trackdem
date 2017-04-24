@@ -202,7 +202,7 @@ createBackground <- function(colorimages,method='mean') {
         SD <- sqrt(SDs[,,1]^2+SDs[,,2]^2+SDs[,,3]^2)
         Threshold <-
          {
-	     optimize(function(a,i1){
+	     stats::optimize(function(a,i1){
 	     t1 <-(i1>a)
 	     sum((i1[t1]-mean(i1[t1]))^2)+
 	     sum((i1[!t1]-mean(i1[!t1]))^2)
@@ -345,14 +345,14 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
-    cat("\r \t Particle Identification: Thresholding (1 of 5) \t \t \t")
+    cat("\r \t Particle Identification: Thresholding (1 of 5)                            ")
 
     # if only one value supplied, use same value for each color layer
     if (length(threshold) == 1) {threshold <- rep(threshold,3)}
 
     # automated threshold
     if(autoThres) {
-      cat("\r \t Particle Identification: Automated thresholding (1 of 5) \t \t \t")
+      cat("\r \t Particle Identification: Automated thresholding (1 of 5)            ")
 	  if (is.null(frames)) { frames <- n }
       threshold <- calcAutoThres(sbg[,,frames,],perFrame=perFrame)
 	}
@@ -361,7 +361,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         A <- array(NA,dim=dim(sbg))
         for (i in 1:3) {
             A[,,,i] <- sapply(1:dim(sbg)[3], function(x)
-                sbg[,,x,i] < quantile(sbg[,,x,i],
+                sbg[,,x,i] < stats::quantile(sbg[,,x,i],
                                        qthreshold),
                 simplify='array')
         }
@@ -388,10 +388,10 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0
 
-    cat("\r \t Particle Identification: Labeling (2 out of 5) \t \t \t")
+    cat("\r \t Particle Identification: Labeling (2 out of 5)                     ")
     A <- sapply(n, function (x) SDMTools::ConnCompLabel(sumRGB[,,x]),simplify='array')
     
-    cat("\r \t Particle Identification: Size filtering (3 out of 5) \t \t \t")
+    cat("\r \t Particle Identification: Size filtering (3 out of 5)               ")
     if (!is.null(pixelRange)) {
 	for (i in n) {
             allLabels <- tabulate(as.vector(A[,,i]),nbins=max(A[,,i]))
@@ -402,7 +402,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 	}
     }
 
-    cat("\r \t Particle Identification: Particle statistics (4 out of 5) \t \t \t")
+    cat("\r \t Particle Identification: Particle statistics (4 out of 5)          ")
     
     for (i in n) {
        ps <- SDMTools::PatchStat(A[,,i])[-1,]
@@ -419,7 +419,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
        if (i > 1) particleStats <- rbind(particleStats,ps)
     }    
 
-    cat("\r \t Particle Identification: Finalizing (5 out of 5) \t \t \t \t \t \n ")
+    cat("\r \t Particle Identification: Finalizing (5 out of 5)                       \n ")
     
     attr(particleStats,"images") <- A
     attr(particleStats, "class") <- c("TrDm","particles","data.frame")
@@ -464,7 +464,7 @@ calcAutoThres <- function(sbg,perFrame=FALSE){
  for(i in 1:ncolours){
   i1<- c( sbg[,,j,i] )
   pp[j,i]<-
-  optimize(function(a){
+  stats::optimize(function(a){
   t1<-(i1>a)+1
   sum((i1[t1==1]-mean(i1[t1==1]))^2)+
   sum((i1[t1==2]-mean(i1[t1==2]))^2)
@@ -474,7 +474,7 @@ calcAutoThres <- function(sbg,perFrame=FALSE){
  pp<-numeric(ncolours)
  for(i in 1:ncolours){
   i1<- c( sbg[,,,i] )
-  pp[i]<- optimize(f,range(i1))$min
+  pp[i]<- stats::optimize(f,range(i1))$min
  }
  }
  

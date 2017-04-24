@@ -20,7 +20,7 @@
 createTrajec <- function(nframes=20,nIndividuals=10,
                                  h=.05,rho=0,domain=c("square","circle"),
                                   correctBoundary=TRUE,
-                                  sizes=runif(nIndividuals)*.012+.01){
+                                  sizes=stats::runif(nIndividuals)*.012+.01){
 
     if(length(domain)==2){
         domain <- domain[1]
@@ -33,11 +33,11 @@ createTrajec <- function(nframes=20,nIndividuals=10,
                      init=NULL
 
                      if( domain=="square") {
-                         init<-  runif(2,0,1)
+                         init<-  stats::runif(2,0,1)
                      }
 
                      if( domain=="circle") {
-                         phi<-runif(1,0,2*pi); r=runif(1,0,1)
+                         phi<- stats::runif(1,0,2*pi); r= stats::runif(1,0,1)
                          init<-  r*c(cos(phi),sin(phi))
                      }
                      
@@ -103,10 +103,10 @@ samplePolar<-function(n=10,h=.05,rho=0,init=NULL){
     RHO<- matrix(rho,n,n)
     diag(RHO)<-1
     corPhiNorm<- MASS::mvrnorm(1,rep(0,n),RHO)
-    corPhiUnif<- pnorm(corPhiNorm)*2*pi
-    r<- replicate(n,sqrt(sum(rnorm(2,0,h)^2)))
+    corPhiUnif<- stats::pnorm(corPhiNorm)*2*pi
+    r<- replicate(n,sqrt(sum(stats::rnorm(2,0,h)^2)))
     steps<- cbind(r*cos(corPhiUnif),r*sin(corPhiUnif))
-    if(is.null(init)){init<- runif(2,0,1)}
+    if(is.null(init)){init<- stats::runif(2,0,1)}
     RES <- array(,c(n,4))
     RES[1,1:2]<-init
     for(i in 1:(n-1)){
@@ -128,7 +128,7 @@ add.organisms<- function(traj,col="red"){
     n.orgs<- max(traj$id)
     tapply(1:nrow(traj),traj$id,function(i){
 	ii<- which.max(traj[i,"t"])
-	polygon(
+	graphics::polygon(
             makeOrg(phi=-mean(traj[i[-ii],"phi"]),x=traj[i[ii],"x"],y=traj[i[ii],"y"],size=traj[i[1],"size"])
            ,col=col,border=NA)
     })
@@ -195,7 +195,7 @@ makeOrg<-function(length=30,size=.05,phi=0,x=0,y=0){
 ##' @export
 simulTrajec <-function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                          domain='square',correctBoundary=TRUE,
-                         sizes=runif(nIndividuals)*.012+.01,
+                         sizes=stats::runif(nIndividuals)*.012+.01,
                          staticNoise=FALSE,movingNoise=FALSE,
                          name="trajectory",
                          parsMoving=list(density=10,duration=10,size=1,
@@ -235,36 +235,36 @@ simulTrajec <-function(nframes=20,nIndividuals=10,h=0.02,rho=0,
     for(i in 1:z){
         Name <- paste(name,formatC(i,width=nchar(z),flag="0"),sep="_")
         if (is.null(height)) height <- width
-        png(paste(Name,".png",sep=""),width=width,height=height)
+        grDevices::png(paste(Name,".png",sep=""),width=width,height=height)
 
-        par(mar=c(0,0,0,0))
-        plot(0,type="n",xlim=c(lim,1),ylim=c(lim,1),xlab="",ylab="",asp=1,
+        graphics::par(mar=c(0,0,0,0))
+        graphics::plot(0,type="n",xlim=c(lim,1),ylim=c(lim,1),xlab="",ylab="",asp=1,
              xaxs="i", yaxs="i")
         
         ## add static noise
         if(staticNoise){
-            image(xx,xx,background$blurred,add=TRUE,
-                 col=colorRampPalette(c("transparent","grey"),alpha=TRUE)(64))
+            graphics::image(xx,xx,background$blurred,add=TRUE,
+                 col=grDevices::colorRampPalette(c("transparent","grey"),alpha=TRUE)(64))
         }
         
         ## add dynamic noise	
         if(movingNoise) {
             for(mb in 1:nrow(loc)){
                 if (!is.na(loc[mb,i,2])) {
-                    points(loc[mb,i,2],loc[mb,i,1],pch=16,cex=part$size[mb],
+                    graphics::points(loc[mb,i,2],loc[mb,i,1],pch=16,cex=part$size[mb],
                            col=part$color[mb])
                 }
              }	
         }
         
         if(lim == -1){
-		  lines(cos(seq(0,2*pi,l=300)),sin(seq(0,2*pi,l=300)),lty=3)
+		  graphics::lines(cos(seq(0,2*pi,l=300)),sin(seq(0,2*pi,l=300)),lty=3)
         }
         
         ## add particles
         ii <- which(traj$t==i)
         for(j in ii){
-          polygon(makeOrg(nframes,traj[j,"size"],
+          graphics::polygon(makeOrg(nframes,traj[j,"size"],
                         phi= ifelse(is.na(traj[j,"phi"]),
                               tapply(traj$phi,traj$id,mean,na.rm=T)[j==ii],
                               traj[j,"phi"]),
@@ -272,7 +272,7 @@ simulTrajec <-function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                   col="red",border=NA)
         }
 
-        dev.off()
+        grDevices::dev.off()
     }
     return(traj=traj)
 } 
@@ -300,22 +300,22 @@ generateBackground<- function(spotsDensity=10,
 
 	if(spotsDensity > 0){
       n <- round(spotsDensity)
-      xysp <- matrix(runif(2*n,lim,1),ncol=2)
+      xysp <- matrix(stats::runif(2*n,lim,1),ncol=2)
       if(domain == "circle"){
         cond <- any(toofar<-sqrt(xysp[,1]^2+xysp[,2]^2)>1)
         while(cond){
-          xysp[toofar,]<- runif(sum(toofar)*2,lim,1)
+          xysp[toofar,]<- stats::runif(sum(toofar)*2,lim,1)
           cond <- any(toofar<-sqrt(xysp[,1]^2+xysp[,2]^2)>1)
         }	
       }
-      if(is.null(sizes)) sizes <- runif(n,.1,1.5)
+      if(is.null(sizes)) sizes <- stats::runif(n,.1,1.5)
       if(blur){
         xx <-seq(lim,1,l=512)
-        xtsp <-xtabs(sizes~cut(xysp[,1],c(xx[1]-diff(xx[1:2]),xx)) + 
+        xtsp <-stats::xtabs(sizes~cut(xysp[,1],c(xx[1]-diff(xx[1:2]),xx)) + 
                      cut(xysp[,2],c(xx[1]-diff(xx[1:2]),xx)))
-        ffk <- outer(xx,xx,function(x,y){ dnorm(x,offset,blurCoef) *
-			                dnorm(y,offset,blurCoef) } ) * diff(xx[1:2])^2
-        blurred <- Re(fft(fft(ffk)*fft(xtsp),inverse=TRUE)) / length(xtsp)
+        ffk <- outer(xx,xx,function(x,y){ stats::dnorm(x,offset,blurCoef) *
+			                stats::dnorm(y,offset,blurCoef) } ) * diff(xx[1:2])^2
+        blurred <- Re(stats::fft(stats::fft(ffk)*stats::fft(xtsp),inverse=TRUE)) / length(xtsp	)
         blurred <- blurred[c(257:512,1:256),c(257:512,1:256)]
       }
 	}
@@ -343,12 +343,12 @@ generateBackground<- function(spotsDensity=10,
 addMovingNoiseBg <- function(nframe=30,density=40,size=1,duration=10,speed=10,
                              colRange=c(0,1)){
 
-    particles <- data.frame(size=runif(density,0,size),
+    particles <- data.frame(size=stats::runif(density,0,size),
                             duration=sample(1:duration,density,replace=TRUE),
-                            color=rgb(runif(density,0,0),
-                                      runif(density,colRange[1],colRange[2]),
-                                      runif(density,colRange[1],colRange[2]),
-                                      alpha=runif(density,colRange[1],colRange[2])),
+                            color=grDevices::rgb(stats::runif(density,0,0),
+                                      stats::runif(density,colRange[1],colRange[2]),
+                                      stats::runif(density,colRange[1],colRange[2]),
+                                      alpha=stats::runif(density,colRange[1],colRange[2])),
                             x=sample(1:512,density,replace=TRUE),
                             y=sample(1:512,density,replace=TRUE))  
 

@@ -195,10 +195,10 @@ linkTrajec <- function (recordsObject,particles,
     for (i in 1:(dim(G)[3]-r)) {
       inc <- particles$frame == i
       inc2 <- particles$frame == (i + r)
-      endTrajec <- as.vector(na.omit(label[apply(
+      endTrajec <- as.vector(stats::na.omit(label[apply(
                              trackRecord[,i:(i+1),1],1,function(x) 
                                              x[1] != 0 & x[2] == 0),i]))
-      beginTrajec <- as.vector(na.omit(label[apply(
+      beginTrajec <- as.vector(stats::na.omit(label[apply(
                              trackRecord[,(i+r-1):(i+r),1],1,function(x) 
                                                 x[1]==0 & x[2]>0),i+r]))
       beginTrajec <- beginTrajec[beginTrajec != 0]
@@ -206,7 +206,7 @@ linkTrajec <- function (recordsObject,particles,
       if (length(endTrajec)>0 & length(beginTrajec)>0) {    
         
         if (i > 1) {
-          tmp <- as.vector(na.omit(label[apply(
+          tmp <- as.vector(stats::na.omit(label[apply(
                                trackRecord[,i:(i+1),1],1,function(x) 
                                                x[1] != 0 & x[2] == 0),i-1]))
           tmp <- tmp[tmp > 1] - 1

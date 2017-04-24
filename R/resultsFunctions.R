@@ -100,7 +100,7 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,pixelRange=NU
                                     frames=frames)
       if (!is.null(nn)) {
         pca <- any(names(attributes(nn)) == 'pca')
-        partIden <- update(partIden,nn,pca=pca,colorimages=allFullImages,
+        partIden <- stats::update(partIden,nn,pca=pca,colorimages=allFullImages,
                            sbg=allImages)
       }
       records <- trackParticles(partIden,L=L,R=R,weight=weight)
@@ -109,7 +109,7 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,pixelRange=NU
       dat$Count[i] <- summary(records,incThres=incThres)$N
 
       if (plotOutput == TRUE) {
-        plot(records,type=plotType,colorimages=allFullImages,name=i,
+        graphics::plot(records,type=plotType,colorimages=allFullImages,name=i,
              path=path,incThres=incThres)
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
@@ -145,13 +145,13 @@ is.TrDm <- function(object) {
 ##' @param \dots further arguments passed to or from other methods.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
+summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
   if (sum(class(object) == 'particles') > 0) {
     n <- 1:length(object)
     names(n) <- 1:length(n)
     numbers <- tapply(object$patchID,object$frame,length)                     
     mu <- mean(numbers)
-    sdd <- sd(numbers)
+    sdd <- stats::sd(numbers)
     cv <- sdd/mu
     thr <- attributes(object)$threshold
     tab <- cbind(Mean=mu,SD=sdd,CV=cv)
@@ -164,7 +164,7 @@ summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
     if (is.null(incThres)) {
       dist <- apply(object$trackRecord[,,1],1,function(x) 
                     sum(!is.na(x)))
-      mod <- kmeans(dist,2)
+      mod <- stats::kmeans(dist,2)
       incLabels <- mod$cluster == which.max(mod$centers)
       incThres <- max(dist[!incLabels])
     } else {
@@ -179,7 +179,7 @@ summary.TrDm <- function(object,incThres=NULL,funSize=median,...) {
                                sqrt(diff(tr[x,,1])^2 + diff(tr[x,,2])^2)))
 
     perID <- apply(sr,1,funSize,na.rm=T)
-    sdd <- apply(sr,1,sd,na.rm=T)
+    sdd <- apply(sr,1,stats::sd,na.rm=T)
     muD <- apply(dr,1,sum,na.rm=T) # total movement
     muC <- apply(cr,c(1,3),mean,na.rm=T) # mean colors
         
@@ -316,10 +316,10 @@ print.TrDm <- function(x,...) {
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                       cl=1,path='~',name='animation',...) {
 
-  jet.colors <- colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
+  jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
                                  "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
   
-  oldPar <- par()
+  oldPar <- graphics::par()
 
    if (any(class(x) == 'colorimage')) {  
     if (length(dim(x)) > 3) {
@@ -333,7 +333,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
     if (is.null(incThres)) {
       dist <- apply(x$trackRecord[,,1],1,function(x) 
                     sum(!is.na(x)))
-      mod <- kmeans(dist,2)
+      mod <- stats::kmeans(dist,2)
       incLabels <- mod$cluster == which.max(mod$centers)
       incThres <- max(dist[!incLabels])
     } else {
@@ -343,35 +343,35 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
       if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
                                                     envir=.GlobalEnv) }
       if (is.null(type)) {
-        par(mfrow=c(1,2))
+        graphics::par(mfrow=c(1,2))
         tmp <- x$trackRecord[incLabels,,,drop=FALSE]
-        plot(100,100,xlim=c(0,1),ylim=c(0,1),xlab='x',ylab='y',...)
+        graphics::plot(100,100,xlim=c(0,1),ylim=c(0,1),xlab='x',ylab='y',...)
         for (i in 1:nrow(tmp)) {
-          lines(tmp[i,,1]/ncol(colorimages),1-tmp[i,,2]/nrow(colorimages),
+          graphics::lines(tmp[i,,1]/ncol(colorimages),1-tmp[i,,2]/nrow(colorimages),
                col=paste0(jet.colors(nrow(tmp))[i],'99'),lwd=1.5)
         }
         
         tmp <- x$sizeRecord[incLabels,,drop=FALSE]
         perID <- apply(tmp,1,mean,na.rm=T)
-        sdperID <- apply(tmp,1,sd,na.rm=T)
-        plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,bg='#00000050',
+        sdperID <- apply(tmp,1,stats::sd,na.rm=T)
+        graphics::plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,bg='#00000050',
              xlab='Labeled particle',ylab='Size (pixels)',...)
-        segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
+        graphics::segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
                  y1=perID[order(perID)]+sdperID[order(perID)])
       } else {
           if (type == 'sizes') {
           x <- x$sizeRecord[incLabels,,drop=FALSE]
           perID <- apply(x,1,mean,na.rm=T)
-          sdperID <- apply(x,1,sd,na.rm=T)
-          plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,bg='#00000050',
+          sdperID <- apply(x,1,stats::sd,na.rm=T)
+          graphics::plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,bg='#00000050',
                xlab='Labeled particle',ylab='Size (pixels)',...)
-          segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
+          graphics::segments(x0=1:length(perID),y0=perID[order(perID)]-sdperID[order(perID)],
                    y1=perID[order(perID)]+sdperID[order(perID)])
         } else if (type == 'trajectories') {
             x <- x$trackRecord[incLabels,,,drop=FALSE]
-            plot(colorimages,...)
+            graphics::plot(colorimages,...)
             for (i in 1:nrow(x)) {
-            lines(x[i,,1]/ncol(colorimages),1-x[i,,2]/nrow(colorimages),
+            graphics::lines(x[i,,1]/ncol(colorimages),1-x[i,,2]/nrow(colorimages),
                   col=paste0(jet.colors(nrow(x))[i],'99'),lwd=1.5)
             }
         } else if (type == 'animation') {
@@ -386,14 +386,14 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                             nrow(colorimages),nrow(colorimages)+1)
             rownames(x) <- 1:nrow(x)
            for (i in 1:ncol(x)) {
-              png(paste0('images/images',i,'.png'),width=width,height=height)
-              plot(colorimages,frame=i)
-              points(x[,i,1]/width,
+              grDevices::png(paste0('images/images',i,'.png'),width=width,height=height)
+              graphics::plot(colorimages,frame=i)
+              graphics::points(x[,i,1]/width,
                      1-x[,i,2]/height,
-                     col=rainbow(nrow(x))[as.numeric(rownames(x))],
+                     col=grDevices::rainbow(nrow(x))[as.numeric(rownames(x))],
                      cex=2,lwd=2)
               cat("\r \t Animation:",i,"out of",ncol(x))
-              dev.off()
+              grDevices::dev.off()
            }
            system(paste0("avconv -loglevel quiet -r 10 -i 'images/images'%d.png -b:v 1000k ",name,".mp4"))
            system("rm -r images")
@@ -402,15 +402,15 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
         }
      }  
   } else if (any(class(x) == 'sbg')) {
-    image(x[,,cl,frame])
+    graphics::image(x[,,cl,frame])
   } else if (any(class(x) == 'particles')) {
     if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
                                                   envir=.GlobalEnv) }
-    plot(colorimages,frame=frame)
+    graphics::plot(colorimages,frame=frame)
     inc <- x$frame == frame
-    points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
+    graphics::points(x[inc,]$x/ncol(colorimages),1-x[inc,]$y/nrow(colorimages),
            cex=1.2)
   } 
-  par(oldPar[c('mar','oma','mfrow')])
+  graphics::par(oldPar[c('mar','oma','mfrow')])
 }
 

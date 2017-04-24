@@ -38,9 +38,9 @@ manuallySelect <- function (particles,colorimages=NULL,
   totx <- ncol(colorimages)
   toty <- nrow(colorimages)
  
-  dev.new(width=10, height=7)
-  layout(matrix(c(1:4,rep(5,20)), 6, 4, byrow = TRUE))
-  par(mar=c(0,0,0,0))
+  grDevices::dev.new(width=10, height=7)
+  graphics::layout(matrix(c(1:4,rep(5,20)), 6, 4, byrow = TRUE))
+  graphics::par(mar=c(0,0,0,0))
   buttons <- makeButtons()
   
   x <- raster::brick(colorimages[,,,frame])
@@ -48,17 +48,17 @@ manuallySelect <- function (particles,colorimages=NULL,
 
   #plot(colorimages,frame=n,bty='n')
   inc <- particles$frame == n
-  points(particles[inc,]$x/totx,
+  graphics::points(particles[inc,]$x/totx,
        1-particles[inc,]$y/toty,col='blue',cex=1.5)
-  im <- par('usr','fig','plt','mfg') 
+  im <- graphics::par('usr','fig','plt','mfg') 
   
   options(locatorBell = FALSE)
   
   continue <- TRUE
   id <- st <- as.numeric()
   while (continue == TRUE) {
-    par(mfg=c(2,1),usr=im$usr)
-    pick <- locator(1)
+    graphics::par(mfg=c(2,1),usr=im$usr)
+    pick <- graphics::locator(1)
   
     # calculate devicee coordinates
     b0 <- im$usr[3]
@@ -71,35 +71,35 @@ manuallySelect <- function (particles,colorimages=NULL,
     if (pick$x > buttons$g$fig[1] & pick$x < buttons$g$fig[2] & 
         y > buttons$g$fig[3] & y < buttons$g$fig[4]) {
       makeButtons()
-      par(mfg=c(1,2),usr=buttons$g$usr)
-      polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      text(x=0.5,y=0.5,label='True positives',cex=2)
+      graphics::par(mfg=c(1,2),usr=buttons$g$usr)
+      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
+      graphics::text(x=0.5,y=0.5,label='True positives',cex=2)
       status <- 'g'
       
     } else if (pick$x > buttons$f$fig[1] & pick$x < buttons$f$fig[2] & 
                y > buttons$f$fig[3] & y < buttons$f$fig[4]) {
       makeButtons()
-      par(mfg=c(1,3),usr=buttons$f$usr)
-      polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      text(x=0.5,y=0.5,label='False positives',cex=2)
+      graphics::par(mfg=c(1,3),usr=buttons$f$usr)
+      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
+      graphics::text(x=0.5,y=0.5,label='False positives',cex=2)
       status <- 'f'
       
     } else if (pick$x > buttons$C$fig[1] & pick$x < buttons$C$fig[2] & 
                y > buttons$C$fig[3] & y < buttons$C$fig[4]) {
       makeButtons()
-      par(mfg=c(1,4),usr=buttons$C$usr)
-      polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      text(x=0.5,y=0.5,label='Delete',cex=2)
+      graphics::par(mfg=c(1,4),usr=buttons$C$usr)
+      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
+      graphics::text(x=0.5,y=0.5,label='Delete',cex=2)
       status <- 'rm'
       
     } else if (pick$x > im$fig[1] & pick$x < im$fig[2] & 
                y > im$fig[3] & y < im$fig[4]) {
-      par(mfg=c(2,1),usr=im$usr)
+      graphics::par(mfg=c(2,1),usr=im$usr)
       tmp <- (1-particles[inc,]$y/toty - pick$y)^2 + 
               (particles[inc,]$x/totx - pick$x)^2
       patches <- particles[inc,]$patchID[which(tmp == min(tmp))]
       tmp <- particles[inc,][particles[inc,]$patchID %in% patches,]
-      points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
+      graphics::points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
              cex=ifelse(status == 'rm',2.2,2),pch=5)
       if (status == 'g' | status == 'f') {
         id <- c(id, tmp$patchID)
@@ -114,7 +114,7 @@ manuallySelect <- function (particles,colorimages=NULL,
       continue <- FALSE
     } else {}
   }
-  dev.off()
+  grDevices::dev.off()
 
 
   res <- list(wrong=id[st=='f'],correct=id[st=='g'],frame=n)
@@ -135,33 +135,33 @@ manuallySelect <- function (particles,colorimages=NULL,
 
 ## Make buttons
 makeButtons <- function () {
-  par(mfg=c(1,1))
-  plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
+  graphics::par(mfg=c(1,1))
+  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
        ylim=c(0,1))
-  polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='black',border=NA)
-  text(x=0.5,y=0.5,label='Stop',cex=2,col='white')
-  s <- par('usr','fig','plt','mfg') 
+  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='black',border=NA)
+  graphics::text(x=0.5,y=0.5,label='Stop',cex=2,col='white')
+  s <- graphics::par('usr','fig','plt','mfg') 
 
-  par(mfg=c(1,2))
-  plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
+  graphics::par(mfg=c(1,2))
+  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
        ylim=c(0,1))
-  polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#00FF0050',border=NA)
-  text(x=0.5,y=0.5,label='True positives',cex=2)
-  g <- par('usr','fig','plt','mfg') 
+  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#00FF0050',border=NA)
+  graphics::text(x=0.5,y=0.5,label='True positives',cex=2)
+  g <- graphics::par('usr','fig','plt','mfg') 
   
-  par(mfg=c(1,3))
-  plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
+  graphics::par(mfg=c(1,3))
+  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
        ylim=c(0,1))
-  polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#FF000050',border=NA)
-  text(x=0.5,y=0.5,label='False positives',cex=2)
-  f <- par('usr','fig','plt','mfg') 
+  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#FF000050',border=NA)
+  graphics::text(x=0.5,y=0.5,label='False positives',cex=2)
+  f <- graphics::par('usr','fig','plt','mfg') 
 
-  par(mfg=c(1,4))
-  plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
+  graphics::par(mfg=c(1,4))
+  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
        ylim=c(0,1))
-  polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#EFFF0050',border=NA)
-  text(x=0.5,y=0.5,label='Delete',cex=2)
-  C <- par('usr','fig','plt','mfg')
+  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#EFFF0050',border=NA)
+  graphics::text(x=0.5,y=0.5,label='Delete',cex=2)
+  C <- graphics::par('usr','fig','plt','mfg')
   return(list(f=f,C=C,g=g,s=s))
 }
 
@@ -294,11 +294,12 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
 ## @seealso \code{\link{neuralnet}}, \code{\link{compute}}
 ## @author Marjolein Bruijning & Marco D. Visser
 runNN <- function(predictors,trainingData,validationData,hidden=3,reps=5,stat='F',...) {
-  n <- neuralnet::neuralnet(as.formula(paste("trY ~ ", paste(predictors, collapse= "+"))),
+  n <- neuralnet::neuralnet(stats::as.formula(paste("trY ~ ", paste(predictors, 
+                                              collapse= "+"))),
                  data=trainingData,hidden=hidden,rep=reps,...)
   nCom <- neuralnet::compute(n,validationData[,predictors])
   thr <- optThr(trY=validationData$trY,stat=stat,
-                nnP=plogis(nCom$net.result))$maximum # find threshold
+                nnP=stats::plogis(nCom$net.result))$maximum # find threshold
   res <- list(nn=n,thr=thr,predicted=nCom,trainingData=validationData,
               hidden=hidden,reps=reps,predictors=predictors,stat=stat)
   class(res) <- 'nnTrackdem'
@@ -342,7 +343,7 @@ optThr <- function(trY,nnP,
   }
 
   flipper <- ifelse(stat=="FN",FALSE,TRUE)
-  optimize(ln,c(0,1),maximum = flipper)
+  stats::optimize(ln,c(0,1),maximum = flipper)
 }
 
 ## Calculate different statistics for trained neural network.
@@ -421,12 +422,12 @@ update.particles <- function(object,neuralnet,pca=TRUE,...) {
     
     
     if (pca == TRUE) {
-	   p <- predict(attributes(neuralnet)$pca,object)
+	   p <- stats::predict(attributes(neuralnet)$pca,object)
        
     } else p <- object
     
   pred <- neuralnet$bestNN$predictors
-  newParticleStats <- plogis(neuralnet::compute(neuralnet$bestNN$nn,
+  newParticleStats <- stats::plogis(neuralnet::compute(neuralnet$bestNN$nn,
                                              p[,pred])$net.result[,1])
 
   tmp <- newParticleStats > neuralnet$bestNN$thr
@@ -592,8 +593,8 @@ testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
     
     if (pca == TRUE) {
       d <- dat[,predictors]
-      pc.cr <- princomp(d,cor=TRUE)
-      datComp= predict(pc.cr)
+      pc.cr <- stats::princomp(d,cor=TRUE)
+      datComp <- stats::predict(pc.cr)
       datComp <- datComp[,cumsum(pc.cr$sdev^2/sum(pc.cr$sdev^2)) < thr]
       predictors <- colnames(datComp)
       dat <- as.data.frame(cbind(datComp,dat[,'trY',drop=FALSE]))
