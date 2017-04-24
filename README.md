@@ -5,6 +5,7 @@ Particle tracking and demography
 ---
 
 ![](images/animation2.gif)
+![](images/animation.gif)
 
 A test version of this package has been released (0.1 on CRAN), bug reports and comments are welcome. Post these ![here](https://github.com/marjoleinbruijning/trackdem/issues).
 
@@ -115,7 +116,6 @@ for (i in 1:length(unique(traj$id))) {
 
 ```
 ## Examples of output
-![](images/animation.gif)
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
 
