@@ -115,7 +115,7 @@ for (i in 1:length(unique(traj$id))) {
 
 ```
 ## Examples of output
-![](images/animation2.gif)
+![](images/animation.gif)
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
 
