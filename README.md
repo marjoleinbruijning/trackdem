@@ -4,10 +4,9 @@
 Particle tracking and demography
 ---
 
-![](images/animation2.gif)
-![](images/animation.gif)
+![](images/animation2.gif) ![](images/animation.gif)
 
-A test version of this package has been released (0.1 on CRAN), bug reports and comments are welcome. Post these ![here](https://github.com/marjoleinbruijning/trackdem/issues).
+A test version of this package has been released (0.1 on CRAN), bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
 
 ## Abstract
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
