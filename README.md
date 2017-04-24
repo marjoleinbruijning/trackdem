@@ -4,7 +4,7 @@
 Particle tracking and demography
 ---
 
-![](images/animation.mp4)
+![](images/animation.gif)
 
 This package is currently being developed and tested.
 
