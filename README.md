@@ -22,7 +22,7 @@ the training of an artifical neural network for noise filtering.
 
 ## Installation
 
-**trackdem** can now be installed from ![CRAN](https://cran.r-project.org/web/packages/trackdem/index.html) or from github.
+**trackdem** can now be installed from <a href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
 
 ```r
 ## Install from CRAN
@@ -34,7 +34,7 @@ require(devtools)
 install_github("marjoleinbruijning/trackdem")
 ```
 
-To use the automated video to image and metadata creation function from **trackdem** users should download and install Python 2.7,  Libav and ![ExifTool](http://www.sno.phy.queensu.ca/~phil/exiftool/install.html).
+To use the automated video to image and metadata creation function from **trackdem** users should download and install Python 2.7,  Libav and <a href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
 
 Ubuntu user can copy & paste the following commands in a terminal 
 ```
