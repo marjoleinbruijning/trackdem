@@ -2,7 +2,7 @@
 % Please edit documentation in R/nnFunctions.R
 \name{manuallySelect}
 \alias{manuallySelect}
-\title{Manual selection of true and false positives.}
+\title{Manually identify true and false positives with a GUI.}
 \usage{
 manuallySelect(particles, colorimages = NULL, frame = NULL)
 }
@@ -22,9 +22,9 @@ List containing three elements: true positives, false positives,
 and the evaluated frame.
 }
 \description{
-\code{manuallySelect} is a function to to create training data that
-by manually selecting false and true positives. The created training
-data can be implemented in a neural net.
+\code{manuallySelect} opens a graphic user iterface to create
+ training data for a neural net by manually selecting true and
+ false positives (respectively, correctly identified particles and noise).
 }
 \examples{
 \dontrun{
@@ -34,4 +34,3 @@ manuallySelect(particles=partIden,frame=1)
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

@@ -189,7 +189,7 @@ linkTrajec <- function (recordsObject,particles,
   cat("\t Link track segments: 0 %")
   
   for (r in 1:R) {
-    A <- array(NA,dim=c(1000,1000,length(n)-r-1))
+    A <- array(NA,dim=c(2000,2000,length(n)-r-1))
     links <- list()
       
     for (i in 1:(dim(G)[3]-r)) {
@@ -290,7 +290,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
   n <- unique(particles$frame)
   
-  G <- array(NA,dim=c(1000,1000,length(n)-1))
+  G <- array(NA,dim=c(2000,2000,length(n)-1))
   links <- list()
 
   cat("\t Create track segments: ","0","%")

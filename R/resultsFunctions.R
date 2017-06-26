@@ -314,7 +314,7 @@ print.TrDm <- function(x,...) {
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
-                      cl=1,path='~',name='animation',...) {
+                      cl=1,path=NULL,name='animation',...) {
 
   jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", "cyan",
                                  "#7FFF7F", "yellow", "#FF7F00", "red", "#7F0000")) 
@@ -375,6 +375,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                   col=paste0(jet.colors(nrow(x))[i],'99'),lwd=1.5)
             }
         } else if (type == 'animation') {
+            if(is.null(path)) path <- getwd()
             oldwd <- getwd()
             setwd(path)
             y <- x$sizeRecord[incLabels,]
@@ -386,7 +387,8 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                             nrow(colorimages),nrow(colorimages)+1)
             rownames(x) <- 1:nrow(x)
            for (i in 1:ncol(x)) {
-              grDevices::png(paste0('images/images',i,'.png'),width=width,height=height)
+              grDevices::png(paste0('images/images',i,'.png'),width=width,
+                             height=height)
               graphics::plot(colorimages,frame=i)
               graphics::points(x[,i,1]/width,
                      1-x[,i,2]/height,

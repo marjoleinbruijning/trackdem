@@ -5,9 +5,10 @@
 ##' be converted into an image sequence.
 ##' For each movie, a new directory is created containing the recorded date and 
 ##' name of the movie.
-##' @param moviepath Path to directory containing the video files.
-##' @param imagepath Path to location of directory in which image sequences should
-##' be saved.
+##' @param moviepath Path to existing directory containing the video files.
+##' By default, 'Movies' is used.
+##' @param imagepath Path to location of an existing directory in which image sequences should
+##' be saved. By default, 'ImageSequences' is used.
 ##' @param x Number of pixels in horizontal direction; default is 1915 (HD).
 ##' @param y Number of pixels in vertical direction; default is 1080 (HD).
 ##' @param fps Frames per second, default is 15.
@@ -15,16 +16,33 @@
 ##' When movie length is greater than \code{nsec}, the \code{nsec} seconds 
 ##' in the exact middle of the movie are exported.  
 ##' @param ext The extension of the video. Default is \code{'MTS'}. All
-##' formats supported by "avconv" are accepted. 
-##' @param path Path to location where temporary python file will be saved. Default 
+##' formats supported by avconv are accepted. 
+##' @param path Path to location where temporary Python file will be saved. Default 
 ##' is working directory.
+##' @param libavpath Path to location where the executable file for libav
+##' can be found (named 'avconv.exe'), in case it is not found automatically.
+##' For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.
+##' @param exiftoolpath Path to location where the executable file for 
+##' ExifTool can be found, in case it is not found automatically. 
+##' For instance, use \code{'exiftool(-k).exe'}, if located in the working 
+##' directory. 
+##' @param pythonpath Path to location where the executable file for 
+##' Python 2.7 can be found, in case it is not found automatically. For 
+##' instance, use \code{'C:/Python27/python.exe'}.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-createImageSeq <- function (moviepath,imagepath,x=1915,
-                            y=1080,fps=15,nsec=2,ext='MTS',path=getwd()) {
+createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
+                            x=1915,
+                            y=1080,fps=15,nsec=2,ext='MTS',path=getwd(),
+                            avconvpath=NULL,exiftoolpath=NULL,
+                            pythonpath=NULL) {
         
     ext <- paste0("'.",tolower(ext),"'")
-    fileConn<-file(paste(path,'/tmp.py',sep=''))
+    fileConn <- file(paste(path,'/tmp.py',sep=''))
+
+    if (is.null(avconvpath)) avconvpath <- 'avconv'
+    if (is.null(exiftoolpath)) exiftoolpath <- 'exiftool'
+    if (is.null(pythonpath)) pythonpath <- 'python'
     
     writeLines(c(
         paste("import os"),
@@ -35,7 +53,7 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
         paste("def conv_command(filename, targetDirName, start, stop):"),
         paste("    inFile = os.path.join(movieDir, filename)"),
         paste("    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')"),
-        paste("    return ['avconv',"),
+        paste("    return ['",avconvpath,"',",sep=''),
         paste("            '-loglevel', 'quiet',"),
         paste("            '-i', inFile,"),
         paste("            '-r', '",fps,"',",sep=''),
@@ -51,7 +69,7 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
         paste("movieNames = []"),
         paste("for filename in os.listdir(movieDir):"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
-        paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieName.isdigit() or not movieExtension.lower() == ",ext,":"),
+        paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieExtension.lower() == ",ext,":"),
         paste("        print 'File %s has the wrong name or is a directory, therefore skipped' % filename"),
         paste("    else:"),
         paste("        movieNames.append(filename)"),
@@ -60,12 +78,12 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
         paste("for filename in movieNames:"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
         paste("    try:"),
-        paste("        targetDirName = string.translate(subprocess.check_output(['exiftool', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName"),
+        paste("        targetDirName = string.translate(subprocess.check_output(['",exiftoolpath,"', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName",sep=''),
         paste("    except Exception:"),
         paste("        print 'Error in obtaining date in file %s; therefore skipped' % filename"),
         paste("        continue"),
         paste("    try:"),
-        paste("        duration = float(string.translate(subprocess.check_output(['exiftool', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))"),
+        paste("        duration = float(string.translate(subprocess.check_output(['",exiftoolpath,"', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))",sep=''),
         paste("    except Exception:"),
         paste("        print 'Error in obtaining duration movie in file %s, therefore skipped' % filename"),
         paste("        continue"),
@@ -88,7 +106,7 @@ createImageSeq <- function (moviepath,imagepath,x=1915,
     ), fileConn, sep = "\n")
 
     close(fileConn) 
-    system(paste('python ',path,'/tmp.py',sep=''))
+    system(paste(pythonpath," ",path,'/tmp.py',sep=''))
     file.remove(paste('tmp.py',sep=''))
 }
 

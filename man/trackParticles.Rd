@@ -10,15 +10,20 @@ trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1))
 \item{particles}{Object of class 'particles',
 obtained using \code{\link{identifyParticles}}.}
 
-\item{L}{Numeric. Maximum cost for linking to particle to another particle. When the cost is larger, 
-particle will be not be linked (resulting in the begin or end of a segment).
+\item{L}{Numeric. Maximum cost for linking a particle to another particle. When the cost is larger, 
+particles will be not be linked (resulting in the begin or end of a segment).
  Default set at \code{50}.}
 
 \item{R}{Integer. Link to how many subsequent frames? Default set
 at \code{2}.}
 
-\item{weight}{Vector containing weights to calculate costs. First number 
-gives the weight for differences in x and y coordinates; second number 
+\item{weight}{Vector containing 3 weights to calculate costs. Depending 
+on the study system user may want to value certain elements over others.
+For instance, when individuals can vary in size over frames
+(which happens when objects move away or towards a camera)
+the "size" weight may be decreased. Weights are ordered as follows; 
+first number gives the weight for differences in x and y coordinates;
+second number 
 gives the weight for particle size differences; third number gives the 
 difference bewteen the predicted location and the observed location. The latter 
 is calculated using the location of the identified particle in the previous frame.}
@@ -27,7 +32,7 @@ is calculated using the location of the identified particle in the previous fram
 A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 }
 \description{
-\code{trackParticles} is a function reconstruct trajectories by linking particles.
+\code{trackParticles} attempts to reconstruct trajectories by linking particles.
 }
 \examples{
 \dontrun{
@@ -39,4 +44,3 @@ A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

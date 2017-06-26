@@ -4,30 +4,49 @@
 \alias{createImageSeq}
 \title{Create image sequence}
 \usage{
-createImageSeq(moviepath, imagepath, x = 1915, y = 1080, fps = 15,
-  nsec = 2, ext = "MTS", path = getwd())
+createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
+  x = 1915, y = 1080, fps = 15, nsec = 2, ext = "MTS",
+  path = getwd(), avconvpath = NULL, exiftoolpath = NULL,
+  pythonpath = NULL)
 }
 \arguments{
-\item{moviepath}{Path to directory containing the video files.}
+\item{moviepath}{Path to existing directory containing the video files.
+By default, 'Movies' is used.}
 
-\item{imagepath}{Path to location of directory in which image sequences should
-be saved.}
+\item{imagepath}{Path to location of an existing directory in which image sequences should
+be saved. By default, 'ImageSequences' is used.}
 
-\item{x}{Number of pixels in horizontal direction; default is 1915.}
+\item{x}{Number of pixels in horizontal direction; default is 1915 (HD).}
 
-\item{y}{Number of pixels in vertical direction; default is 1080.}
+\item{y}{Number of pixels in vertical direction; default is 1080 (HD).}
 
 \item{fps}{Frames per second, default is 15.}
 
-\item{nsec}{Duration of movie that is exported, default is 2 seconds.}
+\item{nsec}{Duration of movie that is exported, default is 2 seconds.
+When movie length is greater than \code{nsec}, the \code{nsec} seconds 
+in the exact middle of the movie are exported.}
 
-\item{ext}{The extension of the video. Default is \code{'MTS'}.}
+\item{ext}{The extension of the video. Default is \code{'MTS'}. All
+formats supported by avconv are accepted.}
 
-\item{path}{Path to location where temporary python file will be saved. Default 
+\item{path}{Path to location where temporary Python file will be saved. Default 
 is working directory.}
+
+\item{exiftoolpath}{Path to location where the executable file for 
+ExifTool can be found, in case it is not found automatically. 
+For instance, use \code{'exiftool(-k).exe'}, if located in the working 
+directory.}
+
+\item{pythonpath}{Path to location where the executable file for 
+Python 2.7 can be found, in case it is not found automatically. For 
+instance, use \code{'C:/Python27/python.exe'}.}
+
+\item{libavpath}{Path to location where the executable file for libav
+can be found (named 'avconv.exe'), in case it is not found automatically.
+For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
 }
 \description{
-\code{createImageSeq} is a function to create an image sequence (.png) using
+\code{createImageSeq} creates an image sequences (.png) using
  video files as input. All movies within a directory will  
 be converted into an image sequence.
 For each movie, a new directory is created containing the recorded date and 
@@ -36,4 +55,3 @@ name of the movie.
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

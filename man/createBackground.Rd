@@ -11,16 +11,17 @@ createBackground(colorimages, method = "mean")
 \code{\link{loadImages}}.}
 
 \item{method}{Use \code{method='mean'} to calculate the mean value for each pixel and color.
-Use \code{method='mean2'} to deflate dark values (note, this can only be 
+Use \code{method='powerroot'} to deflate dark values (note, this can only be 
 used for dark particles on a light background). Use \code{method='filter'} to 
-replace pixels in which movement has occurred with the mode of neighboring values.}
+replace pixels in which movement has occurred with the mode of neighboring values.
+Note that \code{method='filter'} is computationally more intensive.}
 }
 \value{
 Array of class 'TrDm' and 'colorimage' containing detected background.
 }
 \description{
-\code{createBackground} is a function to detect a still background,
-containing all motionless particles. Three different methods to detect
+\code{createBackground} detects the still background,
+containing all motionless pixels (non particles). Three different methods to detect
 the background can be used.
 }
 \examples{
@@ -32,4 +33,3 @@ plot(stillBack)
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

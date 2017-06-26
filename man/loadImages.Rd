@@ -4,27 +4,27 @@
 \alias{loadImages}
 \title{Load .png images}
 \usage{
-loadImages(direcPictures, filenames = NULL, nImages = 1:30,
-  xranges = NULL, yranges = NULL)
+loadImages(dirPictures, filenames = NULL, nImages = 1:30, xranges = NULL,
+  yranges = NULL)
 }
 \arguments{
-\item{direcPictures}{The path of the folder where the images can be found.}
+\item{dirPictures}{The path of the folder where the images can be found.}
 
-\item{filenames}{Default is \code{NULL}. If not all files should be loaded, here specify
-which files to use, as a character string.}
+\item{filenames}{Default is \code{NULL}, or all files. If all files should 
+NOT be loaded, here specify which files to use, as a character string.}
 
 \item{nImages}{Numeric vector specifying which images in the directory 
 should be loaded; default is \code{1:30}.}
 
-\item{xranges}{By default full image is loaded; specify to subset the number of columns.}
+\item{xranges}{By default the full image is loaded; specify to subset the number of columns.}
 
-\item{yranges}{By default full image is loaded; specify to subset the number of rows.}
+\item{yranges}{By default the full image is loaded; specify to subset the number of rows.}
 }
 \value{
 Array of class 'TrDm' and 'colorimages' containing all loaded images.
 }
 \description{
-\code{loadImages} is a function to load png images as a three dimensional array.
+\code{loadImages} loads png images as three dimensional arrays.
 The objects created through the function can be used for image analysis.
 }
 \examples{
@@ -37,7 +37,4 @@ images
 }
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
-
-Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

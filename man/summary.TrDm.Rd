@@ -4,7 +4,8 @@
 \alias{summary.TrDm}
 \title{\code{summary} methods for class 'TrDm'.}
 \usage{
-\method{summary}{TrDm}(object, incThres = NULL, funSize = median, ...)
+\method{summary}{TrDm}(object, incThres = NULL, funSize = stats::median,
+  ...)
 }
 \arguments{
 \item{object}{an object of class 'TrDm'.}
@@ -23,4 +24,3 @@ By default an automated threshold is calculated. Only for 'tracked' objects.}
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

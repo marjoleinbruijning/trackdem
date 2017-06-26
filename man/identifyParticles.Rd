@@ -10,15 +10,18 @@ identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
 }
 \arguments{
 \item{sbg}{Array containing images containing all moving particles,
-as obtained by \code{\link{subtractBackground}}.}
+as obtained from \code{\link{subtractBackground}}.}
 
 \item{threshold}{Thresholds for including particles. A numeric vector
 containing three values; one for each color. Otherwise, supply one value 
 which is to be used for all three colors. For a chosen quantile
-for each frame, use qthreshold. Default is \code{threshold=-0.1}.}
+for each frame, use \code{qthreshold}. Default is \code{threshold=-0.1}, 
+ which works for dark particles on a light background. Alternatively,
+set \code{autoThres} below for an automatic threshold.}
 
 \item{pixelRange}{Default is \code{NULL}. Numeric vector with minimum and maximum particle size, used as a
-first filter to identify particles.}
+first filter to identify particles. Use if particle of interest are of a known size
+range (in pixels).}
 
 \item{qthreshold}{Default is \code{NULL}. Supply a value, to do thresholding based on
 quantile. Quantile is calculated for each
@@ -38,15 +41,16 @@ Default is \code{FALSE}.}
 each frame seperately. Default is \code{FALSE}. Note that is can be computationally intensive 
 to calculate a threshold for each frame.}
 
-\item{frames}{Supply a numeric vector to specifify if automated threshold should not be calculated based 
-on all frames.}
+\item{frames}{When \code{autoThres=TRUE} and \code{allFrames=FALSE}, supply a
+numeric vector specifying over which frames the automated threshold 
+should be calculated on (e.g. \code{c(1,3,5,7,9,11)} for all odd frames from 1 to 11).}
 }
 \value{
 Returns a dataframe of class 'TrDm' and 'particles', containing
 particle statistics with identified particles for each frame
 }
 \description{
-\code{identifyParticles} is a function to identify particles using the 
+\code{identifyParticles} identifies particles using the 
 subtracted images obtained from \code{\link{subtractBackground}}.
 }
 \examples{
@@ -59,4 +63,3 @@ subtracted images obtained from \code{\link{subtractBackground}}.
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

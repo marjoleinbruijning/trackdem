@@ -34,15 +34,40 @@ require(devtools)
 install_github("marjoleinbruijning/trackdem")
 ```
 
-To use the automated video to image and metadata creation function from **trackdem** users should download and install Python 2.7,  Libav and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
+To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/download/releases/2.7/'>Python 2.7</a>,  <a target='_blank' href='http://www.libav.org'>Libav</a> and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
 
-Ubuntu user can copy & paste the following commands in a terminal 
+Ubuntu users can paste the following commands in a 
+terminal to install libav and ExifTool (Python 2.7 should be included 
+by default):
+
 ```
 sudo apt-get update
 sudo apt-get install libav-tools
+sudo apt-get install libimage-exiftool-perl
 ``` 
 
-A guide for Mac and Windows users will follow asap.
+Mac users can paste the following commands in a terminal 
+to install libav:
+
+```
+## Make sure that homebrew is installed, see: https://brew.sh/
+## Install libav
+brew install libav
+```
+
+ExifTool can be downloaded from <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. Follow 
+the installation instructions for the OS X Package. The newest  
+Python 2.7 release, if not installed yet, can be downloaded <a href='https://www.python.org/downloads/mac-osx/'>here</a>. 
+
+Windows users can download libav <a href='http://builds.libav.org/windows/'>here</a>. Download the latest nightly-gpl 
+release, and extract all files to a chosen location. Next, download the file 
+named libgcc_s_sjlj-1.dll, and place it within the libav directory, 
+in '/usr/bin'. ExifTool can be downloaded <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. For 
+ExifTool, download the stand-alone executable and place the 
+exiftool(-k).exe file in a chosen directory. For convenience, you can change the name 
+to exiftool.exe, as described in the installation instructions. 
+Finally, Python 2.7 can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the 
+instructions for installation.
 
 ## Examples
 
@@ -75,7 +100,7 @@ class(allFullImages)
 plot(allFullImages,frame=1)
 
 ## Detect background
-stillBack <- createBackground(allFullImages,method='filter')
+stillBack <- createBackground(allFullImages,method='mean')
 stillBack
 class(stillBack)
 plot(stillBack)
@@ -87,7 +112,7 @@ allImages
 ## Identify moving particles
 partIden <- identifyParticles(sbg=allImages,
                               pixelRange=c(1,500),
-                              autoThres=FALSE,threshold=-0.05)
+                              autoThres=FALSE,threshold=-0.1)
 summary(partIden)
 attributes(partIden)$threshold
 plot(partIden,frame=10)
@@ -120,3 +145,5 @@ for (i in 1:length(unique(traj$id))) {
 ![](images/sizeRecord.png)
 
 
+## Future features
+Allow different numbers of color layers (e.g. for black and white images).

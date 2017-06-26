@@ -1,7 +1,7 @@
 Package: trackdem
 Type: Package
 Title: Particle Tracking and Demography
-Version: 0.1
+Version: 0.2
 Date: 2017-04-22
 Author: Marjolein Bruijning, Marco D. Visser, Caspar A. Hallmann, Eelke Jongejans
 Maintainer: Marjolein Bruijning <m.bruijning@science.ru.nl>

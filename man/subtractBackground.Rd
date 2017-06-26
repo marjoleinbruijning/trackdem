@@ -19,10 +19,10 @@ Returns array of class 'TrDm' and 'sbg' with same size as images,
 subtracted from background.
 }
 \description{
-\code{subtractBackground} is a function to subtract each
-image from the created still background.
+\code{subtractBackground} subtracts each image from a
+ previously created still background.
 The objects created through the function contain all changing
-pixels.
+pixels (i.e. movement).
 }
 \examples{
 \dontrun{
@@ -31,4 +31,3 @@ allImages <- subtractBackground(stillBack) }
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

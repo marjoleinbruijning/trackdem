@@ -9,6 +9,5 @@
 trackdem - identifying and tracking particles in R
 }
 \author{
-Marjolein Bruijning <m.bruijning@science.ru.nl>
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

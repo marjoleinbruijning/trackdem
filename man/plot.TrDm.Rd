@@ -5,7 +5,7 @@
 \title{\code{plot} methods for class 'TrDm'.}
 \usage{
 \method{plot}{TrDm}(x, frame = 1, type = NULL, incThres = NULL,
-  colorimages = NULL, cl = 1, path = "~", name = "animation", ...)
+  colorimages = NULL, cl = 1, path = NULL, name = "animation", ...)
 }
 \arguments{
 \item{x}{An object of class 'TrDm'.}
@@ -41,4 +41,3 @@ are saved temporarily, and where the animation should be saved.}
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

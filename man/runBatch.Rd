@@ -4,17 +4,23 @@
 \alias{runBatch}
 \title{Batch analysis}
 \usage{
-runBatch(path, direcnames = NULL, nImages = 1:30, pixelRange = NULL,
-  threshold = -0.1, qthreshold = NULL, select = "dark", nn = NULL,
-  incThres = NULL, plotOutput = FALSE, plotType = "trajectories",
-  L = 20, R = 2, weight = c(1, 1, 1), autoThres = FALSE,
-  perFrame = FALSE, methodBg = "mean", frames = NULL, saveAll = FALSE)
+runBatch(path, settings = NULL, dirnames = NULL, nImages = 1:30,
+  pixelRange = NULL, threshold = -0.1, qthreshold = NULL,
+  select = "dark", nn = NULL, incThres = NULL, plotOutput = FALSE,
+  plotType = "trajectories", L = 20, R = 2, weight = c(1, 1, 1),
+  autoThres = FALSE, perFrame = FALSE, methodBg = "mean", frames = NULL,
+  saveAll = FALSE)
 }
 \arguments{
 \item{path}{A character vector of path name that contains all directories with
 image sequences.}
 
-\item{direcnames}{If not all image sequences should be
+\item{settings}{Object of class 'tracked' containing all optimized settings
+in attributes,
+as obtained from \code{\link{trackParticles}}.
+Alternatively, settings can be specified using arguments described below.}
+
+\item{dirnames}{If not all image sequences should be
 analyzed, specificy which files to use as a character string.}
 
 \item{nImages}{See \code{\link{loadImages}}}
@@ -58,8 +64,9 @@ present. By default, automated estimate is used.}
 Dataframe with estimated population size for each image sequence.
 }
 \description{
-\code{runBatch} is a function to analyze all image sequences in a specified
-directory. Use this function when settings have been optimized.
+\code{runBatch} analyzes all image sequences in a specified
+directory. Use this function when settings have been optimized 
+previously on a single or selection of movies/image sequences.
 }
 \examples{
 \dontrun{
@@ -71,12 +78,11 @@ results <- runBatch(path='images',
 results
 }
 }
-\author{
-Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
-}
 \seealso{
 \code{\link{loadImages}}, \code{\link{createBackground}},
 \code{\link{subtractBackground}}, \code{\link{identifyParticles}},
 \code{\link{trackParticles}}.
 }
-
+\author{
+Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+}

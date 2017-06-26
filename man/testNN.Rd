@@ -9,7 +9,8 @@ testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1, 1),
   predictors = NULL, pca = TRUE, thr = 0.95, ...)
 }
 \arguments{
-\item{dat}{a previously constructed dataset}
+\item{dat}{a previously constructed dataset obtained from 
+\code{manuallySelect}.}
 
 \item{stat}{Fit statistic. May be \code{"precision"}, \code{"recall"}, or
 \code{"F"} for the harmonic mean of precision and recall.}
@@ -26,9 +27,13 @@ c(training, validation,test).}
 \item{predictors}{Optional. A set of custom predictors
 for the neural network. Default uses all columns in \code{dat}.}
 
-\item{pca}{Logical. \code{TRUE} by default. Principal component analysis on predictors.}
+\item{pca}{Logical. \code{TRUE} by default. Should the 
+set of predictors be compressed to the most informative? In short, 
+should a principal component analysis be conducted to select axis that
+explain at least a fraction \code{thr} (see below) 
+of the variance in the full set of predictors?}
 
-\item{thr}{Threshold for pca.}
+\item{thr}{Threshold for pca (above).}
 
 \item{\dots}{additional parameters, passed to neuralnet.}
 }
@@ -36,8 +41,8 @@ for the neural network. Default uses all columns in \code{dat}.}
 Returns trained artificial neural net.
 }
 \description{
-The function fits multiple neural networks to
-a dataset that has been randomly assigned to each
+Fits multiple neural networks to
+a dataset; data set has been randomly assigned to each
 of three catergories: train, validate and test.
 A final neural net is selected based on a fit statistic
 (either precision, recall or the F1-score). All neural networks
@@ -47,7 +52,7 @@ based on the validation data, and then the final neural network
 is selected based on the test data.
 }
 \details{
-The neural networks may be selcted based on precision, recall or
+The neural networks may be selected based on precision, recall or
 a F1-score (default).
 In binary classification, precision is the number of correct positive
 results divided by the number of all positive predictions. Recall is
@@ -68,4 +73,3 @@ summary(finalNN)
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-

@@ -14,7 +14,7 @@
 \item{pca}{Logical. By default \code{TRUE}, indicating that a principal component analysis is 
 performed on the predictors.}
 
-\item{\dots}{Other arguments passed to \code{\link{extractInfo}}}
+\item{\dots}{further arguments passed to or from other methods.}
 }
 \value{
 Data frame class 'particles', containing updated 
@@ -32,4 +32,3 @@ update(particles=partIden,finalNN)
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 }
-
