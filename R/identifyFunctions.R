@@ -16,7 +16,7 @@
 ##' When movie length is greater than \code{nsec}, the \code{nsec} seconds 
 ##' in the exact middle of the movie are exported.  
 ##' @param ext The extension of the video. Default is \code{'MTS'}. All
-##' formats supported by avconv are accepted. 
+##' formats supported by libav are accepted. 
 ##' @param path Path to location where temporary Python file will be saved. Default 
 ##' is working directory.
 ##' @param libavpath Path to location where the executable file for libav
@@ -34,13 +34,13 @@
 createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
                             x=1915,
                             y=1080,fps=15,nsec=2,ext='MTS',path=getwd(),
-                            avconvpath=NULL,exiftoolpath=NULL,
+                            libavpath=NULL,exiftoolpath=NULL,
                             pythonpath=NULL) {
         
     ext <- paste0("'.",tolower(ext),"'")
     fileConn <- file(paste(path,'/tmp.py',sep=''))
 
-    if (is.null(avconvpath)) avconvpath <- 'avconv'
+    if (is.null(libavpath)) libavpath <- 'avconv'
     if (is.null(exiftoolpath)) exiftoolpath <- 'exiftool'
     if (is.null(pythonpath)) pythonpath <- 'python'
     
@@ -53,7 +53,7 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
         paste("def conv_command(filename, targetDirName, start, stop):"),
         paste("    inFile = os.path.join(movieDir, filename)"),
         paste("    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')"),
-        paste("    return ['",avconvpath,"',",sep=''),
+        paste("    return ['",libavpath,"',",sep=''),
         paste("            '-loglevel', 'quiet',"),
         paste("            '-i', inFile,"),
         paste("            '-r', '",fps,"',",sep=''),
@@ -136,12 +136,12 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
                         xranges=NULL,yranges=NULL) {
 
     if (is.null(dirPictures)) {
-		dirtPictures <- getwd()
+		dirPictures <- getwd()
 	}
 	
     if (is.null(filenames)) {
-        allFiles <- list.files(path=dirPictures) # List all files in folder
-        allFiles <- allFiles[nImages]
+      allFiles <- list.files(path=dirPictures) # List all files in folder
+      allFiles <- allFiles[nImages]
     }
     else {filenames <- filenames[nImages]}	
     # Load all images
@@ -150,13 +150,14 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
                             simplify='array')
     # Subset
     if (!is.null(xranges) | !is.null(yranges)) {
-        allFullImages <- sapply(1:length(nImages),function(x) 
-            allFullImages[[x]][yranges,xranges,],simplify='array')	
+        if (is.null(xranges)) xranges <- 1:dim(allFullImages)[2]
+        if (is.null(yranges)) yranges <- 1:dim(allFullImages)[1]
+        allFullImages <- allFullImages[yranges,xranges,,]	
     }
 
     attr(allFullImages,"settings") <- list(nImages=nImages)
     attr(allFullImages, "class") <- c('TrDm','colorimage','array')
-    attr(allFullImages, "originalDirec") <- dirPictures#get(deparse(substitute(dirPictures)))
+    attr(allFullImages, "originalDirec") <- dirPictures
     return(allFullImages)
 }
 

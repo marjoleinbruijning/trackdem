@@ -55,37 +55,41 @@ manuallySelect <- function (particles,colorimages=NULL,
   options(locatorBell = FALSE)
   
   continue <- TRUE
+  status <- NULL
   id <- st <- as.numeric()
   while (continue == TRUE) {
     graphics::par(mfg=c(2,1),usr=im$usr)
     pick <- graphics::locator(1)
   
+    x <- graphics::grconvertX(pick$x, from = "user", to = "npc")
+    y <- graphics::grconvertY(pick$y, from = "user", to = "npc")
+
     # calculate devicee coordinates
     b0 <- im$usr[3]
     b1 <- (im$usr[4] - im$usr[3]) / im$fig[4]
-    y <- (pick$y-b0) / b1
+    y2 <- (pick$y-b0) / b1
     
     cols <- c('green','orange','black')
     names(cols) <- c('g','f','rm')
-    ## true positives  
-    if (pick$x > buttons$g$fig[1] & pick$x < buttons$g$fig[2] & 
-        y > buttons$g$fig[3] & y < buttons$g$fig[4]) {
+    ## true positives 	 
+    if (x > 0.25 & x < 0.49 & 
+        y > 1 & y < 1.2) {
       makeButtons()
       graphics::par(mfg=c(1,2),usr=buttons$g$usr)
       graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
       graphics::text(x=0.5,y=0.5,label='True positives',cex=2)
       status <- 'g'
       
-    } else if (pick$x > buttons$f$fig[1] & pick$x < buttons$f$fig[2] & 
-               y > buttons$f$fig[3] & y < buttons$f$fig[4]) {
+    } else if (x > 0.5 & x < 0.74 & 
+               y > 1 & y < 1.2) {
       makeButtons()
       graphics::par(mfg=c(1,3),usr=buttons$f$usr)
       graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
       graphics::text(x=0.5,y=0.5,label='False positives',cex=2)
       status <- 'f'
       
-    } else if (pick$x > buttons$C$fig[1] & pick$x < buttons$C$fig[2] & 
-               y > buttons$C$fig[3] & y < buttons$C$fig[4]) {
+    } else if (x > 0.75 & x < 0.99 & 
+               y > 1 & y < 1.2) {
       makeButtons()
       graphics::par(mfg=c(1,4),usr=buttons$C$usr)
       graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
@@ -93,24 +97,26 @@ manuallySelect <- function (particles,colorimages=NULL,
       status <- 'rm'
       
     } else if (pick$x > im$fig[1] & pick$x < im$fig[2] & 
-               y > im$fig[3] & y < im$fig[4]) {
-      graphics::par(mfg=c(2,1),usr=im$usr)
-      tmp <- (1-particles[inc,]$y/toty - pick$y)^2 + 
-              (particles[inc,]$x/totx - pick$x)^2
-      patches <- particles[inc,]$patchID[which(tmp == min(tmp))]
-      tmp <- particles[inc,][particles[inc,]$patchID %in% patches,]
-      graphics::points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
-             cex=ifelse(status == 'rm',2.2,2),pch=5)
-      if (status == 'g' | status == 'f') {
-        id <- c(id, tmp$patchID)
-        st <- c(st,status)
-      } else if (status == 'rm') {
-        st <- st[id != tmp$patchID]
-        id <- id[id != tmp$patchID]
-      }
+               y2 > im$fig[3] & y2 < im$fig[4]) {
+      if (!is.null(status)) {
+        graphics::par(mfg=c(2,1),usr=im$usr)
+        tmp <- (1-particles[inc,]$y/toty - pick$y)^2 + 
+                (particles[inc,]$x/totx - pick$x)^2
+        patches <- particles[inc,]$patchID[which(tmp == min(tmp))]
+        tmp <- particles[inc,][particles[inc,]$patchID %in% patches,]
+        graphics::points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
+               cex=ifelse(status == 'rm',2.2,2),pch=5)
+        if (status == 'g' | status == 'f') {
+          id <- c(id, tmp$patchID)
+          st <- c(st,status)
+        } else if (status == 'rm') {
+          st <- st[id != tmp$patchID]
+          id <- id[id != tmp$patchID]
+        }
+    } else {}
       
-    } else if (pick$x > buttons$s$fig[1] & pick$x < buttons$s$fig[2] & 
-               y > buttons$s$fig[3] & y < buttons$s$fig[4]) {
+    } else if (x > 0 & x < 0.24 & 
+               y > 1 & y < 1.2) {
       continue <- FALSE
     } else {}
   }
@@ -118,6 +124,10 @@ manuallySelect <- function (particles,colorimages=NULL,
 
 
   res <- list(wrong=id[st=='f'],correct=id[st=='g'],frame=n)
+  ## remove duplicates
+  res$wrong <- res$wrong[!duplicated(res$wrong)]
+  res$correct <- res$correct[!duplicated(res$correct)]
+  
   attr(res,"background") <- attributes(particles)$background
   attr(res,"originalImages") <- attributes(particles)$originalImages
   attr(res,"originalDirec") <- attributes(particles)$originalDirec
@@ -222,7 +232,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
 	              colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
   }
   if ('neighbors' %in% info) {
-    cat('\r \t Extract neighbor info \t \t \t')
+    cat('\r \t Extract neighbor info                       \t \t \t')
     getNeighbor <- lapply(1:length(frames),function(X) {
                              inc <- stat$frame == frames[X]
 		                     extractNeighbors(stat[inc,]$x,stat[inc,]$y,
@@ -234,7 +244,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                       colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
   }
   if ('sd' %in% info) {
-    cat('\r \t Extract variance particle info \t \t \t \t')
+    cat('\r \t Extract variance particle info                   \t \t \t \t')
     getVar <- lapply(1:length(frames),function(X) {
 		          inc <- stat$frame == frames[X]
                   extractMean(stat[inc,]$patchID,
@@ -246,7 +256,7 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                    colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
   }  
 
-  cat('\r \t Assembling datasets \t \t \t \t \n')
+  cat('\r \t Assembling datasets                       \t \t \t \t \n')
   dat <- lapply(1:length(frames),function(X) {
             inc <- stat$frame == frames[X]
             dat <- stat[inc,]

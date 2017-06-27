@@ -186,7 +186,7 @@ linkTrajec <- function (recordsObject,particles,
   
   n <- unique(particles$frame)
   
-  cat("\t Link track segments: 0 %")
+  cat("\t Link track segments: 0 %            ")
   
   for (r in 1:R) {
     A <- array(NA,dim=c(2000,2000,length(n)-r-1))
@@ -263,7 +263,7 @@ linkTrajec <- function (recordsObject,particles,
           } 
         }                
       } 
-      cat("\r \t Link track segments: ",round(r / R * 100, 1),"%")
+      cat("\r \t Link track segments: ",round(r / R * 100, 1),"%           ")
     }
   }
  
@@ -293,7 +293,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
   G <- array(NA,dim=c(2000,2000,length(n)-1))
   links <- list()
 
-  cat("\t Create track segments: ","0","%")
+  cat("\t Create track segments: ","0","%           ")
   
   for (i in 1:(length(n)-1)) {
 	inc <- particles$frame == i
@@ -345,7 +345,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
                           suffixes=c('',paste0('.',i)))
     }  
 
-  cat("\r \t Create track segments: ",round(i / (length(n)-1) * 100, 1),"%")
+  cat("\r \t Create track segments: ",round(i / (length(n)-1) * 100, 1),"%          ")
 
   }
 

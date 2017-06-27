@@ -6,7 +6,7 @@
 \usage{
 createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
   x = 1915, y = 1080, fps = 15, nsec = 2, ext = "MTS",
-  path = getwd(), avconvpath = NULL, exiftoolpath = NULL,
+  path = getwd(), libavpath = NULL, exiftoolpath = NULL,
   pythonpath = NULL)
 }
 \arguments{
@@ -27,10 +27,14 @@ When movie length is greater than \code{nsec}, the \code{nsec} seconds
 in the exact middle of the movie are exported.}
 
 \item{ext}{The extension of the video. Default is \code{'MTS'}. All
-formats supported by avconv are accepted.}
+formats supported by libav are accepted.}
 
 \item{path}{Path to location where temporary Python file will be saved. Default 
 is working directory.}
+
+\item{libavpath}{Path to location where the executable file for libav
+can be found (named 'avconv.exe'), in case it is not found automatically.
+For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
 
 \item{exiftoolpath}{Path to location where the executable file for 
 ExifTool can be found, in case it is not found automatically. 
@@ -40,10 +44,6 @@ directory.}
 \item{pythonpath}{Path to location where the executable file for 
 Python 2.7 can be found, in case it is not found automatically. For 
 instance, use \code{'C:/Python27/python.exe'}.}
-
-\item{libavpath}{Path to location where the executable file for libav
-can be found (named 'avconv.exe'), in case it is not found automatically.
-For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
 }
 \description{
 \code{createImageSeq} creates an image sequences (.png) using
