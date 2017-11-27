@@ -85,7 +85,6 @@ traj <- simulTrajec(path="images",
                     nframes=30,nIndividuals=20,domain='square',
                     h=0.01,rho=0.9,staticNoise=FALSE,
                     sizes=runif(20,0.004,0.006))
-setwd(a)
 
 ########################################################################
 ## Analyze image sequence
