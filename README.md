@@ -80,11 +80,9 @@ require(trackdem)
 ## Simulate image sequence
 ########################################################################
 dir.create('images')
-a <- getwd()
-setwd('images')
-set.seed(100)
 ## Create image sequence (this takes a moment)
-traj <- simulTrajec(nframes=30,nIndividuals=20,domain='square',
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain='square',
                     h=0.01,rho=0.9,staticNoise=FALSE,
                     sizes=runif(20,0.004,0.006))
 setwd(a)
@@ -93,14 +91,14 @@ setwd(a)
 ## Analyze image sequence
 ########################################################################
 ## Load images
-dir <- 'images'
+dir <- "images"
 allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
 allFullImages
 class(allFullImages)
 plot(allFullImages,frame=1)
 
 ## Detect background
-stillBack <- createBackground(allFullImages,method='mean')
+stillBack <- createBackground(allFullImages,method="mean")
 stillBack
 class(stillBack)
 plot(stillBack)
@@ -121,8 +119,8 @@ plot(partIden,frame=10)
 records <- trackParticles(partIden,L=60,R=3)
 summary(records)
 summary(records)$N # population count
-summary(records)$particles[,'Size'] # body size distribution
-summary(records)$particles[,'Total movement'] # movement distribution
+summary(records)$particles[,"Size"] # body size distribution
+summary(records)$particles[,"Total movement"] # movement distribution
 summary(records)$area # area covered by particles
 summary(records)$presence # minimum presence
 dim(records$trackRecord)
@@ -137,7 +135,34 @@ for (i in 1:length(unique(traj$id))) {
 	    lty=2,lwd=2)
 }
 
-
+########################################################################
+## Analyze image sequence containing noise
+########################################################################
+dir.create("images")
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain="square",
+                    h=0.01,rho=0.9,movingNoise=TRUE,
+                    parsMoving = list(density=20, duration=10, size=1,
+                                      speed = 10, colRange = c(0,1)),
+                    sizes=runif(20,0.004,0.006))
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+partIden <- identifyParticles(allImages,threshold=-0.1,
+                             pixelRange=c(3,400))
+## Select three frames with most identified particles
+nframes <- 3
+frames <- order(tapply(partIden$patchID,partIden$frame,length),
+                decreasing=TRUE)[1:nframes]
+## Manually select true and false positives
+mId <- manuallySelect(particles=partIden,frame=frames)
+## Train neural net
+finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
+## Update and track
+partIdenNN <- update(particles=partIden,neuralnet=finalNN)
+records <- trackParticles(partIdenNN,L=60,R=3)
+summary(records)
 
 ```
 ## Examples of output

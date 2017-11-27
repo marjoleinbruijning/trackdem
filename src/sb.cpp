@@ -13,7 +13,6 @@ NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d,
 
   IntegerVector dim(d);
   arma::cube array(mat.begin(),dim[0],dim[1],dim[2],false);
-  //arma::cube arrayBg(b.begin(),dim[0],dim[1],dim[2],false);
   arma::cube subs(empty.begin(),dim[0],dim[1],dim[2],false);
   
   int nrows = dim[0];

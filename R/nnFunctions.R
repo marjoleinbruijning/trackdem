@@ -1,26 +1,45 @@
 ##' Manually identify true and false positives with a GUI.
 ##'
-##' \code{manuallySelect} opens a graphic user iterface to create
+##' \code{manuallySelect} opens a graphic user interface to create
 ##'  training data for a neural net by manually selecting true and
-##'  false positives (respectively, correctly identified particles and noise). 
-##' @param particles A data frame of class 'TrDm' with particle statistics for each frame,
-##' obtained by \code{\link{identifyParticles}}.
-##' @param colorimages An array with the original full color images, in order to plot
-##' on the original images. If \code{NULL}, the original color images are used, obtained
-##'  from the global environment.
-##' @param frame A number defining the frame that should be used. Default
-##' is \code{NULL}; in that case the frame with the maximum number of identified particles is used.
+##'  false positives (i.e. correctly identified particles and noise, respectively). 
+##' @param particles A data frame of class 'TrDm' with particle statistics for 
+##' each frame, obtained by \code{\link{identifyParticles}}.
+##' @param colorimages An array with the original full color images, in order 
+##' to plot on the original images. If \code{NULL}, the original color images 
+##' are used, obtained from the global environment.
+##' @param frames A vector defining the frame(s) that should be used. Default
+##' is \code{NULL}; in that case the frame with the maximum number of identified 
+##' particles is used.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' manuallySelect(particles=partIden,frame=1)
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain='square',
+##'                     h=0.01,rho=0.9,movingNoise=TRUE,
+##'                     parsMoving = list(density=20, duration=10, size=1,
+##'                                       speed = 10, colRange = c(0,1)),
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' partIden <- identifyParticles(allImages,threshold=-0.1,
+##'                                    pixelRange=c(3,400))
+##' # select the nframes with the most identified particles
+##' nframes <- 3
+##' frames <- order(tapply(partIden$patchID,partIden$frame,length),
+##'                 decreasing=TRUE)[1:nframes]
+##' mId <- manuallySelect(particles=partIden,frame=frames)
 ##'	}
 ##' @return List containing three elements: true positives, false positives,
 ##' and the evaluated frame.
 ##' @export
-
 manuallySelect <- function (particles,colorimages=NULL,
-                            frame=NULL) {
+                            frames=NULL) {
                             
   if(!is.TrDm(particles)){
       stop("Input does not appear to be of the class \"TrDm\"")
@@ -29,150 +48,243 @@ manuallySelect <- function (particles,colorimages=NULL,
     colorimages <- get(attributes(particles)$originalImages,
                        envir=.GlobalEnv)
   }
-  if(is.null(frame)) {
+  if(is.null(frames)) {
     n <- order(tapply(particles$patchID,particles$frame,length),
                decreasing=TRUE)[1]
     
-  } else { n <- frame }
+  } else { n <- frames }
 
-  totx <- ncol(colorimages)
-  toty <- nrow(colorimages)
- 
-  grDevices::dev.new(width=10, height=7)
-  graphics::layout(matrix(c(1:4,rep(5,20)), 6, 4, byrow = TRUE))
-  graphics::par(mar=c(0,0,0,0))
-  buttons <- makeButtons()
-  
-  x <- raster::brick(colorimages[,,,frame])
-  raster::plotRGB(x,scale=1,asp=nrow(x)/ncol(x),bty='n')
-
-  #plot(colorimages,frame=n,bty='n')
-  inc <- particles$frame == n
-  graphics::points(particles[inc,]$x/totx,
-       1-particles[inc,]$y/toty,col='blue',cex=1.5)
-  im <- graphics::par('usr','fig','plt','mfg') 
-  
-  options(locatorBell = FALSE)
-  
-  continue <- TRUE
-  status <- NULL
-  id <- st <- as.numeric()
-  while (continue == TRUE) {
-    graphics::par(mfg=c(2,1),usr=im$usr)
-    pick <- graphics::locator(1)
-  
-    x <- graphics::grconvertX(pick$x, from = "user", to = "npc")
-    y <- graphics::grconvertY(pick$y, from = "user", to = "npc")
-
-    # calculate devicee coordinates
-    b0 <- im$usr[3]
-    b1 <- (im$usr[4] - im$usr[3]) / im$fig[4]
-    y2 <- (pick$y-b0) / b1
-    
-    cols <- c('green','orange','black')
-    names(cols) <- c('g','f','rm')
-    ## true positives 	 
-    if (x > 0.25 & x < 0.49 & 
-        y > 1 & y < 1.2) {
-      makeButtons()
-      graphics::par(mfg=c(1,2),usr=buttons$g$usr)
-      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      graphics::text(x=0.5,y=0.5,label='True positives',cex=2)
-      status <- 'g'
-      
-    } else if (x > 0.5 & x < 0.74 & 
-               y > 1 & y < 1.2) {
-      makeButtons()
-      graphics::par(mfg=c(1,3),usr=buttons$f$usr)
-      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      graphics::text(x=0.5,y=0.5,label='False positives',cex=2)
-      status <- 'f'
-      
-    } else if (x > 0.75 & x < 0.99 & 
-               y > 1 & y < 1.2) {
-      makeButtons()
-      graphics::par(mfg=c(1,4),usr=buttons$C$usr)
-      graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='grey')
-      graphics::text(x=0.5,y=0.5,label='Delete',cex=2)
-      status <- 'rm'
-      
-    } else if (pick$x > im$fig[1] & pick$x < im$fig[2] & 
-               y2 > im$fig[3] & y2 < im$fig[4]) {
-      if (!is.null(status)) {
-        graphics::par(mfg=c(2,1),usr=im$usr)
-        tmp <- (1-particles[inc,]$y/toty - pick$y)^2 + 
-                (particles[inc,]$x/totx - pick$x)^2
-        patches <- particles[inc,]$patchID[which(tmp == min(tmp))]
-        tmp <- particles[inc,][particles[inc,]$patchID %in% patches,]
-        graphics::points(tmp$x/totx,1-tmp$y/toty,col=cols[status],
-               cex=ifelse(status == 'rm',2.2,2),pch=5)
-        if (status == 'g' | status == 'f') {
-          id <- c(id, tmp$patchID)
-          st <- c(st,status)
-        } else if (status == 'rm') {
-          st <- st[id != tmp$patchID]
-          id <- id[id != tmp$patchID]
-        }
-    } else {}
-      
-    } else if (x > 0 & x < 0.24 & 
-               y > 1 & y < 1.2) {
-      continue <- FALSE
-    } else {}
+  res <- vector(mode="list",length=length(n))
+  for (i in 1:length(n)) {
+    res[[i]] <- runSelect(n[i],particles,colorimages)
   }
-  grDevices::dev.off()
 
-
-  res <- list(wrong=id[st=='f'],correct=id[st=='g'],frame=n)
-  ## remove duplicates
-  res$wrong <- res$wrong[!duplicated(res$wrong)]
-  res$correct <- res$correct[!duplicated(res$correct)]
+  res <- lapply(1:length(res),function(x) {
+	            list(wrong=res[[x]]$id[res[[x]]$trY == 0],
+	            correct=res[[x]]$id[res[[x]]$trY == 1],
+	            frame=n[x])
+	            })
   
+  dat <- extractInfo(particles=particles,training=TRUE,
+                     frames=n,mIdObject=res)
+
   attr(res,"background") <- attributes(particles)$background
   attr(res,"originalImages") <- attributes(particles)$originalImages
   attr(res,"originalDirec") <- attributes(particles)$originalDirec
   attr(res,"subtractedImages") <- attributes(particles)$subtractedImages
-  
-  dat <- extractInfo(particles=particles,training=TRUE,
-              frames=n,mIdObject=res)
-
-  res[[4]] <- dat
-  names(res) <- c('wrong','correct','frame','trainingData')
+  attr(res,"trainingData") <- dat
   
   class(res) <- c("TrDm","tfp","list")
   return(res)
 }
 
-## Make buttons
-makeButtons <- function () {
-  graphics::par(mfg=c(1,1))
-  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
-       ylim=c(0,1))
-  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='black',border=NA)
-  graphics::text(x=0.5,y=0.5,label='Stop',cex=2,col='white')
-  s <- graphics::par('usr','fig','plt','mfg') 
+runSelect <- function(frame,particles,colorimages,ui,server) {
+shiny::runApp(
+  list(ui=shiny::fluidPage(
+  shiny::titlePanel(paste0("Create a training dataset for frame ",frame)),
+  shiny::fluidRow(
+     shiny::column(6,
+     'Manually select false and true positives to create a training data set.
+      To do so, select "True positives" (correctly identified particles) or 
+      "False positives" (noise). Subsequently, click on the correctly or wrongly
+      identified particles in the right graph. Use "Remove" to delete particles 
+      from the selection. 
+      Click on "Update image" to reload the image and 
+      selected particles, or select "Update automatically" to update after each 
+      click. The left graph can be used to zoom; draw a polygon and clik 
+      on "Update image". Try to select as many particles as possible 
+      (> 20 if possible), and when done, click on "Done".',
+      align='left',offset=0),
+      shiny::column(2,shiny::sidebarPanel(shiny::radioButtons("select", 
+                                                    shiny::h4("Select:"),
+                   choices = list("True positives" = 1, 
+                                   "False positives" = 2,
+                                   "Remove" = 3),selected = 1),width=12)),
+      shiny::column(2,
+       shiny::actionButton("stop", "Done"),
+       shiny::checkboxInput("automatic", "Upload automatically.
+                     Slower for larger images.",value=FALSE)
+              
+      )),
+  shiny::hr(),
+    shiny::fluidRow(
+    shiny::column(3,
+    shiny::h5('Choose region of interest and click on update.'),
+    shiny::actionButton("update","Update image"),
+    shiny::br(),shiny::br(),
+    shiny::plotOutput("plot2", brush = shiny::brushOpts(id="plot2_brush",
+                        resetOnNew = TRUE,clip=TRUE))),
+    shiny::column(9,shiny::plotOutput("plot1", click = "plot_click"))
+    ),
 
-  graphics::par(mfg=c(1,2))
-  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
-       ylim=c(0,1))
-  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#00FF0050',border=NA)
-  graphics::text(x=0.5,y=0.5,label='True positives',cex=2)
-  g <- graphics::par('usr','fig','plt','mfg') 
+  shiny::hr(),
+  shiny::fluidRow(
+      shiny::sidebarPanel(
+        shiny::h4('Selected true positives'),
+        shiny::tableOutput("true"),width=5),
+      shiny::sidebarPanel(
+        shiny::h4('Selected false positives'),
+        shiny::tableOutput("false"),width=5
+      ),
+      shiny::verbatimTextOutput("selected_select")
+  )
+),
+  server=function(input, output) {
+  ranges <- shiny::reactiveValues(x=NULL,y=NULL)
+  coords <- shiny::reactiveValues(x=NULL,y=NULL)
   
-  graphics::par(mfg=c(1,3))
-  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
-       ylim=c(0,1))
-  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#FF000050',border=NA)
-  graphics::text(x=0.5,y=0.5,label='False positives',cex=2)
-  f <- graphics::par('usr','fig','plt','mfg') 
+  falses <- shiny::reactiveValues()
+  falses$df <- data.frame(x=numeric(0),y=numeric(0),id=numeric(0),
+                          size=numeric(0),inc=logical(0),no=numeric())
+  trues <- shiny::reactiveValues()
+  trues$df <- data.frame(x=numeric(0),y=numeric(0),id=numeric(0),
+                          size=numeric(0),inc=logical(0),no=numeric())
+  
+  data <- particles[particles$frame == frame,]
+  data$id <- data$patchID
+  
+  # update plot range and coordinates
+  shiny::observe({
+    brush <- input$plot2_brush
+    if (!is.null(brush)) {
+      ranges$x <- floor(c(brush$xmin, brush$xmax) * ncol(colorimages))
+      ranges$y <- nrow(colorimages) - floor(c(brush$ymin, brush$ymax) * 
+                  nrow(colorimages))
+      
+    } else {
+      ranges$x <- c(1,ncol(colorimages)) 
+      ranges$y <- c(1,nrow(colorimages))
+    }
 
-  graphics::par(mfg=c(1,4))
-  graphics::plot(100,100,xlab='',ylab='',xaxt='n',yaxt='n',bty='n',xlim=c(0,1),
-       ylim=c(0,1))
-  graphics::polygon(x=c(0,1,1,0,0),y=c(0,0,1,1,0),col='#EFFF0050',border=NA)
-  graphics::text(x=0.5,y=0.5,label='Delete',cex=2)
-  C <- graphics::par('usr','fig','plt','mfg')
-  return(list(f=f,C=C,g=g,s=s))
+    coords$x <- (data$x - min(ranges$x)) / length(seq(ranges$x[1],ranges$x[2]))
+    coords$y <- 1 - (data$y - min(ranges$y)) / length(seq(ranges$y[1],
+                                                          ranges$y[2]))
+
+  })
+
+  shiny::observe({
+    if(is.null(input$plot_click$x)) return(NULL)
+    click <- c(input$plot_click$x, input$plot_click$y) 
+    nearest_point <- which.min(apply(cbind(coords$x,coords$y), 1, 
+                               function(x) sum(((click-x)^2))))
+      
+    shiny::isolate({
+      if (input$select == 1) {
+        trues$df <- rbind(trues$df,data.frame(x=data$x[nearest_point],
+                                              y=data$y[nearest_point],
+                                              id=data$id[nearest_point],
+                                              size=data$n.cell[nearest_point],
+                                              inc=TRUE,
+                                              no=nearest_point))
+      }  
+      if (input$select == 2) {
+        falses$df <- rbind(falses$df,data.frame(x=data$x[nearest_point],
+                                              y=data$y[nearest_point],
+                                              id=data$id[nearest_point],
+                                              size=data$n.cell[nearest_point],
+                                              inc=TRUE,
+                                              no=nearest_point))
+      }  
+      if (input$select == 3) {
+        trues$df$inc[trues$df$id == data$id[nearest_point]] <- FALSE
+        falses$df$inc[falses$df$id == data$id[nearest_point]] <- FALSE
+      }
+    })
+  })
+
+  shiny::observe({
+    input$automatic
+    if (!input$automatic) {
+      p <- shiny::eventReactive(input$update,{
+        
+        if (length(dim(colorimages)) > 3) {
+          im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
+                          c(min(ranges$x):max(ranges$x)),,frame])
+        } else if (length(dim(colorimages)) == 3) {
+          class(im) <- 'array'
+          im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
+                                          ranges$x[1]:ranges$x[2],])
+        }
+        
+      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+      inc <- coords$x > 0 & coords$x < 1 & coords$y > 0 & coords$y < 1
+      graphics::points(coords$x[inc],coords$y[inc],cex=1.5,col='blue')
+
+      if (length(trues$df$x) > 0) {
+        tmpx <- coords$x[trues$df$no][trues$df$inc]
+        tmpy <- coords$y[trues$df$no][trues$df$inc]
+        inc <- tmpx > 0 & tmpx < 1 & tmpy > 0 & tmpy < 1
+        graphics::points(tmpx[inc],
+                         tmpy[inc],
+                         col='green',cex=3)
+      }
+      if (length(falses$df$x) > 0) { 
+        tmpx <- coords$x[falses$df$no][falses$df$inc]
+        tmpy <- coords$y[falses$df$no][falses$df$inc]
+        inc <- tmpx > 0 & tmpx < 1 & tmpy > 0 & tmpy < 1
+        graphics::points(tmpx[inc],
+                         tmpy[inc],
+                         col='red',cex=3)
+      }
+          
+    },ignoreNULL=FALSE)
+
+    output$plot1 <- shiny::renderPlot({p()})
+    
+  } else if (input$automatic) {
+    
+    output$plot1 <- shiny::renderPlot({
+      if (length(dim(colorimages)) > 3) {
+        im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
+                            c(min(ranges$x):max(ranges$x)),,frame])
+      } else if (length(dim(colorimages)) == 3) {
+        class(im) <- 'array'
+        im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
+                             ranges$x[1]:ranges$x[2],])
+      }
+        
+      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+      inc <- coords$x > 0 & coords$x < 1 & coords$y > 0 & coords$y < 1
+      graphics::points(coords$x[inc],coords$y[inc],cex=1.5,col='blue')
+
+      if (length(trues$df$x) > 0) {
+        tmpx <- coords$x[trues$df$no][trues$df$inc]
+        tmpy <- coords$y[trues$df$no][trues$df$inc]
+        inc <- tmpx > 0 & tmpx < 1 & tmpy > 0 & tmpy < 1
+        graphics::points(tmpx[inc],
+                         tmpy[inc],
+                         col='green',cex=3)
+      }
+      if (length(falses$df$x) > 0) { 
+        tmpx <- coords$x[falses$df$no][falses$df$inc]
+        tmpy <- coords$y[falses$df$no][falses$df$inc]
+        inc <- tmpx > 0 & tmpx < 1 & tmpy > 0 & tmpy < 1
+        graphics::points(tmpx[inc],
+                         tmpy[inc],
+                         col='red',cex=3,pch=5)
+      }    
+    })
+  }
+  })
+
+  output$plot2 <- shiny::renderPlot({graphics::plot(colorimages,frame=frame)})  
+  output$true <- shiny::renderTable({trues$df[trues$df$inc & 
+	                                 !duplicated(trues$df$id),
+                                     c('id','x','y','size')]})
+  output$false <- shiny::renderTable({falses$df[falses$df$inc & 
+	                                  !duplicated(falses$df$id),
+                                       c('id','x','y','size')]})
+  
+  shiny::observeEvent(input$stop, shiny::stopApp({
+    data <- rbind(trues$df[trues$df$inc,],falses$df[falses$df$inc,])
+    data$trY <- c(rep(1,sum(trues$df$inc)),rep(0,sum(falses$df$inc)))
+    data$frame <- frame
+    data[,c(1:4,6:7)]
+   }))
+    
+}
+))
+
 }
 
 
@@ -210,11 +322,12 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                          colorimages=NULL,sbg=NULL,
                          frames=NULL,mIdObject=NULL,training=FALSE) {
 
-    if(is.null(colorimages)) { colorimages <- get(attributes(particles)$originalImages,
-                                                  envir=.GlobalEnv) }
+    if(is.null(colorimages)) { 
+	  colorimages <- get(attributes(particles)$originalImages, envir=.GlobalEnv)
+	}
     if(is.null(sbg)) { sbg <- get(attributes(particles)$subtractedImages,
                                                   envir=.GlobalEnv) }
-    if (is.null(frames)) frames <- 1:length(particles)
+    if (is.null(frames)) frames <- unique(particles$frame)
     
     stat <- particles[particles$frame %in% frames,] # Subset
 
@@ -224,40 +337,43 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
     cat("\n")
   if ('intensity' %in% info) {
     cat('\t Extract intensity info \t \t \t')
-    getI <- lapply(1:length(frames),function(X) {
+    getI <- lapply(seq_along(frames),function(X) {
                     inc <- stat$frame == frames[X]
                     extractRGB(stat[inc,]$x,stat[inc,]$y,
                              images=sbg[,,frames[X],])})
-    sapply(1:length(getI),function(X) 
-	              colnames(getI[[X]]) <<- paste0("I",colnames(getI[[X]])))
+    for (i in seq_along(getI)) {
+      colnames(getI[[i]]) <- paste0("I",colnames(getI[[i]]))
+    }
   }
   if ('neighbors' %in% info) {
     cat('\r \t Extract neighbor info                       \t \t \t')
-    getNeighbor <- lapply(1:length(frames),function(X) {
+    getNeighbor <- lapply(seq_along(frames),function(X) {
                              inc <- stat$frame == frames[X]
 		                     extractNeighbors(stat[inc,]$x,stat[inc,]$y,
 	                                        images=colorimages[,,,frames[X]])})
-    getNeighbor <- lapply(1:length(frames),function(X) 
-                        t(sapply(1:length(getNeighbor[[X]]),function(i) 
-		                  as.vector(getNeighbor[[X]][[i]])))) 
-    sapply(1:length(getNeighbor),function(X) 
-                      colnames(getNeighbor[[X]]) <<- paste0('n',1:27))
+    getNeighbor <- lapply(seq_along(frames),function(X) 
+                        t(vapply(seq_along(getNeighbor[[X]]),function(i) 
+		                  as.vector(getNeighbor[[X]][[i]]),numeric(27)))) 
+
+    for (i in seq_along(getNeighbor)) {
+      colnames(getNeighbor[[i]]) <- paste0("n",1:27)
+    }
   }
   if ('sd' %in% info) {
     cat('\r \t Extract variance particle info                   \t \t \t \t')
-    getVar <- lapply(1:length(frames),function(X) {
+    getVar <- lapply(seq_along(frames),function(X) {
 		          inc <- stat$frame == frames[X]
                   extractMean(stat[inc,]$patchID,
                               colorimages=colorimages[,,,X],
                               images=attributes(particles)$images[,,frames[X]],
                               fun='sd')})
-                                           
-    sapply(1:length(getVar),function(X) 
-                   colnames(getVar[[X]]) <<- paste0('sd',c('R','G','B')))
+    for (i in seq_along(getVar)) {
+      colnames(getVar[[i]]) <- paste0('sd',c('R','G','B'))
+    }
   }  
 
   cat('\r \t Assembling datasets                       \t \t \t \t \n')
-  dat <- lapply(1:length(frames),function(X) {
+  dat <- lapply(seq_along(frames),function(X) {
             inc <- stat$frame == frames[X]
             dat <- stat[inc,]
             if(exists('getI')) dat <- cbind(dat,getI[[X]])
@@ -268,10 +384,10 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                  
   ## Make training data based on test data and manually identified objects
   if (training == TRUE) {
-    for(i in 1:length(frames)){
+    for(i in seq_along(frames)){
 	  dat[[i]]$trY <- NA
-	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject$correct] <- 1
-	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject$wrong] <- 0
+	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject[[i]]$correct] <- 1
+	  dat[[i]]$trY[dat[[i]]$patchID %in% mIdObject[[i]]$wrong] <- 0
     }
   }
 
@@ -281,6 +397,9 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
   attr(dat,"originalImages") <- attributes(particles)$originalImages
   attr(dat,"originalDirec") <- attributes(particles)$originalDirec
   attr(dat,"subtractedImages") <- attributes(particles)$subtractedImages
+  attr(dat,"threshold") <- attributes(particles)$threshold
+  attr(dat,"settings") <- attributes(particles)$settings  
+  attr(dat,"images") <- attributes(particles)$images  
   
   class(dat) <- c("TrDm","trainingdata","particles","data.frame")
   
@@ -303,7 +422,9 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
 ## can be used to plot the results.
 ## @seealso \code{\link{neuralnet}}, \code{\link{compute}}
 ## @author Marjolein Bruijning & Marco D. Visser
-runNN <- function(predictors,trainingData,validationData,hidden=3,reps=5,stat='F',...) {
+runNN <- function(predictors,trainingData,validationData,
+                  hidden=3,reps=5,stat='F',...) {
+					  
   n <- neuralnet::neuralnet(stats::as.formula(paste("trY ~ ", paste(predictors, 
                                               collapse= "+"))),
                  data=trainingData,hidden=hidden,rep=reps,...)
@@ -321,7 +442,7 @@ runNN <- function(predictors,trainingData,validationData,hidden=3,reps=5,stat='F
 ## Precision is the number of correct positive results divided by the
 ## number of all positive predictions. Recall is the number of correct
 ## positive results divided by the number of positive results that
-## could have been returned if the algoritm was perfect.
+## could have been returned if the algorithm was perfect.
 ## In binary classification, a F1 score (F-score/ F-measure) is statistical
 ## measure of accuracy. F1 scores considers both the precision
 ## and the recall. A F1 score may be seen as a weighted average
@@ -374,33 +495,32 @@ confuStats <- function(confusion){
   precision <- confusion[2,2]/sum(confusion[,2]) # prop positive that are correct
   if(is.na(precision)) precision <- 0
 
-  F <-  2*((recall*precision)/(recall+precision)) # F-measure
-  if(is.na(F)) F <- 0
+  Fm <-  2*((recall*precision)/(recall+precision)) # F-measure
+  if(is.na(Fm)) Fm <- 0
 
   list(confusion=confusion, accuracy=accuracy, recall=recall,
-        TN=TN, FN=FN, precision=precision, F=F)
+        TN=TN, FN=FN, precision=precision, F=Fm)
 }
 
 ## Calculate a confusion matrix for trained neural network.
 getConfMat <- function(Y,P,thr,stat="F"){
 
-    temp <- data.frame(Y=factor(Y,levels=c(0,1)),
-                       P=factor(as.numeric(P>thr),levels=c(0,1)))
-    conf <- table(temp)
+  temp <- data.frame(Actual=factor(Y,levels=c(0,1)),
+                     Predicted=factor(as.numeric(P>thr),levels=c(0,1)))
+  conf <- table(temp)
     
-    if(length(attr(conf,"dimnames")$P)<2){
-      num <- 1+as.logical(attr(conf,"dimnames")$P)
-      temp <- matrix(0,ncol=2,nrow=2)
-      temp[,num] <- as.numeric(conf)
-      conf <- temp
-    }
+  if(length(attr(conf,"dimnames")$Predicted)<2){
+    num <- 1+as.logical(attr(conf,"dimnames")$Predicted)
+    temp <- matrix(0,ncol=2,nrow=2)
+    temp[,num] <- as.numeric(conf)
+    conf <- temp
+  }
 
-    if(any(rowSums(conf)==0)) {
-      warning("Confusion matrix: data contains no true or false values")
+  if(any(rowSums(conf)==0)) {
+    warning("Confusion matrix: data contains no true or false values")
   }
     
-   confuStats(conf)[[stat]]
-
+  confuStats(conf)[[stat]]
 }
 
 ##' Update identified particles.
@@ -408,33 +528,67 @@ getConfMat <- function(Y,P,thr,stat="F"){
 ##' Apply trained artificial neural network to particleStat object.
 ##' @param object Object of class 'nnTrackdemObject'.
 ##' @param neuralnet Trained neural net obtained from \code{\link{testNN}}
-##' @param pca Logical. By default \code{TRUE}, indicating that a principal component analysis is 
-##' performed on the predictors.
+##' @param pca Logical. By default \code{TRUE}, indicating that a principal 
+##' component analysis is performed on the predictors.
+##' @param colorimages An array with the original full color images, in order 
+##' to plot on the original images, obtained by \code{\link{loadImages}}. 
+##' By default the original color images are used.
+##' @param sbg Images subtracted from background, as obtained by 
+##' \code{\link{subtractBackground}}. By default, the original subtracted images 
+##' are used.
 ##' @param \dots further arguments passed to or from other methods.
 ##' @examples
 ##' \dontrun{
-##' update(particles=partIden,finalNN)
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain='square',
+##'                     h=0.01,rho=0.9,movingNoise=TRUE,
+##'                     parsMoving = list(density=20, duration=10, size=1,
+##'                                       speed = 10, colRange = c(0,1)),
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' partIden <- identifyParticles(allImages,threshold=-0.1,
+##'                                    pixelRange=c(3,400))
+##' nframes <- 3
+##' frames <- order(tapply(partIden$patchID,partIden$frame,length),
+##'                 decreasing=TRUE)[1:nframes]
+##' mId <- manuallySelect(particles=partIden,frame=frames)
+##' finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
+##' partIdenNN <- update(particles=partIden,neuralnet=finalNN)
 ##'	}
 ##' @return Data frame class 'particles', containing updated 
 ##' particle statistics (excluding 
 ##' particles that have been filtered out by the neural net).
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
-update.particles <- function(object,neuralnet,pca=TRUE,...) {
-    if(!is.TrDm(neuralnet)){
-        stop("Input does not appear to be of the class \"TrDm\"")
-    }
-    if(!is.TrDm(object)){
-        stop("Input does not appear to be of the class \"TrDm\"")
-    }
+update.particles <- function(object,neuralnet,pca=TRUE,colorimages=NULL,
+                             sbg=NULL, ...) {
     
-    object <- extractInfo(object,training=FALSE)
+  if(is.null(colorimages)) { 
+   colorimages <- get(attributes(object)$originalImages, envir=.GlobalEnv)
+  }
+  if(is.null(sbg)) { sbg <- get(attributes(object)$subtractedImages,
+                                                  envir=.GlobalEnv) }
+
+  if(!is.TrDm(neuralnet)){
+    stop("Input does not appear to be of the class \"TrDm\"")
+  }
+  if(!is.TrDm(object)){
+    stop("Input does not appear to be of the class \"TrDm\"")
+  }
+    
+  object <- extractInfo(object,training=FALSE,colorimages=colorimages,
+                        sbg=sbg)
     
     
-    if (pca == TRUE) {
-	   p <- stats::predict(attributes(neuralnet)$pca,object)
-       
-    } else p <- object
+  if (pca == TRUE) {
+    p <- stats::predict(attributes(neuralnet)$pca,object)
+  } else p <- object
     
   pred <- neuralnet$bestNN$predictors
   newParticleStats <- stats::plogis(neuralnet::compute(neuralnet$bestNN$nn,
@@ -443,8 +597,8 @@ update.particles <- function(object,neuralnet,pca=TRUE,...) {
   tmp <- newParticleStats > neuralnet$bestNN$thr
   dat <- cbind(data.frame(include=ifelse(tmp,1,0),
                     prob=newParticleStats),object)
-                          
   dat <- dat[dat$include == 1,]
+  
   attr(dat, "class") <- c("TrDm","particles","data.frame")
   attr(dat,"background") <- attributes(object)$background
   attr(dat,"originalImages") <- attributes(object)$originalImages
@@ -452,6 +606,10 @@ update.particles <- function(object,neuralnet,pca=TRUE,...) {
   attr(dat,"subtractedImages") <- attributes(object)$subtractedImages
   attr(dat,"neuralnet") <- deparse(substitute(neuralnet))
   attr(dat,"nn") <- TRUE
+  attr(dat,"settings") <- attributes(object)$settings
+  attr(dat,"threshold") <- attributes(object)$threshold
+  attr(dat,"images") <- attributes(object)$images
+  
   return(dat)
 }
 
@@ -498,7 +656,7 @@ extractNeighbors <- function(x,y,images){
   Ymax[Ymax > dim(images)[1]] <- dim(images)[1]
   Xmin[Xmin < 1] <- 1
   Ymin[Ymin < 1] <- 1
-  return(lapply(1:length(x),function(i) 
+  return(lapply(seq_along(x),function(i) 
          images[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
 
@@ -513,20 +671,32 @@ extractNeighbors <- function(x,y,images){
 ##
 makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 
-    ## force proportions
+  ## force proportions
+  prop <- prop/sum(prop)
+
+  Ndf <- nrow(dat)
+  spl <- seq_len(Ndf)
+  
+  if (Ndf <= 20) {
+    prop <- prop[1:2]
     prop <- prop/sum(prop)
-    Ndf <- nrow(dat)
-    spl <- seq_len(Ndf)
+    Tr.spl <- sample(spl,floor(prop[1]*Ndf),replace=FALSE)
+    Va.spl <- sample(spl[-Tr.spl],floor(prop[2]*Ndf),replace=FALSE)
+    Te.spl <- Va.spl
+    warning(paste("\t Less than 20 identified true and false positives. \n",
+                  "\t Therefore no separate test and validation data created.",
+                  "\n"))
+  } else {
     Tr.spl <- sample(spl,floor(prop[1]*Ndf),replace=FALSE)
     Va.spl <- sample(spl[-Tr.spl],floor(prop[2]*Ndf),replace=FALSE)
     Te.spl <- spl[-c(Tr.spl,Va.spl)]
-
+  }
     
-    Tr <- dat[Tr.spl,]
-    Va <- dat[Va.spl,]
-    Te <- dat[Te.spl,]
+  Tr <- dat[Tr.spl,]
+  Va <- dat[Va.spl,]
+  Te <- dat[Te.spl,]
 
-    return(list(Tr=Tr,Va=Va,Te=Te))
+  return(list(Tr=Tr,Va=Va,Te=Te))
 }
 
 ##' Train, validate and test artificial
@@ -534,7 +704,7 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##'
 ##' Fits multiple neural networks to
 ##' a dataset; data set has been randomly assigned to each
-##' of three catergories: train, validate and test.
+##' of three categories: train, validate and test.
 ##' A final neural net is selected based on a fit statistic
 ##' (either precision, recall or the F1-score). All neural networks
 ##' are trained to the training dataset. Neural network may vary in
@@ -547,8 +717,8 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' In binary classification, precision is the number of correct positive
 ##' results divided by the number of all positive predictions. Recall is
 ##' the number of correct positive results divided by the number of positive
-##' results that could have been returned if the algoritm was perfect.
-##' A F1 score (F-score/ F-measure) is statistical
+##' results that could have been returned if the algorithm was perfect.
+##' A F1 score (F-score/ F-measure) is a statistical
 ##' measure of accuracy. F1 scores considers both the precision
 ##' and the recall. A F1 score may be seen as a weighted average
 ##' (harmonic mean) of the precision and recall.
@@ -577,119 +747,134 @@ makeTrVaTe <- function(dat,prop=c(.8,.1,.1)){
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain='square',
+##'                     h=0.01,rho=0.9,movingNoise=TRUE,
+##'                     parsMoving = list(density=20, duration=10, size=1,
+##'                                       speed = 10, colRange = c(0,1)),
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' partIden <- identifyParticles(allImages,threshold=-0.1,
+##'                                    pixelRange=c(3,400))
+##' nframes <- 3
+##' frames <- order(tapply(partIden$patchID,partIden$frame,length),
+##'                 decreasing=TRUE)[1:nframes]
+##' mId <- manuallySelect(particles=partIden,frame=frames)
+##' finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
 ##' summary(finalNN)
 ##'	}
 ##' @export
 testNN <- function(dat,stat="F",maxH=5,repetitions=3,prop=c(8,1,1),
                    predictors=NULL,pca=TRUE,thr=0.95, ...) {
 
-    datOrig <- dat
-    attributes(datOrig) <- attributes(dat)
+  datOrig <- dat
+  attributes(datOrig) <- attributes(dat)
 
-    if (any(class(dat[[1]]) == 'list')) {
-      dat <- lapply(dat,function(x) x$trainingData)
-      dat <- do.call(rbind,dat)
-    } else {dat <- dat$trainingData}
+  dat <- attributes(dat)$trainingData
         
-    if(is.null(predictors)){
-        predictors <- colnames(dat)
-        predictors <- predictors[predictors != 'trY']
-        predictors <- predictors[predictors != 'patchID']
-        predictors <- predictors[predictors != 'frame']
-        predictors <- predictors[predictors != 'frac.dim.index']
+  if(is.null(predictors)){
+    predictors <- colnames(dat)
+    predictors <- predictors[unlist(lapply(dat,stats::var,na.rm=TRUE)) != 0]
+    predictors <- predictors[predictors != 'trY']
+    predictors <- predictors[predictors != 'patchID']
+    predictors <- predictors[predictors != 'frame']
+    predictors <- predictors[predictors != 'frac.dim.index']
+  }
+    
+  if (pca == TRUE) {
+    d <- dat[,predictors]
+    pc.cr <- stats::princomp(d,cor=TRUE)
+    datComp <- stats::predict(pc.cr)
+    datComp <- datComp[,cumsum(pc.cr$sdev^2/sum(pc.cr$sdev^2)) < thr,drop=FALSE]
+    predictors <- colnames(datComp)
+    dat <- as.data.frame(cbind(datComp,dat[,'trY',drop=FALSE]))
+  }
+    
+  Hidd <- 1:maxH
 
-    }
-    
-    if (pca == TRUE) {
-      d <- dat[,predictors]
-      pc.cr <- stats::princomp(d,cor=TRUE)
-      datComp <- stats::predict(pc.cr)
-      datComp <- datComp[,cumsum(pc.cr$sdev^2/sum(pc.cr$sdev^2)) < thr]
-      predictors <- colnames(datComp)
-      dat <- as.data.frame(cbind(datComp,dat[,'trY',drop=FALSE]))
-    }
-    
-    Hidd <- 1:maxH
+  results <- vector("list", length(maxH))
+  DAT <- makeTrVaTe(dat=dat[!is.na(dat$trY),],prop=prop)
+  Tr <- DAT$Tr
+  Va <- DAT$Va
+  Te <- DAT$Te
 
-    results <- vector("list", length(maxH))
+   cat("\r \t Training, Validating & Testing Neural Networks:  ",
+      round(100*0/length(Hidd),2),"% Done \t")
+    
+  for(H in Hidd) {
+    results[[H]] <- runNN(predictors=predictors,Tr,Va,hidden=H,
+                          reps=repetitions,
+                          stat=stat,...)
 
-    DAT <- makeTrVaTe(dat=dat,prop=prop)
-    Tr <- DAT$Tr
-    Va <- DAT$Va
-    Te <- DAT$Te
-
-     cat("\r \t Training, Validating & Testing Neural Networks:  ",
-            round(100*0/length(Hidd),2),
-         "% Done \t")
+    cat("\r \t Training, Validating & Testing Neural Networks:  ",
+     round(100*H/length(Hidd),2),"% Done \t")
+  }
     
-    for(H in Hidd) {
-        
-        
-        results[[H]] <- runNN(predictors=predictors,Tr,Va,hidden=H,
-                              reps=repetitions,
-                              stat=stat,...)
-
-         cat("\r \t Training, Validating & Testing Neural Networks:  ",
-            round(100*H/length(Hidd),2),
-            "% Done \t")
-            
-    }
+  cat("\n\n")
     
-    cat("\n\n")
+  ## get predictions from each neural network
+  testNNs <- lapply(results, function(X) neuralnet::compute(X$nn,
+                                                            Te[,predictors]))
+  valiNNs <- lapply(results, function(X) neuralnet::compute(X$nn,
+                                                            Va[,predictors]))
+  trainNNs <- lapply(results, function(X) neuralnet::compute(X$nn,
+                                                             Tr[,predictors]))
     
-    ## get predictions from each neural network
-    testNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Te[,predictors]))
-    valiNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Va[,predictors]))
-    trainNNs <- lapply(results, function(X) neuralnet::compute(X$nn,Tr[,predictors]))
-    
-    ## get optimized prediction/classification thresholds
-    thrNNs <- lapply(results, function(X) X$thr)
+  ## get optimized prediction/classification thresholds
+  thrNNs <- lapply(results, function(X) X$thr)
   
-    ## calculate final scores based on the test data
-    final <- sapply(Hidd, function(X) getConfMat(Te$trY,testNNs[[X]]$net.result,
-                                                 thrNNs[[X]],stat=stat))
+  ## calculate final scores based on the test data
+  final <- vapply(Hidd, function(X) getConfMat(Te$trY,testNNs[[X]]$net.result,
+                                               thrNNs[[X]],stat=stat),
+                  numeric(1))
 
-    ## calculate scores based on the training data
-    finalTr <- sapply(Hidd, function(X) getConfMat(Tr$trY,
-                                                   trainNNs[[X]]$net.result,
-                                                 thrNNs[[X]],stat=stat))
-    ## calculate scores based on the validation data
-    finalVa <- sapply(Hidd, function(X) getConfMat(Va$trY,
-                                                   valiNNs[[X]]$net.result,
-                                                   thrNNs[[X]],stat=stat))
 
-    testTable <- data.frame(layers=Hidd,Training=finalTr,Validation=finalVa,
-                            Test=final)
-    rownames(testTable) <- paste("ANN",Hidd,sep="-")
-    
-    bestNN <- which((final-1)==max(final-1))[1]
-    cat("\t Neural Network ( ",stat,")  Scores \n")
+  ## calculate scores based on the training data
+  finalTr <- vapply(Hidd, function(X) getConfMat(Tr$trY, 
+                                                 trainNNs[[X]]$net.result,
+                                                 thrNNs[[X]],stat=stat),
+                    numeric(1))
 
-    print.default(format(as.matrix.data.frame(testTable),digits = 3)
-                 ,print.gap = 2L, 
-                  quote = FALSE)
+  ## calculate scores based on the validation data
+  finalVa <- vapply(Hidd, function(X) getConfMat(Va$trY,
+                                                 valiNNs[[X]]$net.result,
+                                                 thrNNs[[X]],stat=stat),
+                    numeric(1))
+
+  testTable <- data.frame(layers=Hidd,Training=finalTr,Validation=finalVa,
+                          Test=final)
+  rownames(testTable) <- paste("ANN",Hidd,sep="-")
+  bestNN <- which((final-1)==max(final-1))[1]
+  cat("\t Neural Network ( ",stat,")  Scores \n")
+
+  print.default(format(as.matrix.data.frame(testTable),digits = 3),
+                print.gap = 2L, 
+                quote = FALSE)
     
-    cat("\t Neural Net #", bestNN, " selected \n")
+  cat("\t Neural Net #", bestNN, " selected \n")
     
-    conf <- tryCatch(getConfMat(Te$trY,testNNs[[bestNN]]$net.result,
-                      results[[bestNN]]$thr,stat='confusion'),
+  conf <- tryCatch(getConfMat(Te$trY,testNNs[[bestNN]]$net.result,
+                    results[[bestNN]]$thr,stat='confusion'),
                     error=function(e) Te)
 
-    res <- list(bestNN=results[[bestNN]],
-              finalstats=testTable,confusion=conf,fscore=final[bestNN])
+  res <- list(bestNN=results[[bestNN]],
+             finalstats=testTable,confusion=conf,fscore=final[bestNN])
               
-    attr(res,"background") <- attributes(datOrig)$background
-    attr(res,"originalImages") <- attributes(datOrig)$originalImages
-    attr(res,"originalDirec") <- attributes(datOrig)$originalDirec
-    attr(res,"subtractedImages") <- attributes(datOrig)$subtractedImages
-    #attr(res,"trainingData") <- deparse(substitute(datOrig))
-    attr(res,"data") <- dat
-    if(exists('pc.cr')) attr(res,"pca") <- pc.cr
-    
-    class(res) <- c("TrDm","neuralnet","list")
+  attr(res,"background") <- attributes(datOrig)$background
+  attr(res,"originalImages") <- attributes(datOrig)$originalImages
+  attr(res,"originalDirec") <- attributes(datOrig)$originalDirec
+  attr(res,"subtractedImages") <- attributes(datOrig)$subtractedImages
+  attr(res,"data") <- dat
+  if(exists('pc.cr')) attr(res,"pca") <- pc.cr
+  class(res) <- c("TrDm","neuralnet","list")
               
-    invisible(res)
+  invisible(res)
 }
 
 

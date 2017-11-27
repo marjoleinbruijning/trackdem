@@ -4,31 +4,51 @@
 \alias{manuallySelect}
 \title{Manually identify true and false positives with a GUI.}
 \usage{
-manuallySelect(particles, colorimages = NULL, frame = NULL)
+manuallySelect(particles, colorimages = NULL, frames = NULL)
 }
 \arguments{
-\item{particles}{A data frame of class 'TrDm' with particle statistics for each frame,
-obtained by \code{\link{identifyParticles}}.}
+\item{particles}{A data frame of class 'TrDm' with particle statistics for 
+each frame, obtained by \code{\link{identifyParticles}}.}
 
-\item{colorimages}{An array with the original full color images, in order to plot
-on the original images. If \code{NULL}, the original color images are used, obtained
- from the global environment.}
+\item{colorimages}{An array with the original full color images, in order 
+to plot on the original images. If \code{NULL}, the original color images 
+are used, obtained from the global environment.}
 
-\item{frame}{A number defining the frame that should be used. Default
-is \code{NULL}; in that case the frame with the maximum number of identified particles is used.}
+\item{frames}{A vector defining the frame(s) that should be used. Default
+is \code{NULL}; in that case the frame with the maximum number of identified 
+particles is used.}
 }
 \value{
 List containing three elements: true positives, false positives,
 and the evaluated frame.
 }
 \description{
-\code{manuallySelect} opens a graphic user iterface to create
+\code{manuallySelect} opens a graphic user interface to create
  training data for a neural net by manually selecting true and
- false positives (respectively, correctly identified particles and noise).
+ false positives (i.e. correctly identified particles and noise, respectively).
 }
 \examples{
 \dontrun{
-manuallySelect(particles=partIden,frame=1)
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain='square',
+                    h=0.01,rho=0.9,movingNoise=TRUE,
+                    parsMoving = list(density=20, duration=10, size=1,
+                                      speed = 10, colRange = c(0,1)),
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+partIden <- identifyParticles(allImages,threshold=-0.1,
+                                   pixelRange=c(3,400))
+# select the nframes with the most identified particles
+nframes <- 3
+frames <- order(tapply(partIden$patchID,partIden$frame,length),
+                decreasing=TRUE)[1:nframes]
+mId <- manuallySelect(particles=partIden,frame=frames)
 }
 }
 \author{

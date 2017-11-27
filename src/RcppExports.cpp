@@ -8,7 +8,7 @@ using namespace Rcpp;
 
 // cb
 NumericVector cb(NumericVector m1, NumericVector m2, NumericVector m3, IntegerVector d, IntegerVector e);
-RcppExport SEXP trackdem_cb(SEXP m1SEXP, SEXP m2SEXP, SEXP m3SEXP, SEXP dSEXP, SEXP eSEXP) {
+RcppExport SEXP _trackdem_cb(SEXP m1SEXP, SEXP m2SEXP, SEXP m3SEXP, SEXP dSEXP, SEXP eSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -21,9 +21,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cbDynamic
+NumericVector cbDynamic(NumericVector m1, IntegerVector d, IntegerVector e, NumericVector w);
+RcppExport SEXP _trackdem_cbDynamic(SEXP m1SEXP, SEXP dSEXP, SEXP eSEXP, SEXP wSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
+    rcpp_result_gen = Rcpp::wrap(cbDynamic(m1, d, e, w));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getCoords
 NumericVector getCoords(NumericVector m, IntegerVector d);
-RcppExport SEXP trackdem_getCoords(SEXP mSEXP, SEXP dSEXP) {
+RcppExport SEXP _trackdem_getCoords(SEXP mSEXP, SEXP dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -35,7 +49,7 @@ END_RCPP
 }
 // muP
 NumericVector muP(NumericVector m, NumericVector id, NumericVector cm1, NumericVector cm2, NumericVector cm3, IntegerVector d);
-RcppExport SEXP trackdem_muP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
+RcppExport SEXP _trackdem_muP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -49,9 +63,23 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sb2
+NumericVector sb2(NumericVector m1, NumericVector bg, IntegerVector d, IntegerVector e);
+RcppExport SEXP _trackdem_sb2(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    rcpp_result_gen = Rcpp::wrap(sb2(m1, bg, d, e));
+    return rcpp_result_gen;
+END_RCPP
+}
 // sb
 NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d, IntegerVector e);
-RcppExport SEXP trackdem_sb(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
+RcppExport SEXP _trackdem_sb(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -65,7 +93,7 @@ END_RCPP
 }
 // sdP
 NumericVector sdP(NumericVector m, NumericVector id, NumericVector cm1, NumericVector cm2, NumericVector cm3, IntegerVector d);
-RcppExport SEXP trackdem_sdP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
+RcppExport SEXP _trackdem_sdP(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP cm2SEXP, SEXP cm3SEXP, SEXP dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -78,4 +106,20 @@ BEGIN_RCPP
     rcpp_result_gen = Rcpp::wrap(sdP(m, id, cm1, cm2, cm3, d));
     return rcpp_result_gen;
 END_RCPP
+}
+
+static const R_CallMethodDef CallEntries[] = {
+    {"_trackdem_cb", (DL_FUNC) &_trackdem_cb, 5},
+    {"_trackdem_cbDynamic", (DL_FUNC) &_trackdem_cbDynamic, 4},
+    {"_trackdem_getCoords", (DL_FUNC) &_trackdem_getCoords, 2},
+    {"_trackdem_muP", (DL_FUNC) &_trackdem_muP, 6},
+    {"_trackdem_sb2", (DL_FUNC) &_trackdem_sb2, 4},
+    {"_trackdem_sb", (DL_FUNC) &_trackdem_sb, 4},
+    {"_trackdem_sdP", (DL_FUNC) &_trackdem_sdP, 6},
+    {NULL, NULL, 0}
+};
+
+RcppExport void R_init_trackdem(DllInfo *dll) {
+    R_registerRoutines(dll, NULL, CallEntries, NULL, NULL);
+    R_useDynamicSymbols(dll, FALSE);
 }

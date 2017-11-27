@@ -7,13 +7,14 @@
 ## @author Marjolein Bruijning & Marco D. Visser
 ## @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ## @return List two elements: first contains array with all images,
-## subset when relevant. Second element contains all original color images as array.
+## subset when relevant. Second element contains all original color images as 
+## array.
 ## 
 track <- function (Phi, g, L=50) {
-  totCost <- sum(g*Phi,na.rm=T)
+  totCost <- sum(g*Phi,na.rm=TRUE)
   continue <- 1
   while (continue < 5) {
-    a <- sample(1:ncol(g),ncol(g),replace=F)# shuffle columns
+    a <- sample(1:ncol(g),ncol(g),replace=FALSE)# shuffle columns
     for (i in a) {
       reducedCost <- rep(NA,length(a))
       for (j in 1:nrow(g)) {
@@ -40,8 +41,8 @@ track <- function (Phi, g, L=50) {
         }
       } 
       if (sum(!is.na(reducedCost)) > 0) {
-        if (min(reducedCost,na.rm=T) < 0) {
-          j <- which(reducedCost == min(reducedCost,na.rm=T))[1]
+        if (min(reducedCost,na.rm=TRUE) < 0) {
+          j <- which(reducedCost == min(reducedCost,na.rm=TRUE))[1]
           if (i > 1 & j > 1) {
             k <- which(g[j,] == 1)
             l <- which(g[,i] == 1)
@@ -65,7 +66,7 @@ track <- function (Phi, g, L=50) {
         }
       }
     }
-    totCostNew <- sum(g*Phi,na.rm=T)
+    totCostNew <- sum(g*Phi,na.rm=TRUE)
     if (totCostNew == totCost) continue <- continue + 1
     totCost <- totCostNew
   }
@@ -115,7 +116,7 @@ calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
 phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
                     coords0=NULL) {
   
-  Phi <- sapply(1:nrow(coords1),function(x) {
+  Phi <- vapply(seq_len(nrow(coords1)),function(x) {
 	  if (length(coords0[rownames(coords0) == x,]) > 0) {
         predLoc <- TRUE
       } else {
@@ -131,7 +132,7 @@ phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
 		       predLoc=predLoc,
 		       x0=coords0[rownames(coords0) == x,1],
 		       y0=coords0[rownames(coords0) == x,2])
-   })
+   }, numeric(length(coords2[,1])))
    
   Phi <- matrix(Phi,ncol=dim(coords1)[1],nrow=dim(coords2)[1])
   Phi <- cbind(rep(L*r,nrow(Phi)),Phi)
@@ -148,8 +149,8 @@ phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
 ## 
 gMat <- function (Phi) {
   g <- matrix(0,nrow=nrow(Phi),ncol=ncol(Phi))
-  sequence <- sample(2:nrow(Phi),ncol(Phi)-1,replace=T)
-  sapply(2:ncol(g),function(x) g[unique(sequence)[x-1],x] <<- 1)
+  sequence <- sample(2:nrow(Phi),ncol(Phi)-1,replace=TRUE)
+  for (i in 2:ncol(g)) { g[unique(sequence)[i-1],i] <- 1 }
   g[1,colSums(g) == 0] <- 1
   g[rowSums(g) == 0,1] <- 1
   return(g)
@@ -211,16 +212,17 @@ linkTrajec <- function (recordsObject,particles,
                                                x[1] != 0 & x[2] == 0),i-1]))
           tmp <- tmp[tmp > 1] - 1
           coords0 <- matrix(c(particles[particles$frame == (i-1),]$x[tmp],
-                   particles[particles$frame == (i-1),]$y[tmp]),ncol=2,byrow=F)
+                            particles[particles$frame == (i-1),]$y[tmp]),ncol=2,
+                            byrow=FALSE)
           rownames(coords0) <- tmp
         }
 
         coords1 <- matrix(c(particles[inc,]$x[endTrajec],
-                   particles[inc,]$y[endTrajec]),ncol=2,byrow=F)
+                   particles[inc,]$y[endTrajec]),ncol=2,byrow=FALSE)
         sizes1 <- particles[inc,]$n.cell[endTrajec]           
     
         coords2 <- matrix(c(particles[inc2,]$x[beginTrajec],
-                   particles[inc2,]$y[beginTrajec]),ncol=2,byrow=F)
+                   particles[inc2,]$y[beginTrajec]),ncol=2,byrow=FALSE)
         sizes2 <- particles[inc2,]$n.cell[beginTrajec]
     
         Phi <- phiMat(coords1,coords2,
@@ -270,9 +272,11 @@ linkTrajec <- function (recordsObject,particles,
   trackRecord[trackRecord == 0] <- NA                             
   label[label == 0] <- NA 
   sizeRecord[sizeRecord == 0] <- NA
-  colorRecord[colorRecord == 0] <- NA         
-  res <- list(trackRecord=trackRecord,A=A,label=label,
-              sizeRecord=sizeRecord,colorRecord=colorRecord)
+  colorRecord[colorRecord == 0] <- NA
+  inc <- apply(trackRecord[,,1],1,function(x) !all(is.na(x)))
+  res <- list(trackRecord=trackRecord[inc,,],costsTracking=G,costsLinking=A,
+              label=label,
+              sizeRecord=sizeRecord[inc,],colorRecord=colorRecord[inc,,])
   return(res) 
 }
 
@@ -299,16 +303,16 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 	inc <- particles$frame == i
 	inc2 <- particles$frame == (i + 1)
     coords1 <- matrix(c(particles[inc,]$x,
-                      particles[inc,]$y),ncol=2,byrow=F)
+                      particles[inc,]$y),ncol=2,byrow=FALSE)
     sizes1 <- particles[inc,]$n.cell
     coords2 <- matrix(c(particles[inc2,]$x,
-                      particles[inc2,]$y),ncol=2,byrow=F)	
+                      particles[inc2,]$y),ncol=2,byrow=FALSE)	
     sizes2 <- particles[inc2,]$n.cell
     
     if (i > 1) {
       coords0 <- matrix(c(particles[particles$frame == (i-1),]$x,
                         particles[particles$frame == (i-1),]$y),
-                        ncol=2,byrow=F)
+                        ncol=2,byrow=FALSE)
       # labels for previous linked frame
       tmp <- links[[i-1]][,2]
       # combine with labels for frame i
@@ -345,7 +349,8 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
                           suffixes=c('',paste0('.',i)))
     }  
 
-  cat("\r \t Create track segments: ",round(i / (length(n)-1) * 100, 1),"%          ")
+  cat("\r \t Create track segments: ",round(i / (length(n)-1) * 100, 1),
+      "%          ")
 
   }
 
@@ -357,20 +362,20 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
   for (i in 1:length(allnames)){ 
     n <- which(tmp == allnames[i])
     if (length(n) > 1) {
-      allLinks[,n] <- rowSums(allLinks[,n],na.rm=T)
+      allLinks[,n] <- rowSums(allLinks[,n],na.rm=TRUE)
     }
   }
   allLinks <- allLinks - 1
 
   allLinks[allLinks == 0] <- NA
-  allLinks <- allLinks[,duplicated(tmp)==F]
+  allLinks <- allLinks[,duplicated(tmp)==FALSE]
 
   trackRecord <- array(NA,dim=c(dim(allLinks)[1],dim(allLinks)[2],2))
   sizeRecord <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
   colorRecord <- array(NA,dim=c(dim(allLinks)[1],dim(allLinks)[2],3))
 
   label <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
-  a <- tmp[duplicated(tmp)==F]
+  a <- tmp[duplicated(tmp)==FALSE]
 
   for (i in 1:(length(a))) {
 	inc <- particles$frame == i
@@ -390,32 +395,185 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 }
 
 
+##' Merge track records
+##' 
+##' \code{mergeTracks} attempts to merge to two track objects as obtained by 
+##' \code{\link{trackParticles}}.
+##' @param records1 Object of class 'tracked',
+##' obtained using \code{\link{trackParticles}}.
+##' @param records2 Object of class 'tracked',
+##' obtained using \code{\link{trackParticles}} that should be linked to 
+##' \code{records1}.
+##' @param L Numeric. Maximum cost for linking a particle to another particle. 
+##' When the cost is larger, 
+##' particles will be not be linked (resulting in the begin or end of a segment).
+##' If \code{NULL}, the same \code{L} as used to create 
+##' \code{records2} is used.
+##' @param weight Vector containing 3 weights to calculate costs. Depending 
+##' on the study system user may want to value certain elements over others.
+##' Weights are ordered as follows; 
+##' first number gives the weight for differences in x and y coordinates;
+##' second number 
+##' gives the weight for particle size differences. Note that the 
+##' difference between the predicted location and the observed location is 
+##' not taken into account in this function. If \code{NULL}, the same weights as 
+##' used to create \code{records2} is used.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' ## Create image sequence
+##' dir.create("images")
+##' traj <- simulTrajec(path="images",
+##'                     nframes=60,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,sizes=runif(20,0.004,0.006))
+##' ## Analyse first part
+##' dir <- "images"
+##' allFullImages1 <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack1 <- createBackground(allFullImages1)
+##' allImages1 <- subtractBackground(bg=stillBack1)
+##' partIden1 <- identifyParticles(sbg=allImages1,
+##'                               pixelRange=c(1,500),
+##'                               threshold=-0.1)
+##' records1 <- trackParticles(partIden1,L=20,R=2)
+##' ## Analyse second part
+##' allFullImages2 <- loadImages (dirPictures=dir,nImages=31:60)
+##' stillBack2 <- createBackground(allFullImages2)
+##' allImages2 <- subtractBackground(bg=stillBack2)
+##' partIden2 <- identifyParticles(sbg=allImages2,
+##'                               pixelRange=c(1,500),
+##'                               threshold=-0.1)
+##' records2 <- trackParticles(partIden2,L=20,R=2)
+##' ## Merge tracks
+##' records <- mergeTracks(records1,records2)
+##' plot(records,colorimages=allFullImages1,type="trajectories",incThres=10)
+##'	}
+##' @return A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
+##' @export
+## 
+mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
+
+  if (is.null(L)) L <- attributes(records2)$settings$L
+  if (is.null(weight)) weight <- attributes(records2)$settings$weight
+
+  coords1 <- records1$trackRecord[,ncol(records1$trackRecord),]
+  coords2 <- records2$trackRecord[,1,]
+  sizes1 <- records1$sizeRecord[,ncol(records1$sizeRecord)]
+  sizes2 <- records2$sizeRecord[,1]
+  label1 <- records1$label[,ncol(records1$label)]
+  label2 <- records2$label[,1]
+  
+  Phi <- phiMat(coords1,coords2,
+	            sizes1=sizes1,
+	            sizes2=sizes2,
+	            L=L,r=1,weight=weight,
+	            coords0=NULL)
+
+  gstart <- gMat(Phi)
+    
+  ## optimize
+  G <- array(NA,dim=c(2000,2000))
+  G[1:nrow(Phi),1:ncol(Phi)] <- track(Phi=Phi, g=gstart, L=L) * Phi	
+  
+  links <- data.frame(which(G > 0,TRUE))
+  names(links) <- c(paste('frame',2),paste('frame',1))
+
+  links <- links - 1
+  links[links == 0] <- NA
+  links <- stats::na.omit(links)
+  
+  fillMat <- function(mat1,mat2,l=links) {
+    A <- matrix(NA,ncol=ncol(mat1) + ncol(mat2),nrow=nrow(l))
+    for (i in 1:nrow(l)) {
+      A[i,] <- c(mat1[l[i,2],],mat2[l[i,1],])
+    }
+    todo1 <- !seq_len(nrow(mat1)) %in% l[,2]
+    m <- mat1[todo1,]
+    m <- cbind(m,matrix(NA,ncol=ncol(mat2),nrow=nrow(m)))
+
+    todo2 <- !seq_len(nrow(mat2)) %in% l[,1]
+    m2 <- mat2[todo2,]
+    m2 <- cbind(matrix(NA,ncol=ncol(mat1),nrow=nrow(m2)),m2)
+    
+    return(rbind(A,m,m2))
+  }
+
+  label <- fillMat(records1$label,records2$label)
+  sizeRecord <- fillMat(records1$sizeRecord,records2$sizeRecord)
+  
+  trackRecord <- array(NA,dim=c(dim(sizeRecord),2))
+  trackRecord[,,1] <- fillMat(records1$trackRecord[,,1],
+                              records2$trackRecord[,,1])
+  trackRecord[,,2] <- fillMat(records1$trackRecord[,,2],
+                              records2$trackRecord[,,2])
+  colorRecord <- array(NA,dim=c(dim(sizeRecord),3))
+  colorRecord[,,1] <- fillMat(records1$colorRecord[,,1],
+                         records2$colorRecord[,,1])
+  colorRecord[,,2] <- fillMat(records1$colorRecord[,,2],
+                         records2$colorRecord[,,2])
+  colorRecord[,,3] <- fillMat(records1$colorRecord[,,3],
+                         records2$colorRecord[,,3])
+
+  rec <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,
+              colorRecord=colorRecord,label=label)
+
+  class(rec) <- c('TrDm','tracked')
+  attr(rec,"background1") <- attributes(records1)$background
+  attr(rec,"originalImages1") <- attributes(records1)$originalImages
+  attr(rec,"subtractedImages1") <- attributes(records1)$subtractedImages
+  attr(rec,"images1") <- attributes(records1)$images
+  attr(rec,"settings1") <- attributes(records1)$settings
+
+  attr(rec,"background2") <- attributes(records2)$background
+  attr(rec,"originalImages2") <- attributes(records2)$originalImages
+  attr(rec,"subtractedImages2") <- attributes(records2)$subtractedImages
+  attr(rec,"images2") <- attributes(records2)$images
+  attr(rec,"settings2") <- attributes(records2)$settings
+
+  return(rec)
+}
+
+
 ##' Track particles
 ##' 
-##' \code{trackParticles} attempts to reconstruct trajectories by linking particles.
+##' \code{trackParticles} reconstructs trajectories by linking particles.
 ##' @param particles Object of class 'particles',
 ##' obtained using \code{\link{identifyParticles}}.
-##' @param L Numeric. Maximum cost for linking a particle to another particle. When the cost is larger, 
+##' @param L Numeric. Maximum cost for linking a particle to another particle. 
+##' When the cost is larger, 
 ##' particles will be not be linked (resulting in the begin or end of a segment).
 ##'  Default set at \code{50}.
 ##' @param R Integer. Link to how many subsequent frames? Default set
 ##' at \code{2}.
 ##' @param weight Vector containing 3 weights to calculate costs. Depending 
-##' on the study system user may want to value certain elements over others.
+##' on the study system, users may want to value certain elements over others.
 ##' For instance, when individuals can vary in size over frames
 ##' (which happens when objects move away or towards a camera)
 ##' the "size" weight may be decreased. Weights are ordered as follows; 
 ##' first number gives the weight for differences in x and y coordinates;
 ##' second number 
 ##' gives the weight for particle size differences; third number gives the 
-##' difference bewteen the predicted location and the observed location. The latter 
-##' is calculated using the location of the identified particle in the previous frame.
+##' difference between the predicted location and the observed location. The 
+##' latter is calculated using the location of the identified particle in the 
+##' previous frame.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##'    records <- trackParticles(particles)
-##'    summary(records)
-##'    plot(records,type='trajectories')
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' partIden <- identifyParticles(allImages,threshold=-0.1,
+##'                                    pixelRange=c(3,400))
+##' records <- trackParticles(particles,L=40,R=2)
+##' summary(records)
+##' plot(records,type="trajectories")
 ##'	}
 ##' @return A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 ##' @export

@@ -2,22 +2,30 @@
 # Generator token: 10BE3573-1514-4C36-9D1C-5A225CD40393
 
 cb <- function(m1, m2, m3, d, e) {
-    .Call('trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d, e)
+    .Call('_trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d, e)
+}
+
+cbDynamic <- function(m1, d, e, w) {
+    .Call('_trackdem_cbDynamic', PACKAGE = 'trackdem', m1, d, e, w)
 }
 
 getCoords <- function(m, d) {
-    .Call('trackdem_getCoords', PACKAGE = 'trackdem', m, d)
+    .Call('_trackdem_getCoords', PACKAGE = 'trackdem', m, d)
 }
 
 muP <- function(m, id, cm1, cm2, cm3, d) {
-    .Call('trackdem_muP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
+    .Call('_trackdem_muP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
+}
+
+sb2 <- function(m1, bg, d, e) {
+    .Call('_trackdem_sb2', PACKAGE = 'trackdem', m1, bg, d, e)
 }
 
 sb <- function(m1, bg, d, e) {
-    .Call('trackdem_sb', PACKAGE = 'trackdem', m1, bg, d, e)
+    .Call('_trackdem_sb', PACKAGE = 'trackdem', m1, bg, d, e)
 }
 
 sdP <- function(m, id, cm1, cm2, cm3, d) {
-    .Call('trackdem_sdP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
+    .Call('_trackdem_sdP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
 }
 

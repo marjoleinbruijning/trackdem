@@ -12,8 +12,8 @@ runBatch(path, settings = NULL, dirnames = NULL, nImages = 1:30,
   saveAll = FALSE)
 }
 \arguments{
-\item{path}{A character vector of path name that contains all directories with
-image sequences.}
+\item{path}{A character vector of path name that contains all directories 
+with image sequences.}
 
 \item{settings}{Object of class 'tracked' containing all optimized settings
 in attributes,
@@ -21,7 +21,7 @@ as obtained from \code{\link{trackParticles}}.
 Alternatively, settings can be specified using arguments described below.}
 
 \item{dirnames}{If not all image sequences should be
-analyzed, specificy which files to use as a character string.}
+analyzed, specify which files to use as a character string.}
 
 \item{nImages}{See \code{\link{loadImages}}}
 
@@ -33,7 +33,7 @@ analyzed, specificy which files to use as a character string.}
 
 \item{select}{See \code{\link{identifyParticles}}}
 
-\item{nn}{Name of artifical neural net if apply it to images. Default
+\item{nn}{Name of artificial neural net if apply it to images. Default
 is \code{NULL}, resulting in no neural net being applied.}
 
 \item{incThres}{Minimum number of frames that a particle must be
@@ -41,7 +41,8 @@ present. By default, automated estimate is used.}
 
 \item{plotOutput}{Default is \code{FALSE}. Set \code{TRUE} to plot results.}
 
-\item{plotType}{Default is 'trajectories'. Other options are 'sizes' and 'animation'.}
+\item{plotType}{Default is 'trajectories'. Other options are 'sizes' and 
+'animation'.}
 
 \item{L}{See \code{\link{trackParticles}}}
 
@@ -57,8 +58,8 @@ present. By default, automated estimate is used.}
 
 \item{frames}{See \code{\link{identifyParticles}}}
 
-\item{saveAll}{Logical. Set \code{TRUE} to save for each image sequence the full object obtained from
-\code{\link{loadImages}}. Default is FALSE.}
+\item{saveAll}{Logical. Set \code{TRUE} to save for each image sequence the 
+full object obtained from \code{\link{loadImages}}. Default is FALSE.}
 }
 \value{
 Dataframe with estimated population size for each image sequence.
@@ -70,11 +71,25 @@ previously on a single or selection of movies/image sequences.
 }
 \examples{
 \dontrun{
-results <- runBatch(path='images',
-                    nImages=1:30,threshold=0.2,select='both',
+## Simulate 3 image sequences
+wd <- getwd()
+folders <- paste0(rep("images",3),1:3)
+populations <- c(15,25,50)
+dir.create("./batchTest")
+setwd("./batchTest")	
+for(i in 1:length(folders)){
+  dir.create(folders[i])
+  traj <- simulTrajec(path=folders[i],
+                      nframes=30,nIndividuals=populations[i],
+                      h=0.01,rho=0.9,
+                      sizes=runif(populations[i],0.004,0.006))
+}
+setwd(wd)
+batchpath <- "./batchTest"
+results <- runBatch(path=batchpath,
+                    nImages=1:30,threshold=-0.1,select='dark',
                     pixelRange=c(1,100),L=50,R=3,
-                    incThres=1,plotOutput=TRUE,plotType='trajectories',
-                    weight=c(1,0,1))
+                    incThres=10)
 results
 }
 }

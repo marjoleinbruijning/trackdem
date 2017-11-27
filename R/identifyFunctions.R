@@ -7,7 +7,8 @@
 ##' name of the movie.
 ##' @param moviepath Path to existing directory containing the video files.
 ##' By default, 'Movies' is used.
-##' @param imagepath Path to location of an existing directory in which image sequences should
+##' @param imagepath Path to location of an existing directory in which image 
+##' sequences should
 ##' be saved. By default, 'ImageSequences' is used.
 ##' @param x Number of pixels in horizontal direction; default is 1915 (HD).
 ##' @param y Number of pixels in vertical direction; default is 1080 (HD).
@@ -17,11 +18,11 @@
 ##' in the exact middle of the movie are exported.  
 ##' @param ext The extension of the video. Default is \code{'MTS'}. All
 ##' formats supported by libav are accepted. 
-##' @param path Path to location where temporary Python file will be saved. Default 
-##' is working directory.
+##' @param path Path to location where temporary Python file will be saved. 
+##' Default is working directory.
 ##' @param libavpath Path to location where the executable file for libav
-##' can be found (named 'avconv.exe'), in case it is not found automatically.
-##' For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.
+##' can be found (named 'avconv.exe'), in case it is not found automatically, 
+##' e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}.
 ##' @param exiftoolpath Path to location where the executable file for 
 ##' ExifTool can be found, in case it is not found automatically. 
 ##' For instance, use \code{'exiftool(-k).exe'}, if located in the working 
@@ -30,6 +31,11 @@
 ##' Python 2.7 can be found, in case it is not found automatically. For 
 ##' instance, use \code{'C:/Python27/python.exe'}.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' createImageSeq(moviepath="Movies",imagepath="ImageSequences",
+##'                nsec=3,ext="AVI")
+##'	}
 ##' @export
 createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
                             x=1915,
@@ -52,7 +58,8 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
         paste("sequenceParentDirname = os.path.abspath('",imagepath,"')",sep=''),
         paste("def conv_command(filename, targetDirName, start, stop):"),
         paste("    inFile = os.path.join(movieDir, filename)"),
-        paste("    outFiles = os.path.join(sequenceParentDir, targetDirName, 'image-%03d.png')"),
+        paste("    outFiles = os.path.join(sequenceParentDir, targetDirName,",
+              " 'image-%03d.png')"),
         paste("    return ['",libavpath,"',",sep=''),
         paste("            '-loglevel', 'quiet',"),
         paste("            '-i', inFile,"),
@@ -69,8 +76,10 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
         paste("movieNames = []"),
         paste("for filename in os.listdir(movieDir):"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
-        paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or not movieExtension.lower() == ",ext,":"),
-        paste("        print 'File %s has the wrong name or is a directory, therefore skipped' % filename"),
+        paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or",
+              "not movieExtension.lower() == ",ext,":"),
+        paste("        print 'File %s has the wrong name or is a directory,",
+              "therefore skipped' % filename"),
         paste("    else:"),
         paste("        movieNames.append(filename)"),
         paste("if not os.path.exists(sequenceParentDir):"),
@@ -78,17 +87,27 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
         paste("for filename in movieNames:"),
         paste("    movieName, movieExtension = os.path.splitext(filename)"),
         paste("    try:"),
-        paste("        targetDirName = string.translate(subprocess.check_output(['",exiftoolpath,"', '-DateTimeOriginal', '-T', os.path.join(movieDir, filename)]).split()[0], None, ':') + '_' + movieName",sep=''),
+        paste("        targetDirName = string.translate(subprocess.check_output",
+              "(['",exiftoolpath,"', '-DateTimeOriginal', '-T', os.path.join(",
+              "movieDir, filename)]).split()[0], None, ':') + '_' + movieName",
+               sep=''),
         paste("    except Exception:"),
-        paste("        print 'Error in obtaining date in file %s; therefore skipped' % filename"),
+        paste("        print 'Error in obtaining date in file %s; therefore",
+              "skipped' % filename"),
         paste("        continue"),
         paste("    try:"),
-        paste("        duration = float(string.translate(subprocess.check_output(['",exiftoolpath,"', '-n', '-s3', '-duration', os.path.join(movieDir, filename)]).split()[0], None, ':'))",sep=''),
+        paste("        duration = float(string.translate(subprocess.check_",
+              "output(['",exiftoolpath,"', '-n', '-s3', '-duration', ",
+              "os.path.join(movieDir, filename)]).split()[0], None, ':'))",
+               sep=''),
         paste("    except Exception:"),
-        paste("        print 'Error in obtaining duration movie in file %s, therefore skipped' % filename"),
+        paste("        print 'Error in obtaining duration movie in file %s,",
+              "therefore skipped' % filename"),
         paste("        continue"),
-        paste("    if os.path.exists(os.path.join(sequenceParentDir, targetDirName)):"),
-        paste("        print 'Directory %s already exists, file %s skipped' % (targetDirName, filename)"),
+        paste("    if os.path.exists(os.path.join(sequenceParentDir,",
+              "targetDirName)):"),
+        paste("        print 'Directory %s already exists, file %s skipped' %",
+              "(targetDirName, filename)"),
         paste("    else:"),
         paste("        if duration >",nsec,":",sep=''),
         paste("            start = duration/2 -",nsec/2,sep=''),
@@ -97,17 +116,19 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
         paste("            start = 0"),
         paste("            stop = duration"),
         paste("        os.mkdir(os.path.join(sequenceParentDir, targetDirName))"),
-        paste("        command = conv_command(filename, targetDirName, start, stop)"),
+        paste("        command = conv_command(filename, targetDirName, start,",
+              "stop)"),
         paste("        try:"),
         paste("            subprocess.call(command)"),
         paste("            print 'File %s done' % filename"),
         paste("        except Exception, e:"),
-        paste("            print 'Error in processing file %s, error: %s' % (filename, e)")
+        paste("            print 'Error in processing file %s, error: %s' %",
+              "(filename, e)")
     ), fileConn, sep = "\n")
 
     close(fileConn) 
     system(paste(pythonpath," ",path,'/tmp.py',sep=''))
-    file.remove(paste('tmp.py',sep=''))
+    unlink(paste('tmp.py',sep=''))
 }
 
 ##' Load .png images
@@ -119,14 +140,22 @@ createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
 ##' NOT be loaded, here specify which files to use, as a character string.
 ##' @param nImages Numeric vector specifying which images in the directory 
 ##' should be loaded; default is \code{1:30}.
-##' @param xranges By default the full image is loaded; specify to subset the number of columns.
-##' @param yranges By default the full image is loaded; specify to subset the number of rows.
+##' @param xranges By default the full image is loaded; specify to subset the 
+##' number of columns.
+##' @param yranges By default the full image is loaded; specify to subset the 
+##' number of rows.
 ##' @examples
 ##' \dontrun{
-##' images <- loadImages(direcPictures='~/images1/',
-##'	                     nImages=1:30,yranges=1:1080,xranges=1:1915)
-##' plot(images)
-##' images
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' plot(allFullImages)
 ##'	}
 ##' @return Array of class 'TrDm' and 'colorimages' containing all loaded images.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
@@ -144,10 +173,30 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
       allFiles <- allFiles[nImages]
     }
     else {filenames <- filenames[nImages]}	
-    # Load all images
-    allFullImages <- sapply(1:length(nImages),
-                            function(x) png::readPNG(file.path(dirPictures,allFiles[x])),
-                            simplify='array')
+    # First load one to get dimensions
+    im1 <- png::readPNG(file.path(dirPictures,allFiles[1]))
+    # Then load all images
+    allFullImages <- structure(vapply(seq_along(nImages),
+                       function(x) png::readPNG(file.path(dirPictures,
+                                                          allFiles[x])),
+                                      numeric(prod(dim(im1)))),
+                               dim=c(dim(im1),length(nImages)))
+
+    if (dim(allFullImages)[3] == 3) {
+    } else if (dim(allFullImages)[3] == 4) {
+      if (all(allFullImages[,,4,] == 1)) {
+        warning("Color channel 4 (for transparency) is safely ignored as all 
+                 values equaled 1.")
+      } else {
+        warning("Color channel 4 (for transparency) is ignored. Note that
+                 not all values equaled 1.")
+      }
+      allFullImages <- allFullImages[,,1:3,]
+    } else {
+      stop("Wrong number of color channels; only 3 color layers are currently
+            supported.")
+    }
+  
     # Subset
     if (!is.null(xranges) | !is.null(yranges)) {
         if (is.null(xranges)) xranges <- 1:dim(allFullImages)[2]
@@ -165,24 +214,34 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
 ##' Background detection
 ##'
 ##' \code{createBackground} detects the still background,
-##' containing all motionless pixels (non particles). Three different methods to detect
-##' the background can be used.
+##' containing all motionless pixels (non particles). Three different methods 
+##' to detect the background can be used.
 ##' @param colorimages Array of class 'TrDm' containing all images, obtained by 
 ##' \code{\link{loadImages}}.
-##' @param method Use \code{method='mean'} to calculate the mean value for each pixel and color.
+##' @param method Use \code{method='mean'} to calculate the mean value for each
+##' pixel and color.
 ##' Use \code{method='powerroot'} to deflate dark values (note, this can only be 
 ##' used for dark particles on a light background). Use \code{method='filter'} to 
-##' replace pixels in which movement has occurred with the mode of neighboring values.
+##' replace pixels in which movement has occurred with the mode of neighboring 
+##' values.
 ##' Note that \code{method='filter'} is computationally more intensive. 
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' stillBack <- createBackground (allFullImages)
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
 ##' plot(stillBack)
 ##'	}
 ##' @return Array of class 'TrDm' and 'colorimage' containing detected background.
 ##' @export
-
 createBackground <- function(colorimages,method='mean') {
     if(!is.TrDm(colorimages)){
         stop("Input does not appear to be of the class \"TrDm\"")
@@ -193,22 +252,18 @@ createBackground <- function(colorimages,method='mean') {
               colorimages[,,3,],
               dim(colorimages[,,1,]),
               array(0,dim=dim(colorimages[,,,1])))
-
     } else if (method == 'powerroot') {
-      zz <- apply(colorimages[,,1,],c(1,2),function(x)  mean(x^50)^(1/50) )
-      zz2 <- apply(colorimages[,,2,],c(1,2),function(x)  mean(x^50)^(1/50) )
-      zz3 <- apply(colorimages[,,3,],c(1,2),function(x)  mean(x^50)^(1/50) )
-      A <- array(0,c(dim(zz),3))
-      A[,,1] <- zz
-      A[,,2] <- zz2
-      A[,,3] <- zz3
+      A <- array(NA,dim=dim(colorimages)[1:3])
+      for (i in 1:dim(colorimages)[3]) {
+        A[,,i] <- apply(colorimages[,,i,],c(1,2),function(x) mean(x^50)^(1/50))
+      }
 
     } else if (method == 'filter') {
         rst <-  cb(colorimages[,,1,],
-              colorimages[,,2,],
-              colorimages[,,3,],
-              dim(colorimages[,,1,]),
-              array(0,dim=dim(colorimages[,,,1])))
+                   colorimages[,,2,],
+                   colorimages[,,3,],
+                   dim(colorimages[,,1,]),
+                   array(0,dim=dim(colorimages[,,,1])))
         class(rst) <- class(colorimages)
         subs <- aperm(subtractBackground(bg=rst,colorimages),c(1,2,4,3))
         class(subs) <- class(colorimages)
@@ -222,7 +277,7 @@ createBackground <- function(colorimages,method='mean') {
         Threshold <-
          {
 	     stats::optimize(function(a,i1){
-	     t1 <-(i1>a)
+	     t1 <- (i1 > a)
 	     sum((i1[t1]-mean(i1[t1]))^2)+
 	     sum((i1[!t1]-mean(i1[!t1]))^2)
 	     }
@@ -236,14 +291,15 @@ createBackground <- function(colorimages,method='mean') {
          for (i in 1:3) {
            r <- raster::raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
 
-           f1 <- raster::focal(r,w=matrix(1,31,31),fun=function(x){raster::modal(x,na.rm=T)},
-                       NAonly=TRUE)
-           while((!all(is.finite(f1@data@values)))|any(is.na(f1@data@values))){
+           f1 <- raster::focal(r,w=matrix(1,31,31),
+                               fun=function(x){ raster::modal(x,na.rm=TRUE) },
+                               NAonly=TRUE)
+           while((!all(is.finite(f1@data@values)))|any(is.na(f1@data@values))) {
              f1@data@values[!is.finite(f1@data@values)] <- NA
-             f1 <- raster::focal(f1,w=matrix(1,31,31),fun=function(x){raster::modal(x,na.rm=T)},
-                         NAonly=TRUE,pad=T)
+             f1 <- raster::focal(f1,w=matrix(1,31,31),
+                                 fun=function(x){ raster::modal(x,na.rm=TRUE) },
+                                 NAonly=TRUE,pad=TRUE)
            }
-
            A[,,i] <- matrix(f1[,,1],ncol=ncol(colorimages),
                             nrow=nrow(colorimages),byrow=TRUE)
          }
@@ -253,7 +309,8 @@ createBackground <- function(colorimages,method='mean') {
     class(A) <- c('TrDm','colorimage','array')
     attr(A,"originalImages") <- deparse(substitute(colorimages))
     attr(A,"originalDirec") <- attributes(colorimages)$originalDirec
-    attr(A,"settings") <- c(attributes(colorimages)$settings,list(BgMethod=method))
+    attr(A,"settings") <- c(attributes(colorimages)$settings,
+                            list(BgMethod=method))
     return(A)
 }
 
@@ -268,43 +325,77 @@ createBackground <- function(colorimages,method='mean') {
 ##' @param bg Array containing still background, as returned from
 ##' \code{\link{createBackground}}.
 ##' @param colorimages Array containing all frames, obtained by 
-##' \code{\link{loadImages}}. Default is \code{NULL}, in this case the original images
-##' are used from the global environment.
+##' \code{\link{loadImages}}. Default is \code{NULL}, in this case the original
+##' images are used from the global environment.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##' allImages <- subtractBackground(stillBack) }
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' plot(allImages)
+##'	}
 ##' @return Returns array of class 'TrDm' and 'sbg' with same size as images, 
 ##' subtracted from background.
 ##' @export
 
 subtractBackground <- function (bg,colorimages=NULL) {
 
-    if(!is.TrDm(bg)){
-        stop("Input does not appear to be of the class \"TrDm\"")
-    }
-    
     if(is.null(colorimages)) { colorimages <- get(attributes(bg)$originalImages,
                                                   envir=.GlobalEnv) }
+
+    if(!is.TrDm(bg)) {
+      ch1 <- all(dim(bg)[1:3] == dim(colorimages)[1:3])
+      ch2 <- length(dim(bg)) %in% 3:4
+      ch3 <- TRUE
+      if (length(dim(bg)) == 4) ch3 <- dim(bg)[4] == dim(colorimages)[4]
+      if (!all(ch1,ch2,ch3)) {
+        stop(paste("Input does not appear to be of the class \"TrDm\"",
+              "and has wrong dimensions."))
+      } else {
+          message(paste("Input does not appear to be of the class \"TrDm\" but", 
+                  "has the correct dimensions and is therefore used."))
+      }
+    }
     
-    sb <- sapply(1:3, function(x) sb(colorimages[,,x,],
-                                     bg[,,x],
-                                     dim(colorimages[,,x,]),
-                                     array(0,dim=dim(colorimages))),
-                 simplify='array')
-    sb <- aperm(sb, c(1,2,4,3))
-    attr(sb,"background") <- deparse(substitute(bg))
-    attr(sb,"originalImages") <- attributes(bg)$originalImages
-    attr(sb,"originalDirec") <- attributes(bg)$originalDirec
-    attr(sb,"settings") <- attributes(bg)$settings
+    if (length(dim(bg)) == 3) {
+      sbg <- array(NA,dim=dim(colorimages))
+      for (i in 1:(dim(colorimages)[3])) {
+        sbg[,,i,] <- sb(colorimages[,,i,],
+                        bg[,,i],
+                        dim(colorimages[,,i,]),
+                        array(0,dim=dim(colorimages)))
+      }
+    } else if (length(dim(bg)) == 4) {
+      sbg <- array(NA,dim=dim(colorimages))
+      for (i in 1:(dim(colorimages)[3])) {
+        sbg[,,i,] <- sb2(colorimages[,,i,],
+                        bg[,,i,],
+                        dim(colorimages[,,i,]),
+                        array(0,dim=dim(colorimages)))
+      }
+    } else {stop("Wrong dimensions for background image.")} 
+            
+    attr(sbg,"background") <- deparse(substitute(bg))
+    attr(sbg,"originalImages") <- attributes(bg)$originalImages
+    attr(sbg,"originalDirec") <- attributes(bg)$originalDirec
+    attr(sbg,"settings") <- attributes(bg)$settings
     
-    class(sb) <- c('TrDm','sbg','array')
-    return(sb)
+    class(sbg) <- c('TrDm','sbg','array')
+    return(sbg)
 }
 
 ##' Identify moving particles
 ##'
-##' \code{identifyParticles} identifies particles using the 
+##' \code{identifyParticles} identifies moving particles using the 
 ##' subtracted images obtained from \code{\link{subtractBackground}}.
 ##' @param sbg Array containing images containing all moving particles,
 ##' as obtained from \code{\link{subtractBackground}}.
@@ -314,31 +405,46 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' for each frame, use \code{qthreshold}. Default is \code{threshold=-0.1}, 
 ##'  which works for dark particles on a light background. Alternatively,
 ##' set \code{autoThres} below for an automatic threshold.  
-##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and maximum particle size, used as a
-##' first filter to identify particles. Use if particle of interest are of a known size
-##' range (in pixels).
-##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding based on
-##' quantile. Quantile is calculated for each
-##' frame seperately.
-##' @param select Select dark particles (\code{'dark'}), light particles (\code{'light'}), or
-##' both (\code{'both'}), compared to background. Default is \code{'dark'}.
-##' @param colorimages Array containing original color images. By default, the original
-##' color images are obtained from global environment.
-##' @param autoThres Logical. \code{TRUE} to get an automated threshold for each color layer.
-##' Default is \code{FALSE}.
+##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and 
+##' maximum particle size, used as a
+##' first filter to identify particles. Use if particle of interest are of a 
+##' known size range (in pixels).
+##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding 
+##' based on quantile. Quantile is calculated for each
+##' frame separately.
+##' @param select Select dark particles (\code{'dark'}), light particles 
+##' (\code{'light'}), or both (\code{'both'}), compared to background. 
+##' Default is \code{'dark'}.
+##' @param colorimages Array containing original color images. By default, the 
+##' original color images are obtained from global environment.
+##' @param autoThres Logical. \code{TRUE} to get an automated threshold for each 
+##' color layer. Default is \code{FALSE}.
 ##' @param perFrame Logical. If \code{autoThres=TRUE}, set at \code{TRUE}
 ##'  to calculate a threshold for 
-##' each frame seperately. Default is \code{FALSE}. Note that is can be computationally intensive 
-##' to calculate a threshold for each frame.
+##' each frame separately. Default is \code{FALSE}. Note that is can be 
+##' computationally intensive to calculate a threshold for each frame.
 ##' @param frames When \code{autoThres=TRUE} and \code{allFrames=FALSE}, supply a
 ##' numeric vector specifying over which frames the automated threshold 
-##' should be calculated on (e.g. \code{c(1,3,5,7,9,11)} for all odd frames from 1 to 11). 
+##' should be calculated on (e.g. \code{c(1,3,5,7,9,11)} for all odd frames 
+##' from 1 to 11). 
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
-##'   trackObject <- identifyParticles(allImages,threshold=-0.1,pixelRange=c(3,400))
-##'  plot(trackObject)
-##'  summary(trackObject)
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' partIden <- identifyParticles(allImages,threshold=-0.1,
+##'                                    pixelRange=c(3,400))
+##' plot(partIden)
+##' summary(partIden)
 ##'	}
 ##' @return Returns a dataframe of class 'TrDm' and 'particles', containing
 ##' particle statistics with identified particles for each frame
@@ -364,40 +470,46 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
-    cat("\r \t Particle Identification: Thresholding (1 of 5)                            ")
+    cat("\r \t Particle Identification: Thresholding (1 of 5)                 ",
+        "           ")
 
     # if only one value supplied, use same value for each color layer
     if (length(threshold) == 1) {threshold <- rep(threshold,3)}
 
     # automated threshold
-    if(autoThres) {
-      cat("\r \t Particle Identification: Automated thresholding (1 of 5)            ")
+    if (autoThres) {
+      cat("\r \t Particle Identification: Automated thresholding (1 of 5)     ",
+          "       ")
 	  if (is.null(frames)) { frames <- n }
       threshold <- calcAutoThres(sbg[,,frames,],perFrame=perFrame)
 	}
     
-    if(!is.null(qthreshold)) {
+    if (!is.null(qthreshold)) {
         A <- array(NA,dim=dim(sbg))
-        for (i in 1:3) {
-            A[,,,i] <- sapply(1:dim(sbg)[3], function(x)
-                sbg[,,x,i] < stats::quantile(sbg[,,x,i],
-                                       qthreshold),
-                simplify='array')
+        for (i in 1:3) { # over color layers
+            A[,,,i] <- structure(vapply(seq_len(dim(sbg)[3]), function(x)
+                sbg[,,x,i] < stats::quantile(sbg[,,x,i],qthreshold),
+                numeric(prod(dim(sbg[,,1,1])))),dim=dim(sbg)[1:3])
         }
-        
     } else {
         if (select == 'dark') {
-          A <- sapply(1:length(threshold), function(x) sbg[,,,x] < threshold[x],
-                      simplify='array')
+	      A <- structure(vapply(seq_along(threshold), 
+                                function(x) sbg[,,,x] < threshold[x],
+	                            numeric(prod(dim(sbg[,,,1])))),
+	                     dim=dim(sbg))
 		}
         else if (select == 'light') {
-          A <- sapply(1:length(threshold), function(x) sbg[,,,x] > threshold[x],
-                      simplify='array')
+	      A <- structure(vapply(seq_along(threshold), 
+                                function(x) sbg[,,,x] > threshold[x],
+	                            numeric(prod(dim(sbg[,,,1])))),
+	                     dim=dim(sbg))
         }
         else if (select == 'both') {
-          A <- sapply(1:length(threshold), function(x) sbg[,,,x] > threshold[x] |
+	      A <- structure(vapply(seq_along(threshold), 
+                                function(x) sbg[,,,x] > threshold[x] |
                                                        sbg[,,,x] < -threshold[x],
-                      simplify='array')
+	                             numeric(prod(dim(sbg[,,,1])))),
+	                     dim=dim(sbg))
 
         }
         else {stop("Invalid selection, choose 'dark', 'light' or 'both' ")}
@@ -407,21 +519,27 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0
 
-    cat("\r \t Particle Identification: Labeling (2 out of 5)                     ")
-    A <- sapply(n, function (x) SDMTools::ConnCompLabel(sumRGB[,,x]),simplify='array')
-    
-    cat("\r \t Particle Identification: Size filtering (3 out of 5)               ")
+    cat("\r \t Particle Identification: Labeling (2 out of 5)                ",
+        "     ")
+    A <- array(NA,dim=dim(sumRGB))
+    for (i in n) {
+      A[,,i] <- SDMTools::ConnCompLabel(sumRGB[,,i])
+    }
+        
+    cat("\r \t Particle Identification: Size filtering (3 out of 5)           ",
+       "    ")
     if (!is.null(pixelRange)) {
-	for (i in n) {
-            allLabels <- tabulate(as.vector(A[,,i]),nbins=max(A[,,i]))
-            allLabels <- allLabels[allLabels > 0]
-            names(allLabels) <- sort(unique(as.numeric(A[,,i])))[-1]
-            inc <- allLabels >= pixelRange[1] & allLabels <= pixelRange[2]
-            A[,,i] [!A[,,i] %in% names(inc[inc==TRUE])] <- 0
-	}
+	  for (i in n) {
+        allLabels <- tabulate(as.vector(A[,,i]),nbins=max(A[,,i]))
+        allLabels <- allLabels[allLabels > 0]
+        names(allLabels) <- sort(unique(as.numeric(A[,,i])))[-1]
+        inc <- allLabels >= pixelRange[1] & allLabels <= pixelRange[2]
+        A[,,i] [!A[,,i] %in% names(inc[inc==TRUE])] <- 0
+	  }
     }
 
-    cat("\r \t Particle Identification: Particle statistics (4 out of 5)          ")
+    cat("\r \t Particle Identification: Particle statistics (4 out of 5)      ",
+        "    ")
     
     for (i in n) {
        ps <- SDMTools::PatchStat(A[,,i])[-1,]
@@ -438,7 +556,8 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
        if (i > 1) particleStats <- rbind(particleStats,ps)
     }    
 
-    cat("\r \t Particle Identification: Finalizing (5 out of 5)                       \n ")
+    cat("\r \t Particle Identification: Finalizing (5 out of 5)               ",
+        "        \n ")
     
     attr(particleStats,"images") <- A
     attr(particleStats, "class") <- c("TrDm","particles","data.frame")
@@ -464,39 +583,174 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 ## Calculate automated threshold.
 ##
 ## @param sbg Array of class 'TrDm' containing subtracted images.
-## @param perFrame If TRUE, threshold is calculated for each frame. Default is FALSE. 
+## @param perFrame If TRUE, threshold is calculated for each frame. Default is
+## FALSE. 
 
 calcAutoThres <- function(sbg,perFrame=FALSE){
 
- ncolours<- dim(sbg)[4]
- nframes<-  dim(sbg)[3]
+  ncolours <- dim(sbg)[4]
+  nframes <- dim(sbg)[3]
 
- f<-function(a){
-  t1<-(i1>a)
-  sum((i1[t1]-mean(i1[t1]))^2)+
-  sum((i1[!t1]-mean(i1[!t1]))^2)
+  f <- function(a){
+    t1 <- (i1 > a)
+    sum((i1[t1]-mean(i1[t1]))^2) + sum((i1[!t1]-mean(i1[!t1]))^2)
   }
 
- if(perFrame){
- pp<-array(0,c(nframes,ncolours))
- for(j in 1:nframes){
- for(i in 1:ncolours){
-  i1<- c( sbg[,,j,i] )
-  pp[j,i]<-
-  stats::optimize(function(a){
-  t1<-(i1>a)+1
-  sum((i1[t1==1]-mean(i1[t1==1]))^2)+
-  sum((i1[t1==2]-mean(i1[t1==2]))^2)
-  } ,range(i1))$min
- }}
- } else {
- pp<-numeric(ncolours)
- for(i in 1:ncolours){
-  i1<- c( sbg[,,,i] )
-  pp[i]<- stats::optimize(f,range(i1))$min
- }
- }
- 
+  if (perFrame) {
+    pp <- array(0,c(nframes,ncolours))
+    for (j in 1:nframes) {
+      for (i in 1:ncolours) {
+        i1 <- c(sbg[,,j,i])
+        pp[j,i] <- stats::optimize(function(a) {
+                   t1 <- (i1 > a) + 1
+                   sum((i1[t1==1]-mean(i1[t1==1]))^2) +
+                       sum((i1[t1==2]-mean(i1[t1==2]))^2)
+                    }, range(i1))$min
+      }
+    }
+  } else {
+    pp <- numeric(ncolours)
+    for (i in 1:ncolours) {
+      i1 <- c(sbg[,,,i])
+      pp[i] <- stats::optimize(f,range(i1))$min
+    }
+  }
+
  return(pp)
 }
+
+
+##' Find threshold
+##'
+##' This function can help to find a threshold value to distinguish noise from 
+##' particles of interest.
+##' @param images Array containing images containing all moving particles,
+##' as obtained from \code{\link{subtractBackground}}.
+##' @param colorimages Array containing original color images. By default, 
+##' the original color images are obtained from the global environment.
+##' @param frame Number specifying which frame to use. Default is frame 1.
+##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+##' @examples
+##' \dontrun{
+##' dir.create("images")
+##' ## Create image sequence
+##' traj <- simulTrajec(path="images",
+##'                     nframes=30,nIndividuals=20,domain="square",
+##'                     h=0.01,rho=0.9,
+##'                     sizes=runif(20,0.004,0.006))
+##' ## Load images
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages,method="mean")
+##' allImages <- subtractBackground(stillBack)
+##' thr <- findThreshold(allImages,frame=10)
+##'	}
+##' @return Returns the number that is interactively chosen by the user. Use 
+##' this threshold value in \code{identifyParticles}.
+##' @export
+findThreshold <- function (images,frame=1,colorimages=NULL) {
+
+  if(is.null(colorimages)) {
+    colorimages <- get(attributes(images)$originalImages,
+                       envir=.GlobalEnv) 
+  }
+
+  thr <- runThreshold(frame,images,colorimages)
+  return(thr)
+}
+
+runThreshold <- function(frame,images,colorimages,ui,server) {
+shiny::runApp(
+  list(ui=shiny::fluidPage(
+  shiny::titlePanel(paste0("Find threshold for particle detection")),
+  shiny::fluidRow(
+     shiny::column(6,
+     'The graph on the left shows the original image. The graph on the right shows 
+      a binary image in which all particles are either labeled as zero (white), 
+      or as one (black). Set whether particles are light or dark compared to the 
+      background. Use the slider to find the best threshold, that results in all 
+      focal particles being labeled as one, and all background pixels labeld as 
+      zero. When finished, click on "Done".',
+      align='left',offset=0),
+      shiny::column(2,
+       shiny::actionButton("stop", "Done"),
+       shiny::br(),shiny::br(),
+       shiny::radioButtons("select", shiny::h5("Select:"),
+                   choices = list("Dark particles" = 1, 
+                                   "Light particles" = 2),selected = 1),   
+       shiny::radioButtons("ch", shiny::h5("Color channel:"),
+                   choices = list("Red" = 1, 
+                                   "Green" = 2,
+                                   "Blue" = 3),selected = 1)
+      )),
+  shiny::hr(),
+    shiny::fluidRow(
+     shiny::column(12,shiny::sliderInput("obs", "Threshold:",
+                 min=-0.3,max=0.3,value=0,step=0.005,width='1000px',
+                ))
+     ),
+    shiny::fluidRow(
+    shiny::column(6,
+    shiny::plotOutput("plot2")),
+    shiny::column(6	,shiny::plotOutput("plot1"))
+    )
+
+),
+  server=function(input, output) {
+ 
+   output$plot2 <- shiny::renderPlot(graphics::plot(colorimages,frame=frame))
+
+   shiny::observe({
+ 
+       if (input$select == 1) {  
+         if (input$ch == 1) {
+           m <- t(apply(images[,,1,frame] < input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+         if (input$ch == 2) {
+           m <- t(apply(images[,,2,frame] < input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+         if (input$ch == 3) {
+           m <- t(apply(images[,,3,frame] < input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+
+       }
+       if (input$select == 2) {  
+         if (input$ch == 1) {
+           m <- t(apply(images[,,1,frame] > input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+         if (input$ch == 2) {
+           m <- t(apply(images[,,2,frame] > input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+         if (input$ch == 3) {
+           m <- t(apply(images[,,3,frame] > input$obs,2,rev))
+           output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                           xlab='',ylab='',xaxt='n',yaxt='n',
+                                           col=c('white','black')))
+         }
+
+       }
+   })
+
+    shiny::observeEvent(input$stop, shiny::stopApp({
+      input$obs
+     }))
+  }
+ ))
+}
+
 

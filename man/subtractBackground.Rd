@@ -11,8 +11,8 @@ subtractBackground(bg, colorimages = NULL)
 \code{\link{createBackground}}.}
 
 \item{colorimages}{Array containing all frames, obtained by 
-\code{\link{loadImages}}. Default is \code{NULL}, in this case the original images
-are used from the global environment.}
+\code{\link{loadImages}}. Default is \code{NULL}, in this case the original
+images are used from the global environment.}
 }
 \value{
 Returns array of class 'TrDm' and 'sbg' with same size as images, 
@@ -26,7 +26,19 @@ pixels (i.e. movement).
 }
 \examples{
 \dontrun{
-allImages <- subtractBackground(stillBack) }
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain="square",
+                    h=0.01,rho=0.9,
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+plot(allImages)
+}
 }
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser

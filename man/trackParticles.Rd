@@ -10,7 +10,8 @@ trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1))
 \item{particles}{Object of class 'particles',
 obtained using \code{\link{identifyParticles}}.}
 
-\item{L}{Numeric. Maximum cost for linking a particle to another particle. When the cost is larger, 
+\item{L}{Numeric. Maximum cost for linking a particle to another particle. 
+When the cost is larger, 
 particles will be not be linked (resulting in the begin or end of a segment).
  Default set at \code{50}.}
 
@@ -18,27 +19,41 @@ particles will be not be linked (resulting in the begin or end of a segment).
 at \code{2}.}
 
 \item{weight}{Vector containing 3 weights to calculate costs. Depending 
-on the study system user may want to value certain elements over others.
+on the study system, users may want to value certain elements over others.
 For instance, when individuals can vary in size over frames
 (which happens when objects move away or towards a camera)
 the "size" weight may be decreased. Weights are ordered as follows; 
 first number gives the weight for differences in x and y coordinates;
 second number 
 gives the weight for particle size differences; third number gives the 
-difference bewteen the predicted location and the observed location. The latter 
-is calculated using the location of the identified particle in the previous frame.}
+difference between the predicted location and the observed location. The 
+latter is calculated using the location of the identified particle in the 
+previous frame.}
 }
 \value{
 A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 }
 \description{
-\code{trackParticles} attempts to reconstruct trajectories by linking particles.
+\code{trackParticles} reconstructs trajectories by linking particles.
 }
 \examples{
 \dontrun{
-   records <- trackParticles(particles)
-   summary(records)
-   plot(records,type='trajectories')
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain="square",
+                    h=0.01,rho=0.9,
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+partIden <- identifyParticles(allImages,threshold=-0.1,
+                                   pixelRange=c(3,400))
+records <- trackParticles(particles,L=40,R=2)
+summary(records)
+plot(records,type="trajectories")
 }
 }
 \author{

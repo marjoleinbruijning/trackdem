@@ -7,10 +7,10 @@
 simulTrajec(nframes = 20, nIndividuals = 10, h = 0.02, rho = 0,
   domain = "square", correctBoundary = TRUE,
   sizes = stats::runif(nIndividuals) * 0.012 + 0.01, staticNoise = FALSE,
-  movingNoise = FALSE, name = "trajectory", parsMoving = list(density =
-  10, duration = 10, size = 1, speed = 10, colRange = c(0, 1)),
-  parsStatic = list(density = 10, blur = TRUE, blurCoef = 0.025, sizes =
-  NULL), width = 480, height = NULL)
+  movingNoise = FALSE, name = "trajectory", path = NULL,
+  parsMoving = list(density = 10, duration = 10, size = 1, speed = 10,
+  colRange = c(0, 1)), parsStatic = list(density = 10, blur = TRUE, blurCoef =
+  0.025, sizes = NULL), width = 480, height = NULL)
 }
 \arguments{
 \item{nframes}{Number of time frames(steps).}
@@ -21,8 +21,8 @@ simulTrajec(nframes = 20, nIndividuals = 10, h = 0.02, rho = 0,
 
 \item{rho}{Correlation parameter for angle of displacement.}
 
-\item{domain}{One of \code{"square"} or \code{"circle"}, imposing a [0-1,0-1] rectangle
-domain, or a circlular domain of radius 1, respectively.
+\item{domain}{One of \code{"square"} or \code{"circle"}, imposing a [0-1,0-1]
+rectangle domain, or a circular domain of radius 1, respectively.
 correct boundary ensure individual trajectories do not cross the domain}
 
 \item{correctBoundary}{Logical. \code{TRUE} to make sure that individuals 
@@ -37,11 +37,14 @@ nIndividuals.}
 
 \item{name}{Stem of the filename.}
 
+\item{path}{to location where the created images should be saved. By default
+the working directory is used.}
+
 \item{parsMoving}{List of parameters used to generate moving noise
 these include the density of noise particles (\code{density}), their duration
 (in n frames; \code{duration}), their size (\code{size=1}), 
-their speed (\code{speed=10}) and the range or colors they are randomly drawn from
-(\code{colRange=c(0,1)}).}
+their speed (\code{speed=10}) and the range or colors they are randomly 
+drawn from (\code{colRange=c(0,1)}).}
 
 \item{parsStatic}{List of parameters used to generate static noise.
 These include the density (per image) of noise particles (\code{density}), 
@@ -55,10 +58,20 @@ look blurry (\code{blur=TRUE} or \code{blur=FALSE}), a blurring coefficient
 }
 \description{
 \code{simulTrajec} simulates movement trajectories within a 
+bounded space, movements are set with speed (\code{h}) and may be correlated
+in direction (\code{rho}). Function simulates movement of particles in a video 
+sequence of certain number of frames (\code{nframes}) in length. Images 
 are saved as png files.
 }
 \examples{
-simulTrajec(nframes=30,h=0.01,rho=0.9)
+\dontrun{
+dir.create("images")
+## Create image sequence and save as png's in the working directory.
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain="square",
+                    h=0.01,rho=0.9,
+                    sizes=runif(20,0.004,0.006))
+}
 }
 \author{
 Caspar A. Hallmann, Marjolein Bruijning & Marco D. Visser

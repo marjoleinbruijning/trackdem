@@ -4,15 +4,24 @@
 \alias{update.particles}
 \title{Update identified particles.}
 \usage{
-\method{update}{particles}(object, neuralnet, pca = TRUE, ...)
+\method{update}{particles}(object, neuralnet, pca = TRUE,
+  colorimages = NULL, sbg = NULL, ...)
 }
 \arguments{
 \item{object}{Object of class 'nnTrackdemObject'.}
 
 \item{neuralnet}{Trained neural net obtained from \code{\link{testNN}}}
 
-\item{pca}{Logical. By default \code{TRUE}, indicating that a principal component analysis is 
-performed on the predictors.}
+\item{pca}{Logical. By default \code{TRUE}, indicating that a principal 
+component analysis is performed on the predictors.}
+
+\item{colorimages}{An array with the original full color images, in order 
+to plot on the original images, obtained by \code{\link{loadImages}}. 
+By default the original color images are used.}
+
+\item{sbg}{Images subtracted from background, as obtained by 
+\code{\link{subtractBackground}}. By default, the original subtracted images 
+are used.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
@@ -26,7 +35,27 @@ Apply trained artificial neural network to particleStat object.
 }
 \examples{
 \dontrun{
-update(particles=partIden,finalNN)
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain='square',
+                    h=0.01,rho=0.9,movingNoise=TRUE,
+                    parsMoving = list(density=20, duration=10, size=1,
+                                      speed = 10, colRange = c(0,1)),
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+partIden <- identifyParticles(allImages,threshold=-0.1,
+                                   pixelRange=c(3,400))
+nframes <- 3
+frames <- order(tapply(partIden$patchID,partIden$frame,length),
+                decreasing=TRUE)[1:nframes]
+mId <- manuallySelect(particles=partIden,frame=frames)
+finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
+partIdenNN <- update(particles=partIden,neuralnet=finalNN)
 }
 }
 \author{

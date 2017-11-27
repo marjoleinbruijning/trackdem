@@ -13,7 +13,8 @@ createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
 \item{moviepath}{Path to existing directory containing the video files.
 By default, 'Movies' is used.}
 
-\item{imagepath}{Path to location of an existing directory in which image sequences should
+\item{imagepath}{Path to location of an existing directory in which image 
+sequences should
 be saved. By default, 'ImageSequences' is used.}
 
 \item{x}{Number of pixels in horizontal direction; default is 1915 (HD).}
@@ -29,12 +30,12 @@ in the exact middle of the movie are exported.}
 \item{ext}{The extension of the video. Default is \code{'MTS'}. All
 formats supported by libav are accepted.}
 
-\item{path}{Path to location where temporary Python file will be saved. Default 
-is working directory.}
+\item{path}{Path to location where temporary Python file will be saved. 
+Default is working directory.}
 
 \item{libavpath}{Path to location where the executable file for libav
-can be found (named 'avconv.exe'), in case it is not found automatically.
-For instance, use \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
+can be found (named 'avconv.exe'), in case it is not found automatically, 
+e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
 
 \item{exiftoolpath}{Path to location where the executable file for 
 ExifTool can be found, in case it is not found automatically. 
@@ -51,6 +52,12 @@ instance, use \code{'C:/Python27/python.exe'}.}
 be converted into an image sequence.
 For each movie, a new directory is created containing the recorded date and 
 name of the movie.
+}
+\examples{
+\dontrun{
+createImageSeq(moviepath="Movies",imagepath="ImageSequences",
+               nsec=3,ext="AVI")
+}
 }
 \author{
 Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser

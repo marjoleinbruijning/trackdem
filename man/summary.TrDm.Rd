@@ -10,11 +10,12 @@
 \arguments{
 \item{object}{an object of class 'TrDm'.}
 
-\item{incThres}{Minimum length of tracked segments for particles to be included.
-By default an automated threshold is calculated. Only for 'tracked' objects.}
+\item{incThres}{Minimum length of tracked segments for particles to be 
+included. By default an automated threshold is calculated. Only for 
+'tracked' objects.}
 
-\item{funSize}{Statistic to be calculated to obtain particle sizes. By default 
-\code{median} is used.}
+\item{funSize}{Statistic to be calculated to obtain particle sizes. By 
+default \code{median} is used.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }

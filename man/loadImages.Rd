@@ -16,9 +16,11 @@ NOT be loaded, here specify which files to use, as a character string.}
 \item{nImages}{Numeric vector specifying which images in the directory 
 should be loaded; default is \code{1:30}.}
 
-\item{xranges}{By default the full image is loaded; specify to subset the number of columns.}
+\item{xranges}{By default the full image is loaded; specify to subset the 
+number of columns.}
 
-\item{yranges}{By default the full image is loaded; specify to subset the number of rows.}
+\item{yranges}{By default the full image is loaded; specify to subset the 
+number of rows.}
 }
 \value{
 Array of class 'TrDm' and 'colorimages' containing all loaded images.
@@ -29,10 +31,16 @@ The objects created through the function can be used for image analysis.
 }
 \examples{
 \dontrun{
-images <- loadImages(direcPictures='~/images1/',
-                     nImages=1:30,yranges=1:1080,xranges=1:1915)
-plot(images)
-images
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain="square",
+                    h=0.01,rho=0.9,
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+plot(allFullImages)
 }
 }
 \author{

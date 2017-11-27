@@ -43,7 +43,7 @@ Returns trained artificial neural net.
 \description{
 Fits multiple neural networks to
 a dataset; data set has been randomly assigned to each
-of three catergories: train, validate and test.
+of three categories: train, validate and test.
 A final neural net is selected based on a fit statistic
 (either precision, recall or the F1-score). All neural networks
 are trained to the training dataset. Neural network may vary in
@@ -57,8 +57,8 @@ a F1-score (default).
 In binary classification, precision is the number of correct positive
 results divided by the number of all positive predictions. Recall is
 the number of correct positive results divided by the number of positive
-results that could have been returned if the algoritm was perfect.
-A F1 score (F-score/ F-measure) is statistical
+results that could have been returned if the algorithm was perfect.
+A F1 score (F-score/ F-measure) is a statistical
 measure of accuracy. F1 scores considers both the precision
 and the recall. A F1 score may be seen as a weighted average
 (harmonic mean) of the precision and recall.
@@ -66,7 +66,26 @@ Precision, recall and F1 scores are at best 1 and at worst 0.
 }
 \examples{
 \dontrun{
-finalNN <- testNN(dat=trainingData,repetitions=5,maxH=4,prop=c(4,3,3))
+dir.create("images")
+## Create image sequence
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=20,domain='square',
+                    h=0.01,rho=0.9,movingNoise=TRUE,
+                    parsMoving = list(density=20, duration=10, size=1,
+                                      speed = 10, colRange = c(0,1)),
+                    sizes=runif(20,0.004,0.006))
+## Load images
+dir <- "images"
+allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+stillBack <- createBackground(allFullImages,method="mean")
+allImages <- subtractBackground(stillBack)
+partIden <- identifyParticles(allImages,threshold=-0.1,
+                                   pixelRange=c(3,400))
+nframes <- 3
+frames <- order(tapply(partIden$patchID,partIden$frame,length),
+                decreasing=TRUE)[1:nframes]
+mId <- manuallySelect(particles=partIden,frame=frames)
+finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
 summary(finalNN)
 }
 }
