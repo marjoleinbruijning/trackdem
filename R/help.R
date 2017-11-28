@@ -1,6 +1,6 @@
-#'trackdem - identifying and tracking particles in R
+#'trackdem - Particle Tracking and Demography
 #'
-#'@author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+#'@author Marjolein Bruijning, Caspar A. Hallmann, Marco D. Visser, Eelke Jongejans
 #'@docType package
 #'@name trackdem
 #'@importFrom Rcpp evalCpp

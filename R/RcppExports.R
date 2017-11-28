@@ -5,10 +5,6 @@ cb <- function(m1, m2, m3, d, e) {
     .Call('_trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d, e)
 }
 
-cbDynamic <- function(m1, d, e, w) {
-    .Call('_trackdem_cbDynamic', PACKAGE = 'trackdem', m1, d, e, w)
-}
-
 getCoords <- function(m, d) {
     .Call('_trackdem_getCoords', PACKAGE = 'trackdem', m, d)
 }

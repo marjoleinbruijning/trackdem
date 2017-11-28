@@ -4,10 +4,10 @@
 \name{trackdem}
 \alias{trackdem}
 \alias{trackdem-package}
-\title{trackdem - identifying and tracking particles in R}
+\title{trackdem - Particle Tracking and Demography}
 \description{
-trackdem - identifying and tracking particles in R
+trackdem - Particle Tracking and Demography
 }
 \author{
-Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
+Marjolein Bruijning, Caspar A. Hallmann, Marco D. Visser, Eelke Jongejans
 }

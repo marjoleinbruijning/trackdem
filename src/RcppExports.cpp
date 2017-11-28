@@ -21,20 +21,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// cbDynamic
-NumericVector cbDynamic(NumericVector m1, IntegerVector d, IntegerVector e, NumericVector w);
-RcppExport SEXP _trackdem_cbDynamic(SEXP m1SEXP, SEXP dSEXP, SEXP eSEXP, SEXP wSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type w(wSEXP);
-    rcpp_result_gen = Rcpp::wrap(cbDynamic(m1, d, e, w));
-    return rcpp_result_gen;
-END_RCPP
-}
 // getCoords
 NumericVector getCoords(NumericVector m, IntegerVector d);
 RcppExport SEXP _trackdem_getCoords(SEXP mSEXP, SEXP dSEXP) {
@@ -110,7 +96,6 @@ END_RCPP
 
 static const R_CallMethodDef CallEntries[] = {
     {"_trackdem_cb", (DL_FUNC) &_trackdem_cb, 5},
-    {"_trackdem_cbDynamic", (DL_FUNC) &_trackdem_cbDynamic, 4},
     {"_trackdem_getCoords", (DL_FUNC) &_trackdem_getCoords, 2},
     {"_trackdem_muP", (DL_FUNC) &_trackdem_muP, 6},
     {"_trackdem_sb2", (DL_FUNC) &_trackdem_sb2, 4},
