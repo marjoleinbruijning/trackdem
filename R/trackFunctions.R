@@ -275,7 +275,7 @@ linkTrajec <- function (recordsObject,particles,
   colorRecord[colorRecord == 0] <- NA
   inc <- apply(trackRecord[,,1],1,function(x) !all(is.na(x)))
   res <- list(trackRecord=trackRecord[inc,,],costsTracking=G,costsLinking=A,
-              label=label,
+              label=label[inc,],
               sizeRecord=sizeRecord[inc,],colorRecord=colorRecord[inc,,])
   return(res) 
 }
@@ -462,9 +462,14 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
   label1 <- records1$label[,ncol(records1$label)]
   label2 <- records2$label[,1]
   
-  Phi <- phiMat(coords1,coords2,
-	            sizes1=sizes1,
-	            sizes2=sizes2,
+
+  ## TMP
+  saveNA1 <- is.na(label1)
+  saveNA2 <- is.na(label2)
+
+  Phi <- phiMat(coords1[!saveNA1,],coords2[!saveNA2,],
+	            sizes1=sizes1[!saveNA1],
+	            sizes2=sizes2[!saveNA2],
 	            L=L,r=1,weight=weight,
 	            coords0=NULL)
 
@@ -476,10 +481,15 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
   
   links <- data.frame(which(G > 0,TRUE))
   names(links) <- c(paste('frame',2),paste('frame',1))
-
   links <- links - 1
+
   links[links == 0] <- NA
   links <- stats::na.omit(links)
+
+  for (x in 1:nrow(links)) {
+    links[x,2] <- seq_len(nrow(coords1))[!saveNA1][links[x,2]]
+    links[x,1] <- seq_len(nrow(coords2))[!saveNA2][links[x,1]]
+  }
   
   fillMat <- function(mat1,mat2,l=links) {
     A <- matrix(NA,ncol=ncol(mat1) + ncol(mat2),nrow=nrow(l))
@@ -517,10 +527,10 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
               colorRecord=colorRecord,label=label)
 
   class(rec) <- c('TrDm','tracked')
-  attr(rec,"background1") <- attributes(records1)$background
-  attr(rec,"originalImages1") <- attributes(records1)$originalImages
-  attr(rec,"subtractedImages1") <- attributes(records1)$subtractedImages
-  attr(rec,"images1") <- attributes(records1)$images
+  attr(rec,"background") <- attributes(records1)$background
+  attr(rec,"originalImages") <- attributes(records1)$originalImages
+  attr(rec,"subtractedImages") <- attributes(records1)$subtractedImages
+  attr(rec,"images") <- attributes(records1)$images
   attr(rec,"settings1") <- attributes(records1)$settings
 
   attr(rec,"background2") <- attributes(records2)$background

@@ -135,8 +135,8 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,
       }
       rm(list=c('allFullImages','stillBack','allImages','partIden','records'))
       gc()
-    }, error=function(e){message(paste('Error in',dirPictures,':',e))},
-    warning=function(w) {message(paste('Warning in',dirPictures,':',w))})
+    }, error=function(e){message(paste('Error in',dirPictures,':',e))}
+   )
   }
   cat("\n")
   class(dat) <- c('TrDm','batch','data.frame')
