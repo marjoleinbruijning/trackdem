@@ -9,7 +9,7 @@
 \usepackage{subcaption}
 \usepackage{amsmath}
 
-% \VignetteIndexEntry{\emph{trackdem}: Automated particle tracking to obtain population counts and size distributions from videos in R}
+% \VignetteIndexEntry{Tutorial}
 
 \begin{document}
 \title{\emph{trackdem}: Automated particle tracking to obtain population counts and size distributions from videos in R}
@@ -542,7 +542,7 @@ summary(recordsNN)
 @
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Robustness checks}
+\section{Robustness checks}
 
 We advise to always check the output of \emph{trackdem} to verify that 
 the right settings have been used and results can be trusted.
@@ -583,7 +583,7 @@ how this could be done.
 \end{itemize}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Batch analysis} \label{sec:batch}
+\section{Batch analysis} \label{sec:batch}
 After a user is satisfied with the output of a single image sequence, 
 the settings from this single image sequence can be supplied to conduct a 
 batch analysis. This will apply the same settings for all directories 
