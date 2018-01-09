@@ -35,7 +35,8 @@ createTrajec <- function(nframes=20,nIndividuals=10,
              init <- stats::runif(2,0,1) 
            }
            if (domain=="circle") {
-             phi <- stats::runif(1,0,2*pi); r= stats::runif(1,0,1)
+             phi <- stats::runif(1,0,2*pi)
+             r <- stats::runif(1,0,1)
              init <-  r*c(cos(phi),sin(phi))
            }
            xy <- samplePolar(nframes,h,rho,init)

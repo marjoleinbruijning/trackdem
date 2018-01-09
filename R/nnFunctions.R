@@ -55,11 +55,11 @@ manuallySelect <- function (particles,colorimages=NULL,
   } else { n <- frames }
 
   res <- vector(mode="list",length=length(n))
-  for (i in 1:length(n)) {
+  for (i in seq_along(n)) {
     res[[i]] <- runSelect(n[i],particles,colorimages)
   }
 
-  res <- lapply(1:length(res),function(x) {
+  res <- lapply(seq_along(res),function(x) {
 	            list(wrong=res[[x]]$id[res[[x]]$trY == 0],
 	            correct=res[[x]]$id[res[[x]]$trY == 1],
 	            frame=n[x])

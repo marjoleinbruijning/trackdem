@@ -98,7 +98,7 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,
   
   results <- vector('list',length(allDirec))
   cat("\n")
-  for (i in 1:length(allDirec)) {
+  for (i in seq_along(allDirec)) {
     tryCatch ({
       cat("\r \t Batch analysis: Image sequence",i,"of",length(allDirec),"\t \n")
       dirPictures <- allDirec[i]
@@ -392,10 +392,10 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
         tmp <- x$sizeRecord[incLabels,,drop=FALSE]
         perID <- apply(tmp,1,mean,na.rm=TRUE)
         sdperID <- apply(tmp,1,stats::sd,na.rm=TRUE)
-        graphics::plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,
+        graphics::plot(seq_along(perID),perID[order(perID)],cex=1.5,pch=21,
                        bg='#00000050',
              xlab='Labeled particle',ylab='Size (pixels)',...)
-        graphics::segments(x0=1:length(perID),
+        graphics::segments(x0=seq_along(perID),
                            y0=perID[order(perID)]-sdperID[order(perID)],
                            y1=perID[order(perID)]+sdperID[order(perID)])
       } else {
@@ -403,10 +403,10 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
           x <- x$sizeRecord[incLabels,,drop=FALSE]
           perID <- apply(x,1,mean,na.rm=TRUE)
           sdperID <- apply(x,1,stats::sd,na.rm=TRUE)
-          graphics::plot(1:length(perID),perID[order(perID)],cex=1.5,pch=21,
+          graphics::plot(seq_along(perID),perID[order(perID)],cex=1.5,pch=21,
                          bg='#00000050',
                          xlab='Labeled particle',ylab='Size (pixels)',...)
-          graphics::segments(x0=1:length(perID),
+          graphics::segments(x0=seq_along(perID),
                              y0=perID[order(perID)]-sdperID[order(perID)],
                              y1=perID[order(perID)]+sdperID[order(perID)])
         } else if (type == 'trajectories') {

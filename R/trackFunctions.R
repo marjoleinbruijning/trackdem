@@ -299,7 +299,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
   cat("\t Create track segments: ","0","%           ")
   
-  for (i in 1:(length(n)-1)) {
+  for (i in seq_along(n[-1])) {
 	inc <- particles$frame == i
 	inc2 <- particles$frame == (i + 1)
     coords1 <- matrix(c(particles[inc,]$x,
@@ -359,7 +359,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
                       strsplit(names(allLinks),'.',fixed=TRUE),
                       function(x) x[1])),'frame'),function(y) y[2])))
   allnames <- sort(unique(tmp))
-  for (i in 1:length(allnames)){ 
+  for (i in seq_along(allnames)){ 
     n <- which(tmp == allnames[i])
     if (length(n) > 1) {
       allLinks[,n] <- rowSums(allLinks[,n],na.rm=TRUE)
@@ -377,7 +377,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
   label <- matrix(NA,nrow=dim(allLinks)[1],ncol=dim(allLinks)[2])
   a <- tmp[duplicated(tmp)==FALSE]
 
-  for (i in 1:(length(a))) {
+  for (i in seq_along(a)) {
 	inc <- particles$frame == i
     label[,i] <- allLinks[,order(a)[i]]
 	trackRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'x']
