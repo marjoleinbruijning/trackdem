@@ -53,14 +53,14 @@ are allowed to move in a rectangle domain. Use
 .png files in the path specified with argument \emph{path}.
 
 <<simul,eval=TRUE>>=
-    require(trackdem)
-    dir.create("images")
-    set.seed(1000)
-    ## Create image sequences
-    traj <- simulTrajec(path="images",
-                        nframes=30,nIndividuals=15,domain="square",
-                        h=0.01,rho=0.9,
-                        sizes=runif(15,0.004,0.006))
+require(trackdem)
+dir.create("images")
+set.seed(1000)
+## Create image sequences
+traj <- simulTrajec(path="images",
+                    nframes=30,nIndividuals=15,domain="square",
+                    h=0.01,rho=0.9,
+                    sizes=runif(15,0.004,0.006))
 @
 
 Random static or moving noise can be added, using 
