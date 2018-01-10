@@ -3,7 +3,7 @@
 ---
 Particle tracking and demography
 ---
-A test version of this package has been released (0.1 on CRAN), bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
+A test version of this package has been released (0.3 on CRAN), bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
 
 
 <img src="images/animation2.gif" width="350"> <img src="images/animation.gif" width="350">
