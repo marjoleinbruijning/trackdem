@@ -116,19 +116,19 @@ plot(partIden,frame=10)
 
 ## Reconstruct trajectories
 records <- trackParticles(partIden,L=60,R=3)
-summary(records)
-summary(records)$N # population count
-summary(records)$particles[,"Size"] # body size distribution
-summary(records)$particles[,"Total movement"] # movement distribution
-summary(records)$area # area covered by particles
-summary(records)$presence # minimum presence
+z <- 1 # minimum presence
+summary(records,incThres=z)
+summary(records,incThres=z)$N # population count
+summary(records,incThres=z)$particles[,"Size"] # body size distribution
+summary(records,incThres=z)$particles[,"Total movement"] # movement distribution
+summary(records,incThres=z)$area # area covered by particles
 dim(records$trackRecord)
 dim(records$sizeRecord)
 dim(records$colorRecord)
 
 ## Obtain results
 ## Trajectories
-plot(records,type='trajectories')
+plot(records,type='trajectories',incThres=z)
 for (i in 1:length(unique(traj$id))) {
   lines(traj$x[traj$id==i],traj$y[traj$id==i],col="grey",
 	    lty=2,lwd=2)
@@ -159,7 +159,7 @@ mId <- manuallySelect(particles=partIden,frame=frames)
 ## Train neural net
 finalNN <- testNN(dat=mId,repetitions=10,maxH=4,prop=c(6,2,2))
 ## Update and track
-partIdenNN <- update(particles=partIden,neuralnet=finalNN)
+partIdenNN <- update(partIden,neuralnet=finalNN)
 records <- trackParticles(partIdenNN,L=60,R=3)
 summary(records)
 
