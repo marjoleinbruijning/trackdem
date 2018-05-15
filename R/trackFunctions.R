@@ -176,7 +176,6 @@ linkTrajec <- function (recordsObject,particles,
   sizeRecord <- recordsObject$sizeRecord
   colorRecord <- recordsObject$colorRecord
   label <- recordsObject$label
-  G <- recordsObject$G
   trackRecord[is.na(trackRecord)] <- 0
   label[is.na(label)] <- 0   
   sizeRecord[is.na(sizeRecord)] <- 0
@@ -190,10 +189,9 @@ linkTrajec <- function (recordsObject,particles,
   cat("\t Link track segments: 0 %            ")
   
   for (r in 1:R) {
-    A <- array(NA,dim=c(2000,2000,length(n)-r-1))
     links <- list()
       
-    for (i in 1:(dim(G)[3]-r)) {
+    for (i in 1:(length(n)-1-r)) {
       inc <- particles$frame == i
       inc2 <- particles$frame == (i + r)
       endTrajec <- as.vector(stats::na.omit(label[apply(
@@ -230,9 +228,10 @@ linkTrajec <- function (recordsObject,particles,
 	                  sizes2=sizes2,
 	                  L=L*r,r=1,weight=weight,coords0=NULL)
         gstart <- gMat(Phi)
-        A[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L*r) * Phi
+        
+        A <- track(Phi=Phi, g=gstart, L=L*r) * Phi
       
-        tmp <- data.frame(which(A[,,i] > 0,TRUE))
+        tmp <- data.frame(which(A > 0,TRUE))
         tmp <- tmp[tmp[,1] != 1,]
         tmp <- tmp[tmp[,2] != 1,]
      
@@ -274,7 +273,7 @@ linkTrajec <- function (recordsObject,particles,
   sizeRecord[sizeRecord == 0] <- NA
   colorRecord[colorRecord == 0] <- NA
   inc <- apply(trackRecord[,,1],1,function(x) !all(is.na(x)))
-  res <- list(trackRecord=trackRecord[inc,,],costsTracking=G,costsLinking=A,
+  res <- list(trackRecord=trackRecord[inc,,],
               label=label[inc,],
               sizeRecord=sizeRecord[inc,],colorRecord=colorRecord[inc,,])
   return(res) 
@@ -290,18 +289,18 @@ linkTrajec <- function (recordsObject,particles,
 ## @author Marjolein Bruijning & Marco D. Visser
 ## @return A list of class 'records'. Use 'summary' and 'plot'.
 ## 
+
 doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 
   n <- unique(particles$frame)
   
-  G <- array(NA,dim=c(2000,2000,length(n)-1))
   links <- list()
 
   cat("\t Create track segments: ","0","%           ")
   
   for (i in seq_along(n[-1])) {
-	inc <- particles$frame == i
-	inc2 <- particles$frame == (i + 1)
+	  inc <- particles$frame == i
+	  inc2 <- particles$frame == (i + 1)
     coords1 <- matrix(c(particles[inc,]$x,
                       particles[inc,]$y),ncol=2,byrow=FALSE)
     sizes1 <- particles[inc,]$n.cell
@@ -320,6 +319,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
       # only succesful links
       tmp <- tmp[tmp > 1] - 1
       tmp <- tmp[names(tmp) > 1]
+      
       coords0 <- coords0[tmp,,drop=FALSE]
       rownames(coords0) <- as.numeric(names(tmp)) - 1 
 
@@ -335,9 +335,9 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
     gstart <- gMat(Phi)
     
     ## optimize
-    G[1:nrow(Phi),1:ncol(Phi),i] <- track(Phi=Phi, g=gstart, L=L) * Phi	
+    G <- track(Phi=Phi, g=gstart, L=L) * Phi	
   
-    links[[i]] <- data.frame(which(G[,,i] > 0,TRUE))
+    links[[i]] <- data.frame(which(G > 0,TRUE))
     if (i > 1) {
       links[[i]] <- links[[i]][links[[i]][,2] != 1,]
     }
@@ -378,19 +378,19 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
   a <- tmp[duplicated(tmp)==FALSE]
 
   for (i in seq_along(a)) {
-	inc <- particles$frame == i
+	  inc <- particles$frame == i
     label[,i] <- allLinks[,order(a)[i]]
-	trackRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'x']
-	trackRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'y']
-	sizeRecord[,i] <- particles[inc,][allLinks[,order(a)[i]],sizeMeasure]
+  	trackRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'x']
+	  trackRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'y']
+	  sizeRecord[,i] <- particles[inc,][allLinks[,order(a)[i]],sizeMeasure]
     
     colorRecord [,i,1] <- particles[inc,][allLinks[,order(a)[i]],'muR']
-	colorRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'muG']
-	colorRecord [,i,3] <- particles[inc,][allLinks[,order(a)[i]],'muB']
+  	colorRecord [,i,2] <- particles[inc,][allLinks[,order(a)[i]],'muG']
+	  colorRecord [,i,3] <- particles[inc,][allLinks[,order(a)[i]],'muB']
     
   }
   res <- list(trackRecord=trackRecord,sizeRecord=sizeRecord,
-              colorRecord=colorRecord,label=label,G=G)
+              colorRecord=colorRecord,label=label)
   return(res)
 }
 

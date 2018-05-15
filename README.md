@@ -2,12 +2,18 @@
 
 ---
 Particle tracking and demography
----
-A test version of this package has been released (0.3 on CRAN), bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
 
+[![cran version](http://www.r-pkg.org/badges/version/trackdem)](http://cran.rstudio.com/web/packages/trackdem)
+[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
+[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
+
+---
 
 <img src="images/animation2.gif" width="350"> <img src="images/animation.gif" width="350">
 
+## Updates version 0.4
+Optimized identification and tracking functions to work with longer image sequences.
+Increased flexibility in function createImageSeq().
 
 ## Abstract
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
@@ -22,7 +28,7 @@ the training of an artifical neural network for noise filtering.
 
 ## Installation
 
-**trackdem** can now be installed from <a target="_blank" href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
+**trackdem** can be installed from <a target="_blank" href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
 
 ```r
 ## Install from CRAN
@@ -36,8 +42,7 @@ install_github("marjoleinbruijning/trackdem")
 
 To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/download/releases/2.7/'>Python 2.7</a>,  <a target='_blank' href='http://www.libav.org'>Libav</a> and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
 
-Ubuntu users can paste the following commands in a 
-terminal to install libav and ExifTool (Python 2.7 should be included 
+Ubuntu users can paste the following commands in a terminal to install libav and ExifTool (Python 2.7 should be included 
 by default):
 
 ```
@@ -171,3 +176,4 @@ summary(records)
 
 ## Future features
 Allow different numbers of color layers (e.g. for black and white images).
+Bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).

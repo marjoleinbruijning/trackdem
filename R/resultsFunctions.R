@@ -422,15 +422,15 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
             if (is.null(libavpath)) libavpath <- 'avconv'
             # make sure file does not exist
             if('images' %in% list.files(path)) {
-			  stop(paste0('Directory "images" already exists in ',
-			       path,'.\n Please remove it or use a different path with ', 
-                   'argument "path".'))
-			}
+			        stop(paste0('Directory "images" already exists in ',
+			             path,'.\n Please remove it or use a different path with ', 
+                        'argument "path".'))
+			      }
             if(paste0(name,'.mp4') %in% list.files(path)) {
-			  stop(paste0('Animation with name "',name,'" already exists in ',
-			       path,'.\n Please remove it or use a different name with ', 
-                   'argument "name".'))
-			}
+			        stop(paste0('Animation with name "',name,'" already exists in ',
+			             path,'.\n Please remove it or use a different name with ', 
+                         'argument "name".'))
+			      }
             y <- x$sizeRecord[incLabels,]
             x <- x$trackRecord[incLabels,,]
             dir.create(paste0(path,'/images'))
@@ -447,6 +447,10 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                      1-x[,i,2]/height,
                      col=grDevices::rainbow(nrow(x))[as.numeric(rownames(x))],
                      cex=2,lwd=2)
+              graphics::text(x[,i,1]/width,
+                     1-x[,i,2]/height,
+                     col='black',
+                     cex=1,lwd=2,labels=seq_len(nrow(x)),pos=2)
               cat("\r \t Animation:",i,"out of",ncol(x))
               grDevices::dev.off()
            }

@@ -7,19 +7,26 @@
 ##' name of the movie.
 ##' @param moviepath Path to existing directory containing the video files.
 ##' By default, 'Movies' is used.
-##' @param imagepath Path to location of an existing directory in which image 
+##' @param imagepath Path to location of a directory in which image 
 ##' sequences should
-##' be saved. By default, 'ImageSequences' is used.
-##' @param x Number of pixels in horizontal direction; default is 1915 (HD).
+##' be saved. By default, 'ImageSequences' is used (and created if not existing).
+##' @param x Number of pixels in horizontal direction; default is 1920 (HD).
 ##' @param y Number of pixels in vertical direction; default is 1080 (HD).
 ##' @param fps Frames per second, default is 15.
 ##' @param nsec Duration of movie that is exported, default is 2 seconds.
 ##' When movie length is greater than \code{nsec}, the \code{nsec} seconds 
 ##' in the exact middle of the movie are exported.  
+##' @param start Start time (in seconds) from where the video is converted (optional). By 
+##' default, the \code{nsec} middle second of the video are used. If a a start 
+##' time is specified and no stop time, \code{nsec} seconds starting from \code{start} 
+##' are converted.
+##' @param stop End time (in seconds) from where the video is converted (optional). By 
+##' default, the \code{nsec} middle second of the video are used. When an end time 
+##' but no start time are specified, conversion starts at \code{nsec} seconds before 
+##' \code{end}.
 ##' @param ext The extension of the video. Default is \code{'MTS'}. All
-##' formats supported by libav are accepted. 
-##' @param path Path to location where temporary Python file will be saved. 
-##' Default is working directory.
+##' formats supported by libav are accepted. To convert videos with different 
+##' extensions, use for example \code{c('MTS','mp4')}.
 ##' @param libavpath Path to location where the executable file for libav
 ##' can be found (named 'avconv.exe'), in case it is not found automatically, 
 ##' e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}.
@@ -30,6 +37,7 @@
 ##' @param pythonpath Path to location where the executable file for 
 ##' Python 2.7 can be found, in case it is not found automatically. For 
 ##' instance, use \code{'C:/Python27/python.exe'}.
+##' @param verbose Logical. By default FALSE. Set to TRUE will print additional information. 
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -37,99 +45,66 @@
 ##'                nsec=3,ext="AVI")
 ##'	}
 ##' @export
-createImageSeq <- function (moviepath='Movies',imagepath='ImageSequences',
-                            x=1915,
-                            y=1080,fps=15,nsec=2,ext='MTS',path=getwd(),
-                            libavpath=NULL,exiftoolpath=NULL,
-                            pythonpath=NULL) {
-        
-    ext <- paste0("'.",tolower(ext),"'")
-    fileConn <- file(paste(path,'/tmp.py',sep=''))
-
-    if (is.null(libavpath)) libavpath <- 'avconv'
-    if (is.null(exiftoolpath)) exiftoolpath <- 'exiftool'
-    if (is.null(pythonpath)) pythonpath <- 'python'
-    
-    writeLines(c(
-        paste("import os"),
-        paste("import subprocess"),
-        paste("import string"),
-        paste("movieDirname = os.path.abspath('",moviepath,"')",sep=''),
-        paste("sequenceParentDirname = os.path.abspath('",imagepath,"')",sep=''),
-        paste("def conv_command(filename, targetDirName, start, stop):"),
-        paste("    inFile = os.path.join(movieDir, filename)"),
-        paste("    outFiles = os.path.join(sequenceParentDir, targetDirName,",
-              " 'image-%03d.png')"),
-        paste("    return ['",libavpath,"',",sep=''),
-        paste("            '-loglevel', 'quiet',"),
-        paste("            '-i', inFile,"),
-        paste("            '-r', '",fps,"',",sep=''),
-        paste("            '-s', '",x,"x",y,"',",sep=''),
-        paste("            '-ss', str(start),"),
-        paste("            '-t', str(stop - start),"),
-        paste("            '-f', 'image2',"),
-        paste("            outFiles]"),
-        paste("startDir = os.path.curdir"),
-        
-        paste("movieDir = os.path.abspath(movieDirname)"),
-        paste("sequenceParentDir = os.path.abspath(sequenceParentDirname)"),
-        paste("movieNames = []"),
-        paste("for filename in os.listdir(movieDir):"),
-        paste("    movieName, movieExtension = os.path.splitext(filename)"),
-        paste("    if not os.path.isfile(os.path.join(movieDir, filename)) or",
-              "not movieExtension.lower() == ",ext,":"),
-        paste("        print 'File %s has the wrong name or is a directory,",
-              "therefore skipped' % filename"),
-        paste("    else:"),
-        paste("        movieNames.append(filename)"),
-        paste("if not os.path.exists(sequenceParentDir):"),
-        paste("    os.mkdir(sequenceParentDir)"),
-        paste("for filename in movieNames:"),
-        paste("    movieName, movieExtension = os.path.splitext(filename)"),
-        paste("    try:"),
-        paste("        targetDirName = string.translate(subprocess.check_output",
-              "(['",exiftoolpath,"', '-DateTimeOriginal', '-T', ",
-              "os.path.join(movieDir, ",
-              "filename)]).split()[0], None, ':') + '_' + movieName",sep=''),
-        paste("    except Exception:"),
-        paste("        print 'Error in obtaining date in file %s; creating ",
-              "directory name without date' % filename", sep=''),
-        paste("        targetDirName = 'nodate_'+ movieName"),
-        paste("    try:"),
-        paste("        duration = float(string.translate(",
-              "subprocess.check_output(",
-              "['",exiftoolpath,"', '-n', '-s3', '-duration', ",
-              "os.path.join(movieDir, ",
-              "filename)]).split()[0], None, ':'))",sep=''),
-        paste("    except Exception:"),
-        paste("        print 'Error in obtaining duration movie in file %s, ",
-              "converting up to 10 seconds from start' % filename",sep=''),
-        paste("        duration = 10"),
-        paste("    if os.path.exists(os.path.join(sequenceParentDir, ",
-              "targetDirName)):",sep=''),
-        paste("        print 'Directory %s already exists, file %s skipped'",
-              " % (targetDirName, filename)",sep=''),
-        paste("    else:"),
-        paste("        if duration > 100:"),
-        paste("            start = duration/2 -",nsec/2,sep=''),
-        paste("            stop = duration/2 +",nsec/2,sep=''),
-        paste("        else:"),
-        paste("            start = 0"),
-        paste("            stop = duration"),
-        paste("        os.mkdir(os.path.join(sequenceParentDir, targetDirName))"),
-        paste("        command = conv_command(filename, targetDirName, start, ",
-              "stop)",sep=''),
-        paste("        try:"),
-        paste("            subprocess.call(command)"),
-        paste("            print 'File %s done' % filename"),
-        paste("        except Exception, e:"),
-        paste("            print 'Error in processing file %s, ",
-              "error: %s' % (filename, e)",sep='')
-    ), fileConn, sep = "\n")
-
-    close(fileConn) 
-    system(paste(pythonpath," ",path,'/tmp.py',sep=''))
-    unlink(paste('tmp.py',sep=''))
+createImageSeq <- function (moviepath='Movies',
+                            imagepath='ImageSequences',
+                            x=1920,
+                            y=1080,
+                            fps=15,
+                            nsec=2,
+                            start=NULL,
+                            stop=NULL,
+                            ext='MTS',
+                            libavpath='avconv',
+                            exiftoolpath='exiftool',
+                            pythonpath='python',
+                            verbose=FALSE)
+                    {
+                    	if (is.null(moviepath)) {
+                    		moviepath = 'NULL'
+                    	}
+                    	if (is.null(imagepath)) {
+                    		imagepath = 'NULL'
+                    	}
+                    	if (is.null(x)) {
+                    		x = 'NULL'
+                    	}
+                    	if (is.null(y)) {
+                    		y = 'NULL'
+                    	}
+                    	if (is.null(fps)) {
+                    		fps = 'NULL'
+                    	}
+                    	if (is.null(nsec)) {
+                    		nsec = 'NULL'
+                    	}
+                    	if (is.null(start)) {
+                    		start = 'NULL'
+                    	}
+                    	if (is.null(stop)) {
+                    		stop = 'NULL'
+                    	}
+                    	if (is.null(ext)) {
+                    		ext = list('NULL')
+                    	}
+                    	if (is.null(verbose)) {
+                    		verbose = 'NULL'
+                    	}
+						system(paste(
+							pythonpath,
+               system.file("python", "createImageSeq.py", package = "trackdem"),
+							"-moviepath", moviepath,
+							"-imagepath", imagepath,
+							"-x", x,
+							"-y", y,
+							"-fps", fps,
+							"-nsec", nsec,
+							"-start", start,
+							"-stop", stop,
+							"-ext", paste(ext, collapse=' '),
+							"-libavpath", libavpath,
+							"-exiftoolpath", exiftoolpath,
+							"-verbose", verbose
+							))
 }
 
 ##' Load .png images
@@ -176,10 +151,16 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     else {filenames <- filenames[nImages]}	
     # First load one to get dimensions
     im1 <- png::readPNG(file.path(dirPictures,allFiles[1]))
+
+    # Subset
+    if (is.null(xranges)) xranges <- 1:dim(im1)[2]
+    if (is.null(yranges)) yranges <- 1:dim(im1)[1]
+    im1 <- im1[yranges,xranges,]	
+
     # Then load all images
     allFullImages <- structure(vapply(seq_along(nImages),
                        function(x) png::readPNG(file.path(dirPictures,
-                                                          allFiles[x])),
+                                                allFiles[x]))[yranges,xranges,],
                                       numeric(prod(dim(im1)))),
                                dim=c(dim(im1),length(nImages)))
 
@@ -196,13 +177,6 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     } else {
       stop("Wrong number of color channels; only 3 color layers are currently
             supported.")
-    }
-  
-    # Subset
-    if (!is.null(xranges) | !is.null(yranges)) {
-        if (is.null(xranges)) xranges <- 1:dim(allFullImages)[2]
-        if (is.null(yranges)) yranges <- 1:dim(allFullImages)[1]
-        allFullImages <- allFullImages[yranges,xranges,,]	
     }
 
     attr(allFullImages,"settings") <- list(nImages=nImages)
@@ -494,19 +468,19 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         }
     } else {
         if (select == 'dark') {
-	      A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold), 
                                 function(x) sbg[,,,x] < threshold[x],
 	                            numeric(prod(dim(sbg[,,,1])))),
 	                     dim=dim(sbg))
 		}
         else if (select == 'light') {
-	      A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold), 
                                 function(x) sbg[,,,x] > threshold[x],
 	                            numeric(prod(dim(sbg[,,,1])))),
 	                     dim=dim(sbg))
         }
         else if (select == 'both') {
-	      A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold), 
                                 function(x) sbg[,,,x] > threshold[x] |
                                                        sbg[,,,x] < -threshold[x],
 	                             numeric(prod(dim(sbg[,,,1])))),
@@ -541,22 +515,37 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 
     cat("\r \t Particle Identification: Particle statistics (4 out of 5)      ",
         "    ")
+
+    dA <- dim(A[,,1]) ## get dim
+    ## get total number of particles
+    totalPart <- apply(A,3,function(x) length(unique(c(x)))-1) 
+    psDim <- SDMTools::PatchStat(A[,,1])[-1,]
+    
+    particleStats <- matrix(NA,nrow=sum(totalPart),ncol=18)
+    colnames(particleStats) <- c(colnames(psDim),
+                                 paste0('mu',c('R','G','B')),'x','y','frame')
     
     for (i in n) {
-       ps <- SDMTools::PatchStat(A[,,i])[-1,]
-       getMean <- extractMean(ps$patchID,
+       if (i == 1) loc <- 1:totalPart[i]
+       if (i > 1) {
+         cum <- sum(totalPart[1:(i-1)])+1
+         loc <- cum:(cum+totalPart[i]-1)
+       }
+       particleStats[loc,1:12] <- as.matrix(SDMTools::PatchStat(A[,,i])[-1,])
+       
+       particleStats[loc,13:15] <- as.matrix(
+                              extractMean(particleStats[loc,'patchID'],
                               colorimages=colorimages[,,,i],
-                              images=A[,,i])
-	   colnames(getMean) <- paste0('mu',c('R','G','B'))
-       coords <- getCoords(m=A[,,i],d=dim(A[,,i]))
-       rows <- tapply(coords[,1],A[,,i][A[,,i]>0],mean)
-       cols <- tapply(coords[,2],A[,,i][A[,,i]>0],mean)
-       ps <- cbind(ps,data.frame(x=cols,y=rows,frame=i),
-                   getMean)
-       if (i == 1) particleStats <- ps
-       if (i > 1) particleStats <- rbind(particleStats,ps)
+                              images=A[,,i]))
+                              
+	     coords <- getCoords(m=A[,,i],d=dA)
+       ind <- A[,,i] > 0
+       particleStats[loc,'y'] <- tapply(coords[,1],A[,,i][ind],mean)
+       particleStats[loc,'x'] <- tapply(coords[,2],A[,,i][ind],mean)
+       particleStats[loc,'frame'] <- i
     }    
-
+    particleStats <- as.data.frame(particleStats)
+    
     cat("\r \t Particle Identification: Finalizing (5 out of 5)               ",
         "        \n ")
     
@@ -665,9 +654,10 @@ shiny::runApp(
   list(ui=shiny::fluidPage(
   shiny::titlePanel(paste0("Find threshold for particle detection")),
   shiny::fluidRow(
-     shiny::column(6,
-     'The graph on the left shows the original image. The graph on the right shows 
-      a binary image in which all particles are either labeled as zero (white), 
+     shiny::column(3,
+     'The graph on the right shows the original image that can be used to zoom, by 
+     drawing a polygon. Bottom graphs show the original image (left) and 
+      a binary image (right) in which all particles are either labeled as zero (white), 
       or as one (black). Set whether particles are light or dark compared to the 
       background. Use the slider to find the best threshold, that results in all 
       focal particles being labeled as one, and all background pixels labeld as 
@@ -682,8 +672,12 @@ shiny::runApp(
        shiny::radioButtons("ch", shiny::h5("Color channel:"),
                    choices = list("Red" = 1, 
                                    "Green" = 2,
-                                   "Blue" = 3),selected = 1)
-      )),
+                                   "Blue" = 3),selected = 1)),
+      shiny::column(5,
+       shiny::h5('Choose region of interest to zoom (slower for larger images).'),
+       shiny::plotOutput("plot3",brush = shiny::brushOpts(id="plot3_brush",
+                        resetOnNew = TRUE,clip=TRUE)))
+      ),
   shiny::hr(),
     shiny::fluidRow(
      shiny::column(12,shiny::sliderInput("obs", "Threshold:",
@@ -698,8 +692,42 @@ shiny::runApp(
 
 ),
   server=function(input, output) {
- 
-   output$plot2 <- shiny::renderPlot(graphics::plot(colorimages,frame=frame))
+   
+   ranges <- shiny::reactiveValues(x=NULL,y=NULL)
+   coords <- shiny::reactiveValues(x=NULL,y=NULL)
+
+   output$plot3 <- shiny::renderPlot(graphics::plot(colorimages,frame=frame))
+
+   # update plot range and coordinates
+   shiny::observe({
+     brush <- input$plot3_brush
+     if (!is.null(brush)) {
+       ranges$x <- floor(c(brush$xmin, brush$xmax) * ncol(colorimages))
+       ranges$y <- nrow(colorimages) - floor(c(brush$ymin, brush$ymax) * 
+                   nrow(colorimages))
+      
+     } else {
+       ranges$x <- c(1,ncol(colorimages)) 
+       ranges$y <- c(1,nrow(colorimages))
+     }
+
+     coords$x <- ranges$x / nrow(colorimages)
+     coords$y <- 1 - (ranges$y / ncol(colorimages))
+
+   })
+
+   output$plot2 <- shiny::renderPlot({
+      if (length(dim(colorimages)) > 3) {
+        im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
+                            c(min(ranges$x):max(ranges$x)),,frame])
+      } else if (length(dim(colorimages)) == 3) {
+        class(im) <- 'array'
+        im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
+                             ranges$x[1]:ranges$x[2],])
+      }
+      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+   })
+
 
    shiny::observe({
  
@@ -708,19 +736,25 @@ shiny::runApp(
            m <- t(apply(images[,,1,frame] < input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
          if (input$ch == 2) {
            m <- t(apply(images[,,2,frame] < input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
          if (input$ch == 3) {
            m <- t(apply(images[,,3,frame] < input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
 
        }
@@ -729,19 +763,25 @@ shiny::runApp(
            m <- t(apply(images[,,1,frame] > input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
          if (input$ch == 2) {
            m <- t(apply(images[,,2,frame] > input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
          if (input$ch == 3) {
            m <- t(apply(images[,,3,frame] > input$obs,2,rev))
            output$plot1 <- shiny::renderPlot(graphics::image(m,
                                            xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black')))
+                                           col=c('white','black'),
+                                           xlim=coords$x,
+                                           ylim=coords$y))
          }
 
        }

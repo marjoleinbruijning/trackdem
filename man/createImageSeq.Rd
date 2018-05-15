@@ -5,19 +5,19 @@
 \title{Create image sequence}
 \usage{
 createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
-  x = 1915, y = 1080, fps = 15, nsec = 2, ext = "MTS",
-  path = getwd(), libavpath = NULL, exiftoolpath = NULL,
-  pythonpath = NULL)
+  x = 1920, y = 1080, fps = 15, nsec = 2, start = NULL, stop = NULL,
+  ext = "MTS", libavpath = "avconv", exiftoolpath = "exiftool",
+  pythonpath = "python", verbose = FALSE)
 }
 \arguments{
 \item{moviepath}{Path to existing directory containing the video files.
 By default, 'Movies' is used.}
 
-\item{imagepath}{Path to location of an existing directory in which image 
+\item{imagepath}{Path to location of a directory in which image 
 sequences should
-be saved. By default, 'ImageSequences' is used.}
+be saved. By default, 'ImageSequences' is used (and created if not existing).}
 
-\item{x}{Number of pixels in horizontal direction; default is 1915 (HD).}
+\item{x}{Number of pixels in horizontal direction; default is 1920 (HD).}
 
 \item{y}{Number of pixels in vertical direction; default is 1080 (HD).}
 
@@ -27,11 +27,19 @@ be saved. By default, 'ImageSequences' is used.}
 When movie length is greater than \code{nsec}, the \code{nsec} seconds 
 in the exact middle of the movie are exported.}
 
-\item{ext}{The extension of the video. Default is \code{'MTS'}. All
-formats supported by libav are accepted.}
+\item{start}{Start time (in seconds) from where the video is converted (optional). By 
+default, the \code{nsec} middle second of the video are used. If a a start 
+time is specified and no stop time, \code{nsec} seconds starting from \code{start} 
+are converted.}
 
-\item{path}{Path to location where temporary Python file will be saved. 
-Default is working directory.}
+\item{stop}{End time (in seconds) from where the video is converted (optional). By 
+default, the \code{nsec} middle second of the video are used. When an end time 
+but no start time are specified, conversion starts at \code{nsec} seconds before 
+\code{end}.}
+
+\item{ext}{The extension of the video. Default is \code{'MTS'}. All
+formats supported by libav are accepted. To convert videos with different 
+extensions, use for example \code{c('MTS','mp4')}.}
 
 \item{libavpath}{Path to location where the executable file for libav
 can be found (named 'avconv.exe'), in case it is not found automatically, 
@@ -45,6 +53,8 @@ directory.}
 \item{pythonpath}{Path to location where the executable file for 
 Python 2.7 can be found, in case it is not found automatically. For 
 instance, use \code{'C:/Python27/python.exe'}.}
+
+\item{verbose}{Logical. By default FALSE. Set to TRUE will print additional information.}
 }
 \description{
 \code{createImageSeq} creates an image sequences (.png) using
