@@ -12,8 +12,8 @@ Particle tracking and demography
 <img src="images/animation2.gif" width="350"> <img src="images/animation.gif" width="350">
 
 ## Updates version 0.4
-Optimized identification and tracking functions to work with longer image sequences.
-Increased flexibility in function createImageSeq().
+* Optimized identification and tracking functions to work with longer image sequences.
+* Increased flexibility in function createImageSeq().
 
 ## Abstract
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
@@ -175,5 +175,6 @@ summary(records)
 
 
 ## Future features
-Allow different numbers of color layers (e.g. for black and white images).
+* Allow different numbers of color layers (e.g. for black and white images).
+
 Bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
