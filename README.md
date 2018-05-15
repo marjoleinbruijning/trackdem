@@ -1,4 +1,7 @@
-# trackdem
+# trackdem (version 0.4)
+[![cran version](http://www.r-pkg.org/badges/version/trackdem)](http://cran.rstudio.com/web/packages/trackdem)
+[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
+[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
 ---
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
@@ -10,12 +13,8 @@ includes a set of functions to convert a short video into an image sequence,
 background detection, particle identification and linking, and 
 the training of an artifical neural network for noise filtering. For more information 
 on the package and usage, see our 
-<a target="_blank" href="https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.12975">article</a>, 
+<a target="_blank" href="https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.12975">article</a> 
 that was recently published in <i>Methods in Ecology and Evolution</i>.
-
-[![cran version](http://www.r-pkg.org/badges/version/trackdem)](http://cran.rstudio.com/web/packages/trackdem)
-[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
-[![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
 ---
 
