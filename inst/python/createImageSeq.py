@@ -223,7 +223,7 @@ def getDuration(filePath):
 				'-duration',
 				filePath
 				], stderr=open('/dev/null')).split()[0], None, ':'))
-		except Exception as e:
+		except subprocess.CalledProcessError as e:
 			if debug:
 				print 'Error in determining duration for file %s: %s' % (filePath, e)
 			duration = None
@@ -242,8 +242,7 @@ def getTargetDirNamePrefix(fileName):
 				os.path.join(movieDir, fileName)
 			], stderr=open('/dev/null')).strip().strip('-') # Note: '-' is sometimes returned by exiftool if DateTimeOriginal field empty
 			targetDirNamePrefix = string.translate(targetDirNamePrefixRaw.split()[0], None, ':') + '_'
-		except Exception as e:
-			print('ex:' + str(e))
+		except subprocess.CalledProcessError as e:
 			if debug:
 				print 'Error in determining date for file %s: %s' % (os.path.join(movieDir, fileName), e)		
 				print 'Got raw prefix: "%s"' % targetDirNamePrefixRaw
@@ -284,7 +283,7 @@ for fileName in movieNames:
 	else:
 		if targetDirNamePrefix == nodate_prefix:
 			if verbose:
-				print 'File %s: Cannot determine date.' % fileName	
+				print 'File %s: exiftool cannot determine date.' % fileName	
 			
 		if start_given:
 			filestart = start_given
@@ -301,7 +300,7 @@ for fileName in movieNames:
 			print 'Duration %s found for file %s.' % (duration, fileName)
 		if not duration:
 			if verbose:
-				print 'File %s: Length of video could not be determined.' % fileName
+				print 'File %s: exiftool cannot determine length.' % fileName
 		if start_given and stop_given:
 			pass
 		elif start_given:

@@ -39,10 +39,6 @@ No movie files are required as all functions are illustrated by simulated image 
 %% Load all result files
 <<allresults,eval=TRUE,echo=FALSE>>=
 load("allResults.RData")
-
-#save('allFullImages','stillBack','allImages','partIden',
-#     'records','results','finalNN', file='allResults.RData')
-
 @
 
 \section{Simulate image sequences}
@@ -191,6 +187,7 @@ identify all moving particles. By default, the original color images are used fr
 
 <<substrBackground, eval=FALSE>>=
 allImages <- subtractBackground(bg=stillBack)
+allImages
 @
 
 The procedure produces a four dimensional array ($N_y$ rows $\times$ $N_x$ columns 
