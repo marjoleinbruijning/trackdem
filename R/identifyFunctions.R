@@ -708,11 +708,11 @@ shiny::runApp(
       
      } else {
        ranges$x <- c(1,ncol(colorimages)) 
-       ranges$y <- c(1,nrow(colorimages))
+       ranges$y <- c(nrow(colorimages),1)
      }
 
-     coords$x <- ranges$x / nrow(colorimages)
-     coords$y <- 1 - (ranges$y / ncol(colorimages))
+     coords$x <- ranges$x / ncol(colorimages)
+     coords$y <- 1 - (ranges$y / nrow(colorimages))
 
    })
 
