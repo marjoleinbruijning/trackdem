@@ -1,0 +1,11 @@
+bibentry(bibtype = "Article",
+         title = "trackdem: Automated particle tracking to obtain population counts and size distributions from videos in R",
+         author = c(person("Marjolein", "Bruijning"),
+                    person("Marco D", "Visser"),
+                    person("Caspar A", "Hallmann"),
+                    person("Eelke", "Jongejans")),
+         journal="Methods in Ecology and Evolution",
+  volume=9,
+  number=4,
+  pages="965-973",
+  year=2018)

@@ -152,6 +152,12 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     # First load one to get dimensions
     im1 <- png::readPNG(file.path(dirPictures,allFiles[1]))
 
+    # if only one color layer
+    if (length(dim(im1)) == 2) {
+      im1 <- array(im1,dim=c(nrow(im1),ncol(im1),3))
+      warning("Only 1 color channel detected (greyscale image).")
+    }
+    
     # Subset
     if (is.null(xranges)) xranges <- 1:dim(im1)[2]
     if (is.null(yranges)) yranges <- 1:dim(im1)[1]
@@ -159,9 +165,13 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
 
     # Then load all images
     allFullImages <- structure(vapply(seq_along(nImages),
-                       function(x) png::readPNG(file.path(dirPictures,
-                                                allFiles[x]))[yranges,xranges,],
-                                      numeric(prod(dim(im1)))),
+                       function(x) {
+                                 im <- png::readPNG(file.path(dirPictures,
+                                                              allFiles[x]))
+                                 if (length(dim(im)) == 2) im <- array(im,dim=c(nrow(im),ncol(im),3))
+                                 im <- im[yranges,xranges,]
+
+                                }, numeric(prod(dim(im1)))),
                                dim=c(dim(im1),length(nImages)))
 
     if (dim(allFullImages)[3] == 3) {
@@ -175,7 +185,7 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
       }
       allFullImages <- allFullImages[,,1:3,]
     } else {
-      stop("Wrong number of color channels; only 3 color layers are currently
+      stop("Wrong number of color channels; only 1 and 3 color layers are
             supported.")
     }
 

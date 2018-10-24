@@ -291,15 +291,15 @@ print.TrDm <- function(x,...) {
     cat("\t Trackdem color image \n")
     cat(paste("\t Images with size:",d[1],"x",d[2]," pixels.\n"))
     if (length(d) == 4) {
-      cat(paste("\t Total of",d[4],"images, with",d[3],"color layers. \n\n"))
+      cat(paste("\t Total of",d[4],"images. \n\n"))
     } else if (length(d) == 3) {
-      cat(paste("\t Total of 1 image, with",d[3],"color layers. \n\n"))
+      cat(paste("\t Total of 1 image. \n\n"))
     }
   } else if (inherits(x,"sbg")) {
     d <- dim(x)
     cat("\t Trackdem subtracted background image. \n")
     cat(paste("\t Images with size:",d[1],'x',d[2],' pixels. \n'))
-    cat(paste("\t Total of",d[4],"images, with",d[3],"color layers. \n\n"))
+    cat(paste("\t Total of",d[4],"images. \n\n"))
   } else if (inherits(x,"particles")) {
     cat("\t Trackdem list with identified particles (without tracking). \n\n")
   } else if (inherits(x,"tracked")) {
@@ -439,8 +439,11 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
             height <- ifelse(nrow(colorimages) %% 2 == 0, 
                             nrow(colorimages),nrow(colorimages)+1)
             rownames(x) <- 1:nrow(x)
-           for (i in 1:ncol(x)) {
-              grDevices::png(paste0(path,'/images/images',i,'.png'),width=width,
+            tot <- ncol(x)
+           for (i in 1:tot) {
+              grDevices::png(paste0(path,'/images/images',
+                             formatC(i,width=4,flag="0"),'.png'),
+                             width=width,
                              height=height)
               graphics::plot(colorimages,frame=i)
               graphics::points(x[,i,1]/width,
@@ -455,7 +458,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
               grDevices::dev.off()
            }
            system(paste0(libavpath, " -loglevel quiet -r 10 -i ",
-                         path,"/images/images%d.png -b:v 1000k ",
+                         path,"/images/images%04d.png -b:v 1000k ",
                          path,"/",name,".mp4"))
            unlink(paste0(path,"/images"),TRUE)
            cat('\n')
