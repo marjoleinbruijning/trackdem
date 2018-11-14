@@ -38,6 +38,8 @@
 ##' Python 2.7 can be found, in case it is not found automatically. For 
 ##' instance, use \code{'C:/Python27/python.exe'}.
 ##' @param verbose Logical. By default FALSE. Set to TRUE will print additional information. 
+##' @param logfile Logical. By default FALSE. Set to TRUE will create a log file in the
+##' working directory. 
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -57,7 +59,8 @@ createImageSeq <- function (moviepath='Movies',
                             libavpath='avconv',
                             exiftoolpath='exiftool',
                             pythonpath='python',
-                            verbose=FALSE)
+                            verbose=FALSE,
+                            logfile=FALSE)
                     {
                     	if (is.null(moviepath)) {
                     		moviepath = 'NULL'
@@ -89,9 +92,12 @@ createImageSeq <- function (moviepath='Movies',
                     	if (is.null(verbose)) {
                     		verbose = 'NULL'
                     	}
+                    	if (is.null(logfile)) {
+                    		logfile = 'NULL'
+                    	}
 						system(paste(
 							pythonpath,
-               system.file("python", "createImageSeq.py", package = "trackdem"),
+               				system.file("python", "createImageSeq.py", package = "trackdem"),
 							"-moviepath", moviepath,
 							"-imagepath", imagepath,
 							"-x", x,
@@ -103,7 +109,8 @@ createImageSeq <- function (moviepath='Movies',
 							"-ext", paste(ext, collapse=' '),
 							"-libavpath", libavpath,
 							"-exiftoolpath", exiftoolpath,
-							"-verbose", verbose
+							"-verbose", verbose,
+							"-logfile", logfile
 							))
 }
 

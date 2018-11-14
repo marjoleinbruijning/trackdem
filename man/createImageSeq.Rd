@@ -7,7 +7,7 @@
 createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
   x = 1920, y = 1080, fps = 15, nsec = 2, start = NULL, stop = NULL,
   ext = "MTS", libavpath = "avconv", exiftoolpath = "exiftool",
-  pythonpath = "python", verbose = FALSE)
+  pythonpath = "python", verbose = FALSE, logfile = FALSE)
 }
 \arguments{
 \item{moviepath}{Path to existing directory containing the video files.
@@ -55,6 +55,9 @@ Python 2.7 can be found, in case it is not found automatically. For
 instance, use \code{'C:/Python27/python.exe'}.}
 
 \item{verbose}{Logical. By default FALSE. Set to TRUE will print additional information.}
+
+\item{logfile}{Logical. By default FALSE. Set to TRUE will create a log file in the
+working directory.}
 }
 \description{
 \code{createImageSeq} creates an image sequences (.png) using
