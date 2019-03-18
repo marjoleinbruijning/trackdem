@@ -18,7 +18,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<center><img src="images/animation2.gif" height="350"></center>
+<p align="center"><img src="images/animation2.gif" height="350"></p>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
@@ -133,19 +133,19 @@ attributes(partIden)$threshold
 plot(partIden,frame=10)
 
 ```
-<center>
-<img src="images/threshold.png" height="550">
-</center>
+<p align="center"><img src="images/threshold.png" width="750"></p>
 
 ```r
+########################################################################
 ## Reconstruct trajectories
+########################################################################
+
 records <- trackParticles(partIden,L=60,R=3)
 z <- 1 # minimum presence
 summary(records,incThres=z)
 summary(records,incThres=z)$N # population count
 summary(records,incThres=z)$particles[,"Size"] # body size distribution
 summary(records,incThres=z)$particles[,"Total movement"] # movement distribution
-summary(records,incThres=z)$area # area covered by particles
 dim(records$trackRecord)
 dim(records$sizeRecord)
 dim(records$colorRecord)
@@ -159,16 +159,14 @@ for (i in 1:length(unique(traj$id))) {
 }
 
 ```
-<center>
-<img src="images/trajec.png" height="350",border="50">
-</center>
+<p align="center"><img src="images/trajec.png" height="350"></p>
 
 ```r
 ########################################################################
 ## Analyze image sequence containing noise
 ########################################################################
 dir.create("images")
-## Red particles are particles of interest
+## Save png images (red particles are particles of interest)
 traj <- simulTrajec(path="images",
                     nframes=30,nIndividuals=20,domain="square",
                     h=0.01,rho=0.9,movingNoise=TRUE,
@@ -195,9 +193,7 @@ records <- trackParticles(partIdenNN,L=60,R=3)
 summary(records)
 
 ```
-<center>
-<img src="images/manuallyselect.png" height="550">
-</center>
+<p align="center"><img src="images/manuallyselect.png" width="750"></p>
 
 <!-- UPDATES -->
 ## Updates
