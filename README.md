@@ -23,25 +23,14 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 
-* [Updates](#updates)
-  * [Version 0.4.3](#version-0.4.3)
-  * [Version 0.4](#version-0.4)
 * [Getting started](#getting-started)  
   * [Installation](#installation)
   * [Tutorial](#tutorial)
+* [Updates](#updates)
+  * [Version 0.4.3](#version-0.4.3)
+  * [Version 0.4](#version-0.4)
+* [Examples of output](#examples-of-output)  
 * [Bugs](#bugs)
-
-<!-- UPDATES -->
-## Updates
-
-### Version 0.4.3
-* Create log file for function createImageSeq().
-* Optimize functions to analyze greyscale images.
-
-### Version 0.4
-* Enable greyscale image sequences.
-* Optimized identification and tracking functions to work with longer image sequences.
-* Increased flexibility in function createImageSeq().
 
 <!-- GETTING STARTED -->
 ## Getting started
@@ -108,11 +97,12 @@ require(trackdem)
 ## Simulate image sequence
 ########################################################################
 dir.create('images')
-## Create image sequence (this takes a moment)
+## Create image sequence and save png files to folder 'images' (this takes a moment)
 traj <- simulTrajec(path="images",
                     nframes=30,nIndividuals=20,domain='square',
                     h=0.01,rho=0.9,staticNoise=FALSE,
-                    sizes=runif(20,0.004,0.006))
+                    sizes=runif(20,0.004,0.006),
+                    parsStatic=list(col='blue'))
 
 ########################################################################
 ## Analyze image sequence
@@ -135,6 +125,7 @@ allImages <- subtractBackground(bg=stillBack)
 allImages
 
 ## Identify moving particles
+findThreshold(allImages)
 partIden <- identifyParticles(sbg=allImages,
                               pixelRange=c(1,500),
                               autoThres=FALSE,threshold=-0.1)
@@ -142,6 +133,13 @@ summary(partIden)
 attributes(partIden)$threshold
 plot(partIden,frame=10)
 
+```
+<img src="images/threshold.png" height="350">
+
+<img src="images/iden.png" height="350">
+
+
+```r
 ## Reconstruct trajectories
 records <- trackParticles(partIden,L=60,R=3)
 z <- 1 # minimum presence
@@ -162,10 +160,17 @@ for (i in 1:length(unique(traj$id))) {
 	    lty=2,lwd=2)
 }
 
+```
+
+<img src="images/trajec.png" height="350">
+
+
+```r
 ########################################################################
 ## Analyze image sequence containing noise
 ########################################################################
 dir.create("images")
+## Red particles are particles of interest
 traj <- simulTrajec(path="images",
                     nframes=30,nIndividuals=20,domain="square",
                     h=0.01,rho=0.9,movingNoise=TRUE,
@@ -192,9 +197,27 @@ records <- trackParticles(partIdenNN,L=60,R=3)
 summary(records)
 
 ```
+
+<img src="images/manuallyselect.png" height="350">
+
+
+<!-- EXAMPLES OF OUTPUT -->
 ## Examples of output
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
+
+
+<!-- UPDATES -->
+## Updates
+
+### Version 0.4.3
+* Create log file for function createImageSeq().
+* Optimize functions to analyze greyscale images.
+
+### Version 0.4
+* Enable greyscale image sequences.
+* Optimized identification and tracking functions to work with longer image sequences.
+* Increased flexibility in function createImageSeq().
 
 
 <!-- BUGS -->
