@@ -160,7 +160,7 @@ for (i in 1:length(unique(traj$id))) {
 
 ```
 <center>
-<img src="images/trajec.png" height="350",border="5">
+<img src="images/trajec.png" height="350",border="50">
 </center>
 
 ```r
