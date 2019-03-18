@@ -152,52 +152,6 @@ testthat::test_that("Particle identification", {
 
 })
 
-testthat::context('Neural net')
-testthat::test_that("Neural net", {
-
-  load('trainingdata.RData')
-  invisible(utils::capture.output(finalNN <- trackdem::testNN(dat=td,
-                                                    repetitions=10,maxH=4,
-                                                    prop=c(6,2,2))))
-
-  dir <- 'images'
-  allFullImages <- trackdem::loadImages (dirPictures=dir,nImages=1:30)
-  stillBack <- trackdem::createBackground(allFullImages,method='mean')
-  allImages <- trackdem::subtractBackground(bg=stillBack,
-                                            colorimages=allFullImages)
-  invisible(utils::capture.output(partIden <- trackdem::identifyParticles(
-                                             sbg=allImages,
-                                             colorimages=allFullImages,
-                                             pixelRange=c(1,500),
-                                             threshold=-0.1)))
-  invisible(utils::capture.output(partIden2 <- update(partIden,finalNN,
-                                                      colorimages=allFullImages,
-                                                      sbg=allImages)))
-  partIden2 <- partIden
-  invisible(utils::capture.output(records <- trackdem::trackParticles(partIden2,
-                                                                    L=60,R=3)))
-  
-  ## Test output
-  testthat::expect_that(finalNN$fscore,testthat::equals(1))
-  testthat::expect_that(finalNN$bestNN$stat,testthat::equals('F'))
-  testthat::expect_that(dim(finalNN$finalstats),testthat::equals(c(4,4)))
-  testthat::expect_that(dim(attributes(td)$trainingData),
-                        testthat::equals(c(147,52)))
-
-  testthat::expect_that(summary(records,incThres=10)$N,testthat::equals(10))
-  testthat::expect_that(summary(records,incThres=10)$presence,
-                        testthat::equals(10))
-  
-  ## Test classes
-  testthat::expect_that(finalNN, testthat::is_a('TrDm'))
-  testthat::expect_that(finalNN, testthat::is_a('neuralnet'))
-  testthat::expect_that(finalNN, testthat::is_a('list'))
-
-  testthat::expect_that(td, testthat::is_a('TrDm'))
-  testthat::expect_that(td, testthat::is_a('tfp'))
-  testthat::expect_that(td, testthat::is_a('list'))
-})
-
 testthat::context('Particle tracking')
 testthat::test_that("Tracking algorithm", {
 

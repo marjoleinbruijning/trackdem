@@ -161,21 +161,22 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
 
     # if only one color layer
     if (length(dim(im1)) == 2) {
-      im1 <- array(im1,dim=c(nrow(im1),ncol(im1),3))
-      warning("Only 1 color channel detected (greyscale image).")
+      im1 <- array(im1,dim=c(nrow(im1),ncol(im1),1))
     }
+    
+    nc <- dim(im1)[3] ## number of color channels
     
     # Subset
     if (is.null(xranges)) xranges <- 1:dim(im1)[2]
     if (is.null(yranges)) yranges <- 1:dim(im1)[1]
-    im1 <- im1[yranges,xranges,]	
+    im1 <- im1[yranges,xranges,,drop=FALSE]	
 
     # Then load all images
     allFullImages <- structure(vapply(seq_along(nImages),
                        function(x) {
                                  im <- png::readPNG(file.path(dirPictures,
                                                               allFiles[x]))
-                                 if (length(dim(im)) == 2) im <- array(im,dim=c(nrow(im),ncol(im),3))
+                                 if (length(dim(im)) == 2) im <- array(im,dim=c(nrow(im),ncol(im),1))
                                  im <- im[yranges,xranges,]
 
                                 }, numeric(prod(dim(im1)))),
@@ -191,6 +192,8 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
                  not all values equaled 1.")
       }
       allFullImages <- allFullImages[,,1:3,]
+    } else if (dim(allFullImages)[3] == 1) {
+        warning("Only 1 color channel detected (grey scale image).")
     } else {
       stop("Wrong number of color channels; only 1 and 3 color layers are
             supported.")
@@ -239,11 +242,17 @@ createBackground <- function(colorimages,method='mean') {
         stop("Input does not appear to be of the class \"TrDm\"")
     }
     if (method == 'mean') {
-      A <- cb(colorimages[,,1,],
-              colorimages[,,2,],
-              colorimages[,,3,],
-              dim(colorimages[,,1,]),
-              array(0,dim=dim(colorimages[,,,1])))
+      if (dim(colorimages)[3] == 3) {
+        A <- cb(colorimages[,,1,],
+                colorimages[,,2,],
+                colorimages[,,3,],
+                dim(colorimages[,,1,]),
+                array(0,dim=dim(colorimages[,,,1])))
+      } else if (dim(colorimages)[3] == 1) {
+        A <- cb1(colorimages[,,1,],
+                dim(colorimages[,,1,]),
+                array(0,dim=dim(colorimages[,,,1])))
+      }
     } else if (method == 'powerroot') {
       A <- array(NA,dim=dim(colorimages)[1:3])
       for (i in 1:dim(colorimages)[3]) {
@@ -251,21 +260,39 @@ createBackground <- function(colorimages,method='mean') {
       }
 
     } else if (method == 'filter') {
-        rst <-  cb(colorimages[,,1,],
-                   colorimages[,,2,],
-                   colorimages[,,3,],
-                   dim(colorimages[,,1,]),
-                   array(0,dim=dim(colorimages[,,,1])))
+
+        if (dim(colorimages)[3] == 3) {
+          rst <-  cb(colorimages[,,1,],
+                     colorimages[,,2,],
+                     colorimages[,,3,],
+                     dim(colorimages[,,1,]),
+                     array(0,dim=dim(colorimages[,,,1])))
+        } else if (dim(colorimages)[3] == 1) {
+          rst <-  cb1(colorimages[,,1,],
+                     dim(colorimages[,,1,]),
+                     array(0,dim=dim(colorimages[,,,1])))
+        }
+      
         class(rst) <- class(colorimages)
         subs <- aperm(subtractBackground(bg=rst,colorimages),c(1,2,4,3))
         class(subs) <- class(colorimages)
         attributes(subs) <- attributes(colorimages)
-        SDs <- cb(subs[,,1,]^2,
-                 subs[,,2,]^2,
-                 subs[,,3,]^2,
-                 dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
-                    dim(colorimages)[4]/(dim(colorimages)[4]-1)
-        SD <- sqrt(SDs[,,1]^2+SDs[,,2]^2+SDs[,,3]^2)
+        
+        if (dim(colorimages)[3] == 3) {
+          SDs <- cb(subs[,,1,]^2,
+                   subs[,,2,]^2,
+                   subs[,,3,]^2,
+                   dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
+                      dim(colorimages)[4]/(dim(colorimages)[4]-1)
+          SD <- sqrt(SDs[,,1]^2+SDs[,,2]^2+SDs[,,3]^2)
+        } else if (dim(colorimages)[3] == 1) {
+          SDs <- cb1(subs[,,1,]^2,
+                     dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
+                       dim(colorimages)[4]/(dim(colorimages)[4]-1)
+          SD <- sqrt(SDs[,,1]^2)
+        }
+                
+
         Threshold <-
          {
 	     stats::optimize(function(a,i1){
@@ -278,9 +305,9 @@ createBackground <- function(colorimages,method='mean') {
   
          rst[(SD>Threshold)] <- NA
 
-         A <- array(0,c(dim(colorimages)[1:2],3))
+         A <- array(0,c(dim(colorimages)[1:3]))
 
-         for (i in 1:3) {
+         for (i in 1:dim(colorimages)[3]) {
            r <- raster::raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
 
            f1 <- raster::focal(r,w=matrix(1,31,31),
@@ -358,7 +385,7 @@ subtractBackground <- function (bg,colorimages=NULL) {
       }
     }
     
-    if (length(dim(bg)) == 3) {
+    if (length(dim(bg)) == 3) { # one background
       sbg <- array(NA,dim=dim(colorimages))
       for (i in 1:(dim(colorimages)[3])) {
         sbg[,,i,] <- sb(colorimages[,,i,],
@@ -366,7 +393,7 @@ subtractBackground <- function (bg,colorimages=NULL) {
                         dim(colorimages[,,i,]),
                         array(0,dim=dim(colorimages)))
       }
-    } else if (length(dim(bg)) == 4) {
+    } else if (length(dim(bg)) == 4) { # dynamic background
       sbg <- array(NA,dim=dim(colorimages))
       for (i in 1:(dim(colorimages)[3])) {
         sbg[,,i,] <- sb2(colorimages[,,i,],
@@ -462,23 +489,24 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
+    nc <- dim(sbg)[4]
     cat("\r \t Particle Identification: Thresholding (1 of 5)                 ",
         "           ")
 
     # if only one value supplied, use same value for each color layer
-    if (length(threshold) == 1) {threshold <- rep(threshold,3)}
+    if (length(threshold) == 1) {threshold <- rep(threshold,nc)}
 
     # automated threshold
     if (autoThres) {
       cat("\r \t Particle Identification: Automated thresholding (1 of 5)     ",
           "       ")
 	  if (is.null(frames)) { frames <- n }
-      threshold <- calcAutoThres(sbg[,,frames,],perFrame=perFrame)
+      threshold <- calcAutoThres(sbg[,,frames,,drop=FALSE],perFrame=perFrame)
 	}
     
     if (!is.null(qthreshold)) {
         A <- array(NA,dim=dim(sbg))
-        for (i in 1:3) { # over color layers
+        for (i in 1:nc) { # over color layers
             A[,,,i] <- structure(vapply(seq_len(dim(sbg)[3]), function(x)
                 sbg[,,x,i] < stats::quantile(sbg[,,x,i],qthreshold),
                 numeric(prod(dim(sbg[,,1,1])))),dim=dim(sbg)[1:3])
@@ -535,7 +563,14 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 
     dA <- dim(A[,,1]) ## get dim
     ## get total number of particles
-    totalPart <- apply(A,3,function(x) length(unique(c(x)))-1) 
+    totalPart <- apply(A,3,function(x) length(unique(c(x)))-1)
+    
+    if (all(totalPart == 0)) {
+       cat("\n")
+       stop(c("\n \t No particle detected in any of the frames. ",
+              "Try different thresholds? \n"))
+    }
+    
     psDim <- SDMTools::PatchStat(A[,,1])[-1,]
     
     particleStats <- matrix(NA,nrow=sum(totalPart),ncol=18)
@@ -553,7 +588,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
        particleStats[loc,13:15] <- as.matrix(
                               extractMean(particleStats[loc,'patchID'],
                               colorimages=colorimages[,,,i],
-                              images=A[,,i]))
+                              images=A[,,i],ncolors=nc))
                               
 	     coords <- getCoords(m=A[,,i],d=dA)
        ind <- A[,,i] > 0
@@ -685,7 +720,8 @@ shiny::runApp(
        shiny::br(),shiny::br(),
        shiny::radioButtons("select", shiny::h5("Select:"),
                    choices = list("Dark particles" = 1, 
-                                   "Light particles" = 2),selected = 1),   
+                                   "Light particles" = 2,
+                                   "Both" = 3),selected = 1),   
        shiny::radioButtons("ch", shiny::h5("Color channel:"),
                    choices = list("Red" = 1, 
                                    "Green" = 2,
@@ -713,7 +749,7 @@ shiny::runApp(
    ranges <- shiny::reactiveValues(x=NULL,y=NULL)
    coords <- shiny::reactiveValues(x=NULL,y=NULL)
 
-   output$plot3 <- shiny::renderPlot(graphics::plot(colorimages,frame=frame))
+   output$plot3 <- shiny::renderPlot(suppressWarnings(graphics::plot(colorimages,frame=frame)))
 
    # update plot range and coordinates
    shiny::observe({
@@ -734,15 +770,12 @@ shiny::runApp(
    })
 
    output$plot2 <- shiny::renderPlot({
-      if (length(dim(colorimages)) > 3) {
-        im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
-                            c(min(ranges$x):max(ranges$x)),,frame])
-      } else if (length(dim(colorimages)) == 3) {
-        class(im) <- 'array'
-        im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
-                             ranges$x[1]:ranges$x[2],])
-      }
-      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+      im <- colorimages[c(min(ranges$y):max(ranges$y)),
+                        c(min(ranges$x):max(ranges$x)),,frame,drop=FALSE]
+      im <- array(im,dim=c(dim(im)[1:3]))
+      im <- raster::brick(im)
+      
+     suppressWarnings(raster::plotRGB(im,scale=1,asp=nrow(im)/ncol(im)))
    })
 
 
@@ -751,57 +784,45 @@ shiny::runApp(
        if (input$select == 1) {  
          if (input$ch == 1) {
            m <- t(apply(images[,,1,frame] < input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
          if (input$ch == 2) {
            m <- t(apply(images[,,2,frame] < input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
          if (input$ch == 3) {
            m <- t(apply(images[,,3,frame] < input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
 
-       }
-       if (input$select == 2) {  
+       } else if (input$select == 2) {  
          if (input$ch == 1) {
            m <- t(apply(images[,,1,frame] > input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
          if (input$ch == 2) {
            m <- t(apply(images[,,2,frame] > input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
          if (input$ch == 3) {
            m <- t(apply(images[,,3,frame] > input$obs,2,rev))
-           output$plot1 <- shiny::renderPlot(graphics::image(m,
-                                           xlab='',ylab='',xaxt='n',yaxt='n',
-                                           col=c('white','black'),
-                                           xlim=coords$x,
-                                           ylim=coords$y))
          }
 
-       }
+       } else if (input$select == 3) {  
+         if (input$ch == 1) {
+           m <- t(apply((images[,,1,frame] > input$obs) | 
+                        (images[,,1,frame] < -input$obs),2,rev))
+         }
+         if (input$ch == 2) {
+           m <- t(apply((images[,,2,frame] > input$obs) | 
+                        (images[,,2,frame] < -input$obs),2,rev))
+         }
+         if (input$ch == 3) {
+           m <- t(apply((images[,,3,frame] > input$obs) | 
+                        (images[,,3,frame] < -input$obs),2,rev))
+         }
+       }    
+          
+       output$plot1 <- shiny::renderPlot(graphics::image(m,
+                                         xlab='',ylab='',xaxt='n',yaxt='n',
+                                         col=c('white','black'),
+                                         xlim=coords$x,
+                                         ylim=coords$y))      
    })
 
     shiny::observeEvent(input$stop, shiny::stopApp({

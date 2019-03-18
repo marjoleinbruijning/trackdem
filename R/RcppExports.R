@@ -5,6 +5,10 @@ cb <- function(m1, m2, m3, d, e) {
     .Call('_trackdem_cb', PACKAGE = 'trackdem', m1, m2, m3, d, e)
 }
 
+cb1 <- function(m1, d, e) {
+    .Call('_trackdem_cb1', PACKAGE = 'trackdem', m1, d, e)
+}
+
 getCoords <- function(m, d) {
     .Call('_trackdem_getCoords', PACKAGE = 'trackdem', m, d)
 }
@@ -13,15 +17,23 @@ muP <- function(m, id, cm1, cm2, cm3, d) {
     .Call('_trackdem_muP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
 }
 
-sb2 <- function(m1, bg, d, e) {
-    .Call('_trackdem_sb2', PACKAGE = 'trackdem', m1, bg, d, e)
+muP1 <- function(m, id, cm1, d) {
+    .Call('_trackdem_muP1', PACKAGE = 'trackdem', m, id, cm1, d)
 }
 
 sb <- function(m1, bg, d, e) {
     .Call('_trackdem_sb', PACKAGE = 'trackdem', m1, bg, d, e)
 }
 
+sb2 <- function(m1, bg, d, e) {
+    .Call('_trackdem_sb2', PACKAGE = 'trackdem', m1, bg, d, e)
+}
+
 sdP <- function(m, id, cm1, cm2, cm3, d) {
     .Call('_trackdem_sdP', PACKAGE = 'trackdem', m, id, cm1, cm2, cm3, d)
+}
+
+sdP1 <- function(m, id, cm1, d) {
+    .Call('_trackdem_sdP1', PACKAGE = 'trackdem', m, id, cm1, d)
 }
 

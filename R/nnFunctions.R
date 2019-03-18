@@ -196,17 +196,14 @@ shiny::runApp(
     input$automatic
     if (!input$automatic) {
       p <- shiny::eventReactive(input$update,{
+
+      im <- colorimages[c(min(ranges$y):max(ranges$y)),
+                        c(min(ranges$x):max(ranges$x)),,frame,drop=FALSE]
+      im <- array(im,dim=c(dim(im)[1:3]))
+      im <- raster::brick(im)
+                
         
-        if (length(dim(colorimages)) > 3) {
-          im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
-                          c(min(ranges$x):max(ranges$x)),,frame])
-        } else if (length(dim(colorimages)) == 3) {
-          class(im) <- 'array'
-          im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
-                                          ranges$x[1]:ranges$x[2],])
-        }
-        
-      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+      suppressWarnings(raster::plotRGB(im,scale=1,asp=nrow(im)/ncol(im)))
       inc <- coords$x > 0 & coords$x < 1 & coords$y > 0 & coords$y < 1
       graphics::points(coords$x[inc],coords$y[inc],cex=1.5,col='blue')
 
@@ -234,16 +231,13 @@ shiny::runApp(
   } else if (input$automatic) {
     
     output$plot1 <- shiny::renderPlot({
-      if (length(dim(colorimages)) > 3) {
-        im <- raster::brick(colorimages[c(min(ranges$y):max(ranges$y)),
-                            c(min(ranges$x):max(ranges$x)),,frame])
-      } else if (length(dim(colorimages)) == 3) {
-        class(im) <- 'array'
-        im <- raster::brick(colorimages[ranges$y[1]:ranges$y[2],
-                             ranges$x[1]:ranges$x[2],])
-      }
-        
-      raster::plotRGB(im,scale=1,asp=nrow(colorimages)/ncol(colorimages))
+      
+      im <- colorimages[c(min(ranges$y):max(ranges$y)),
+                            c(min(ranges$x):max(ranges$x)),,frame,drop=FALSE]
+      im <- array(im,dim=c(dim(im)[1:3]))
+      im <- raster::brick(im)
+      
+      suppressWarnings(raster::plotRGB(im,scale=1,asp=nrow(im)/ncol(im)))
       inc <- coords$x > 0 & coords$x < 1 & coords$y > 0 & coords$y < 1
       graphics::points(coords$x[inc],coords$y[inc],cex=1.5,col='blue')
 
@@ -267,7 +261,7 @@ shiny::runApp(
   }
   })
 
-  output$plot2 <- shiny::renderPlot({graphics::plot(colorimages,frame=frame)})  
+  output$plot2 <- shiny::renderPlot({suppressWarnings(graphics::plot(colorimages,frame=frame))})  
   output$true <- shiny::renderTable({trues$df[trues$df$inc & 
 	                                 !duplicated(trues$df$id),
                                      c('id','x','y','size')]})
@@ -323,8 +317,8 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
                          frames=NULL,mIdObject=NULL,training=FALSE) {
 
     if(is.null(colorimages)) { 
-	  colorimages <- get(attributes(particles)$originalImages, envir=.GlobalEnv)
-	}
+	    colorimages <- get(attributes(particles)$originalImages, envir=.GlobalEnv)
+	  }
     if(is.null(sbg)) { sbg <- get(attributes(particles)$subtractedImages,
                                                   envir=.GlobalEnv) }
     if (is.null(frames)) frames <- unique(particles$frame)
@@ -332,43 +326,48 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
     stat <- particles[particles$frame %in% frames,] # Subset
 
     sbg <- aperm(sbg, c(1,2,4,3))
-
+    
+    nc <- dim(colorimages)[3]
     
     cat("\n")
   if ('intensity' %in% info) {
     cat('\t Extract intensity info \t \t \t')
     getI <- lapply(seq_along(frames),function(X) {
                     inc <- stat$frame == frames[X]
+                    im <- sbg[,,frames[X],,drop=FALSE]
+                    im <- array(im,dim=c(dim(im)[c(1,2,4)]))
                     extractRGB(stat[inc,]$x,stat[inc,]$y,
-                             images=sbg[,,frames[X],])})
+                             images=im)})
     for (i in seq_along(getI)) {
-      colnames(getI[[i]]) <- paste0("I",colnames(getI[[i]]))
+      colnames(getI[[i]]) <- paste0("I",1:nc)
     }
   }
   if ('neighbors' %in% info) {
     cat('\r \t Extract neighbor info                       \t \t \t')
     getNeighbor <- lapply(seq_along(frames),function(X) {
-                             inc <- stat$frame == frames[X]
+                         inc <- stat$frame == frames[X]
+                         im <- colorimages[,,,frames[X],drop=FALSE]
+                         im <- array(im,dim=c(dim(im)[c(1,2,3)]))                             
 		                     extractNeighbors(stat[inc,]$x,stat[inc,]$y,
-	                                        images=colorimages[,,,frames[X]])})
+	                                        images=im)})
     getNeighbor <- lapply(seq_along(frames),function(X) 
                         t(vapply(seq_along(getNeighbor[[X]]),function(i) 
-		                  as.vector(getNeighbor[[X]][[i]]),numeric(27)))) 
+		                  as.vector(getNeighbor[[X]][[i]]),numeric(9*nc)))) 
 
     for (i in seq_along(getNeighbor)) {
-      colnames(getNeighbor[[i]]) <- paste0("n",1:27)
+      colnames(getNeighbor[[i]]) <- paste0("n",1:(9*nc))
     }
   }
   if ('sd' %in% info) {
     cat('\r \t Extract variance particle info                   \t \t \t \t')
     getVar <- lapply(seq_along(frames),function(X) {
-		          inc <- stat$frame == frames[X]
-                  extractMean(stat[inc,]$patchID,
-                              colorimages=colorimages[,,,X],
-                              images=attributes(particles)$images[,,frames[X]],
-                              fun='sd')})
+		            inc <- stat$frame == frames[X]
+                extractMean(stat[inc,]$patchID,
+                            colorimages=colorimages[,,,X],
+                            images=attributes(particles)$images[,,frames[X]],
+                            fun='sd',ncolors=nc)})
     for (i in seq_along(getVar)) {
-      colnames(getVar[[i]]) <- paste0('sd',c('R','G','B'))
+      colnames(getVar[[i]]) <- paste0('sd',1:nc)
     }
   }  
 
@@ -405,6 +404,37 @@ extractInfo <- function (particles,info=c('intensity','neighbors','sd'),
   
   return(dat)
 }
+
+## Find values for R, G and B layer for specified coordinates.
+extractRGB <- function(x,y,images){
+  coords <- cbind(x,y)
+  RGBmat <- t(apply(coords,1,function(X) images[round(X[2]),round(X[1]),,drop=FALSE]))
+  RGBmat <- matrix(RGBmat,nrow=nrow(coords))
+  colnames(RGBmat) <- paste0("color",1:ncol(RGBmat))
+  return(RGBmat)
+}
+
+## Get R, G and B values for specified coordinates, and its eight neighbor 
+## pixels.
+## @param x Vector containing x coordinates.
+## @param y Vector containing y coordinates.
+## @param Three dimensional array.
+extractNeighbors <- function(x,y,images){
+  x <- round(x)
+  y <- round(y)
+  Xmin <- x-1
+  Xmax <- x+1
+  Ymin <- y-1
+  Ymax <- y+1
+  Xmax[Xmax > dim(images)[2]] <- dim(images)[2]
+  Ymax[Ymax > dim(images)[1]] <- dim(images)[1]
+  Xmin[Xmin < 1] <- 1
+  Ymin[Ymin < 1] <- 1
+  return(lapply(seq_along(x),function(i) 
+         images[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
+}
+
+
 
 ## Create neural net
 ## \code{runNN} traines an artificial neural network.
@@ -613,51 +643,35 @@ update.particles <- function(object,neuralnet,pca=TRUE,colorimages=NULL,
   return(dat)
 }
 
-## Find values for R, G and B layer for specified coordinates.
-extractRGB <- function(x,y,images){
-  coords <- cbind(x,y)
-  RGBmat <- t(apply(coords,1,function(X) images[round(X[2]),round(X[1]),]))
-  colnames(RGBmat) <- c("R","G","B")
-  return(RGBmat)
-}
-
-
 ## Find mean and sd particle values
-extractMean <- function(ID,colorimages,images,fun='mean') {
-   if (fun=='mean') {
-     A <- muP(m=images,id=ID,
-              cm1=colorimages[,,1],
-              cm2=colorimages[,,2],
-              cm3=colorimages[,,3],
-              d=dim(images))
-   } else if (fun == 'sd') {
-     A <- sdP(m=images,id=ID,
-              cm1=colorimages[,,1],
-              cm2=colorimages[,,2],
-              cm3=colorimages[,,3],
-              d=dim(images))
-   }
+extractMean <- function(ID,colorimages,images,fun='mean',ncolors=3) {
+  if (ncolors == 3) {
+     if (fun=='mean') {
+       A <- muP(m=images,id=ID,
+                cm1=colorimages[,,1],
+                cm2=colorimages[,,2],
+                cm3=colorimages[,,3],
+                d=dim(images))
+     } else if (fun == 'sd') {
+       A <- sdP(m=images,id=ID,
+                cm1=colorimages[,,1],
+                cm2=colorimages[,,2],
+                cm3=colorimages[,,3],
+                d=dim(images))
+     }
+   } else if (ncolors == 1) {
+     if (fun=='mean') {
+       A <- muP1(m=images,id=ID,
+                cm1=colorimages,
+                d=dim(images))
+     } else if (fun == 'sd') {
+       A <- sdP1(m=images,id=ID,
+                cm1=colorimages,
+                d=dim(images))
+     }
+  }
+  
   return(A)
-}
-
-## Get R, G and B values for specified coordinates, and its eight neighbor 
-## pixels.
-## @param x Vector containing x coordinates.
-## @param y Vector containing y coordinates.
-## @param Three dimensional array.
-extractNeighbors <- function(x,y,images){
-  x <- round(x)
-  y <- round(y)
-  Xmin <- x-1
-  Xmax <- x+1
-  Ymin <- y-1
-  Ymax <- y+1
-  Xmax[Xmax > dim(images)[2]] <- dim(images)[2]
-  Ymax[Ymax > dim(images)[1]] <- dim(images)[1]
-  Xmin[Xmin < 1] <- 1
-  Ymin[Ymin < 1] <- 1
-  return(lapply(seq_along(x),function(i) 
-         images[c(Ymin[i],y[i],Ymax[i]),c(Xmin[i],x[i],Xmax[i]),]))
 }
 
 ## Make a test, validate and training dataset

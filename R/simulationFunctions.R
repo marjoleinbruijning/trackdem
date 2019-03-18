@@ -207,7 +207,7 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                         parsMoving=list(density=10,duration=10,size=1,
                                         speed=10,colRange=c(0,1)),
                         parsStatic=list(density=10,blur=TRUE,blurCoef=0.025,
-                                        sizes=NULL),
+                                        sizes=NULL,col='red'),
                         width=480,height=NULL) {
 
   if (is.null(path)) path <- getwd()
@@ -279,7 +279,7 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                                 tapply(traj$phi,traj$id,mean,na.rm=TRUE)[j==ii],
                                 traj[j,"phi"]),
                                 x=traj[j,"x"],y=traj[j,"y"]),
-                        col="red",border=NA)
+                        col=parsStatic$col,border=NA)
     }
     grDevices::dev.off()
   }

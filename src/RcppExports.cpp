@@ -21,6 +21,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// cb1
+NumericVector cb1(NumericVector m1, IntegerVector d, IntegerVector e);
+RcppExport SEXP _trackdem_cb1(SEXP m1SEXP, SEXP dSEXP, SEXP eSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    rcpp_result_gen = Rcpp::wrap(cb1(m1, d, e));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getCoords
 NumericVector getCoords(NumericVector m, IntegerVector d);
 RcppExport SEXP _trackdem_getCoords(SEXP mSEXP, SEXP dSEXP) {
@@ -49,17 +62,17 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sb2
-NumericVector sb2(NumericVector m1, NumericVector bg, IntegerVector d, IntegerVector e);
-RcppExport SEXP _trackdem_sb2(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
+// muP1
+NumericVector muP1(NumericVector m, NumericVector id, NumericVector cm1, IntegerVector d);
+RcppExport SEXP _trackdem_muP1(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP dSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
-    Rcpp::traits::input_parameter< NumericVector >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type m(mSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type id(idSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm1(cm1SEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
-    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
-    rcpp_result_gen = Rcpp::wrap(sb2(m1, bg, d, e));
+    rcpp_result_gen = Rcpp::wrap(muP1(m, id, cm1, d));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -74,6 +87,20 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
     Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
     rcpp_result_gen = Rcpp::wrap(sb(m1, bg, d, e));
+    return rcpp_result_gen;
+END_RCPP
+}
+// sb2
+NumericVector sb2(NumericVector m1, NumericVector bg, IntegerVector d, IntegerVector e);
+RcppExport SEXP _trackdem_sb2(SEXP m1SEXP, SEXP bgSEXP, SEXP dSEXP, SEXP eSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m1(m1SEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type bg(bgSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type e(eSEXP);
+    rcpp_result_gen = Rcpp::wrap(sb2(m1, bg, d, e));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -93,14 +120,31 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sdP1
+NumericVector sdP1(NumericVector m, NumericVector id, NumericVector cm1, IntegerVector d);
+RcppExport SEXP _trackdem_sdP1(SEXP mSEXP, SEXP idSEXP, SEXP cm1SEXP, SEXP dSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< NumericVector >::type m(mSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type id(idSEXP);
+    Rcpp::traits::input_parameter< NumericVector >::type cm1(cm1SEXP);
+    Rcpp::traits::input_parameter< IntegerVector >::type d(dSEXP);
+    rcpp_result_gen = Rcpp::wrap(sdP1(m, id, cm1, d));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_trackdem_cb", (DL_FUNC) &_trackdem_cb, 5},
+    {"_trackdem_cb1", (DL_FUNC) &_trackdem_cb1, 3},
     {"_trackdem_getCoords", (DL_FUNC) &_trackdem_getCoords, 2},
     {"_trackdem_muP", (DL_FUNC) &_trackdem_muP, 6},
-    {"_trackdem_sb2", (DL_FUNC) &_trackdem_sb2, 4},
+    {"_trackdem_muP1", (DL_FUNC) &_trackdem_muP1, 4},
     {"_trackdem_sb", (DL_FUNC) &_trackdem_sb, 4},
+    {"_trackdem_sb2", (DL_FUNC) &_trackdem_sb2, 4},
     {"_trackdem_sdP", (DL_FUNC) &_trackdem_sdP, 6},
+    {"_trackdem_sdP1", (DL_FUNC) &_trackdem_sdP1, 4},
     {NULL, NULL, 0}
 };
 
