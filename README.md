@@ -18,7 +18,7 @@ that was recently published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<img src="images/animation2.gif" width="350"> <img src="images/animation.gif" width="350">
+<img src="images/animation2.gif" height="350"> <img src="images/animation.gif" width="350">
 
 ## Updates version 0.4.3
 * Create log file for function createImageSeq().
