@@ -18,7 +18,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<img src="images/animation2.gif" height="350">
+<center><img src="images/animation2.gif" height="350"></center>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
@@ -28,8 +28,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
   * [Tutorial](#tutorial)
 * [Updates](#updates)
   * [Version 0.4.3](#version-0.4.3)
-  * [Version 0.4](#version-0.4)
-* [Examples of output](#examples-of-output)  
+  * [Version 0.4.1](#version-0.4.1)
 * [Bugs](#bugs)
 
 <!-- GETTING STARTED -->
@@ -134,10 +133,9 @@ attributes(partIden)$threshold
 plot(partIden,frame=10)
 
 ```
-<img src="images/threshold.png" height="350">
-
-<img src="images/iden.png" height="350">
-
+<center>
+<img src="images/threshold.png" height="550">
+</center>
 
 ```r
 ## Reconstruct trajectories
@@ -161,9 +159,9 @@ for (i in 1:length(unique(traj$id))) {
 }
 
 ```
-
+<center>
 <img src="images/trajec.png" height="350">
-
+</center>
 
 ```r
 ########################################################################
@@ -197,15 +195,9 @@ records <- trackParticles(partIdenNN,L=60,R=3)
 summary(records)
 
 ```
-
-<img src="images/manuallyselect.png" height="350">
-
-
-<!-- EXAMPLES OF OUTPUT -->
-## Examples of output
-![](images/trackingResults.png)
-![](images/sizeRecord.png)
-
+<center>
+<img src="images/manuallyselect.png" height="550">
+</center>
 
 <!-- UPDATES -->
 ## Updates
@@ -214,7 +206,7 @@ summary(records)
 * Create log file for function createImageSeq().
 * Optimize functions to analyze greyscale images.
 
-### Version 0.4
+### Version 0.4.1
 * Enable greyscale image sequences.
 * Optimized identification and tracking functions to work with longer image sequences.
 * Increased flexibility in function createImageSeq().
