@@ -26,8 +26,10 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 * [Updates](#updates)
   * [Version 0.4.3](#version-0.4.3)
   * [Version 0.4](#version-0.4)
-* [Installation](#installation)
-* [Examples](#examples)
+* [Getting started](#getting-started)  
+  * [Installation](#installation)
+  * [Tutorial](#tutorial)
+* [Bugs](#bugs)
 
 <!-- UPDATES -->
 ## Updates
@@ -41,9 +43,10 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 * Optimized identification and tracking functions to work with longer image sequences.
 * Increased flexibility in function createImageSeq().
 
-<!-- INSTALLATION -->
-## Installation
+<!-- GETTING STARTED -->
+## Getting started
 
+### Installation
 **trackdem** can be installed from <a target="_blank" href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
 
 ```r
@@ -90,8 +93,11 @@ to exiftool.exe, as described in the installation instructions.
 Finally, Python 2.7 can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the 
 instructions for installation.
 
-<!-- EXAMPLES -->
-## Examples
+<!-- TUTORIAL -->
+### Tutorial
+
+A full tutorial is available on CRAN (<a href='https://cran.r-project.org/web/packages/trackdem/vignettes/tutorial.pdf'>here</a>).
+Some test code to get you started is given below.
 
 ```r
 
@@ -190,4 +196,7 @@ summary(records)
 ![](images/trackingResults.png)
 ![](images/sizeRecord.png)
 
+
+<!-- BUGS -->
+## Bugs
 Bug reports and comments are ![welcome](https://github.com/marjoleinbruijning/trackdem/issues).
