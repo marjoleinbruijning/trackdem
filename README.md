@@ -1,4 +1,4 @@
-# trackdem (version 0.4.2)
+# trackdem (version 0.4.3)
 [![cran version](http://www.r-pkg.org/badges/version/trackdem)](http://cran.rstudio.com/web/packages/trackdem)
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
@@ -14,21 +14,34 @@ background detection, particle identification and linking, and
 the training of an artifical neural network for noise filtering. For more information 
 on the package and usage, see our 
 <a target="_blank" href="https://besjournals.onlinelibrary.wiley.com/doi/abs/10.1111/2041-210X.12975">article</a> 
-that was recently published in <i>Methods in Ecology and Evolution</i>.
+that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<img src="images/animation2.gif" height="350"> <img src="images/animation.gif" width="350">
+<img src="images/animation2.gif" height="350">
 
-## Updates version 0.4.3
+<!-- TABLE OF CONTENTS -->
+## Table of Contents
+
+* [Updates](#updates)
+  * [Version 0.4.3](#version-0.4.3)
+  * [Version 0.4](#version-0.4)
+* [Installation](#installation)
+* [Examples](#examples)
+
+<!-- UPDATES -->
+## Updates
+
+### Version 0.4.3
 * Create log file for function createImageSeq().
 * Optimize functions to analyze greyscale images.
 
-## Updates version 0.4
+### Version 0.4
 * Enable greyscale image sequences.
 * Optimized identification and tracking functions to work with longer image sequences.
 * Increased flexibility in function createImageSeq().
 
+<!-- INSTALLATION -->
 ## Installation
 
 **trackdem** can be installed from <a target="_blank" href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
@@ -77,6 +90,7 @@ to exiftool.exe, as described in the installation instructions.
 Finally, Python 2.7 can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the 
 instructions for installation.
 
+<!-- EXAMPLES -->
 ## Examples
 
 ```r
