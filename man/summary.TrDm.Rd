@@ -4,8 +4,8 @@
 \alias{summary.TrDm}
 \title{\code{summary} methods for class 'TrDm'.}
 \usage{
-\method{summary}{TrDm}(object, incThres = NULL, funSize = stats::median,
-  ...)
+\method{summary}{TrDm}(object, incThres = NULL,
+  funSize = stats::median, ...)
 }
 \arguments{
 \item{object}{an object of class 'TrDm'.}

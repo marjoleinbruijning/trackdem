@@ -6,11 +6,12 @@
 \usage{
 simulTrajec(nframes = 20, nIndividuals = 10, h = 0.02, rho = 0,
   domain = "square", correctBoundary = TRUE,
-  sizes = stats::runif(nIndividuals) * 0.012 + 0.01, staticNoise = FALSE,
-  movingNoise = FALSE, name = "trajectory", path = NULL,
-  parsMoving = list(density = 10, duration = 10, size = 1, speed = 10,
-  colRange = c(0, 1)), parsStatic = list(density = 10, blur = TRUE, blurCoef =
-  0.025, sizes = NULL), width = 480, height = NULL)
+  sizes = stats::runif(nIndividuals) * 0.012 + 0.01,
+  staticNoise = FALSE, movingNoise = FALSE, name = "trajectory",
+  path = NULL, parsMoving = list(density = 10, duration = 10, size = 1,
+  speed = 10, colRange = c(0, 1)), parsStatic = list(density = 10, blur =
+  TRUE, blurCoef = 0.025, sizes = NULL, col = "red"), width = 480,
+  height = NULL)
 }
 \arguments{
 \item{nframes}{Number of time frames(steps).}

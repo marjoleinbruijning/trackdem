@@ -4,11 +4,12 @@ Title: Particle Tracking and Demography
 Version: 0.4.3
 Date: 2019-03-14
 Author: Marjolein Bruijning, Marco D. Visser, Caspar A. Hallmann, Eelke Jongejans
-Maintainer: Marjolein Bruijning <m.bruijning@science.ru.nl>
+Maintainer: Marjolein Bruijning <mbruijning@princeton.edu>
 Description: Obtain population density and body size structure, using video material or image sequences as input. Functions assist in the creation of image sequences from videos, background detection and subtraction, particle identification and tracking. An artificial neural network can be trained for noise filtering. The goal is to supply accurate estimates of population size, structure and/or individual behavior, for use in  evolutionary and ecological studies. 
 License: GPL-2
 URL: https://github.com/marjoleinbruijning/trackdem
 BugReports: https://github.com/marjoleinbruijning/trackdem/issues
+Encoding: UTF-8
 Depends: 
 Imports:
     png,
@@ -24,7 +25,7 @@ Imports:
 LinkingTo:
     Rcpp,
     RcppArmadillo,
-RoxygenNote: 6.0.1
+RoxygenNote: 6.1.1
 SystemRequirements:
     Python 2.7,
     Libav,

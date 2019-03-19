@@ -458,6 +458,15 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                      1-x[,i,2]/height,
                      col='black',
                      cex=1,lwd=2,labels=seq_len(nrow(x)),pos=2)
+                     
+              for (j in 1:nrow(x)) {
+                graphics::lines(x[j,1:i,1]/width,
+                                1-x[j,1:i,2]/height,
+                                col=grDevices::rainbow(nrow(x),
+                                                 alpha=0.5)[as.numeric(rownames(x))][j],
+                                lwd=4)
+              }
+                     
               cat("\r \t Animation:",i,"out of",ncol(x))
               grDevices::dev.off()
            }

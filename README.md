@@ -18,7 +18,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<p align="center"><img src="images/animation2.gif" height="350"></p>
+<p align="center"><img src="images/animation2.mp4" height="350"></p>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
@@ -84,7 +84,7 @@ instructions for installation.
 <!-- TUTORIAL -->
 ### Tutorial
 
-A full tutorial is available on CRAN (<a href='https://cran.r-project.org/web/packages/trackdem/vignettes/tutorial.pdf'>here</a>).
+A full tutorial is provided with the package (<a href='https://cran.r-project.org/web/packages/trackdem/vignettes/tutorial.pdf'>here</a>).
 Some test code to get you started is given below.
 
 ```r

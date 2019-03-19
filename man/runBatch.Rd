@@ -8,8 +8,8 @@ runBatch(path, settings = NULL, dirnames = NULL, nImages = 1:30,
   pixelRange = NULL, threshold = -0.1, qthreshold = NULL,
   select = "dark", nn = NULL, incThres = NULL, plotOutput = FALSE,
   plotType = "trajectories", L = 20, R = 2, weight = c(1, 1, 1),
-  autoThres = FALSE, perFrame = FALSE, methodBg = "mean", frames = NULL,
-  saveAll = FALSE)
+  autoThres = FALSE, perFrame = FALSE, methodBg = "mean",
+  frames = NULL, saveAll = FALSE)
 }
 \arguments{
 \item{path}{A character vector of path name that contains all directories 

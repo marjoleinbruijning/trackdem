@@ -17,9 +17,7 @@ NumericVector muP1(NumericVector m, NumericVector id,
   
   arma::mat y1(mat.begin(),dim[0],dim[1],false);
  
-  IntegerVector sz(i.size());
   NumericMatrix mu(i.size(),1);
-  NumericMatrix sd(i.size(),1);
   
   for (int j = 0; j < i.size(); j++) { 
     // find coordinates

@@ -5,8 +5,8 @@
 \title{Train, validate and test artificial
 neural networks}
 \usage{
-testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1, 1),
-  predictors = NULL, pca = TRUE, thr = 0.95, ...)
+testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1,
+  1), predictors = NULL, pca = TRUE, thr = 0.95, ...)
 }
 \arguments{
 \item{dat}{a previously constructed dataset obtained from 

@@ -335,7 +335,7 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
     gstart <- gMat(Phi)
     
     ## optimize
-    G <- track(Phi=Phi, g=gstart, L=L) * Phi	
+    G <- track(Phi=Phi, g=gstart, L=L) * (Phi+0.0001)
   
     links[[i]] <- data.frame(which(G > 0,TRUE))
     if (i > 1) {
@@ -477,7 +477,7 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
     
   ## optimize
   G <- array(NA,dim=c(2000,2000))
-  G[1:nrow(Phi),1:ncol(Phi)] <- track(Phi=Phi, g=gstart, L=L) * Phi	
+  G[1:nrow(Phi),1:ncol(Phi)] <- track(Phi=Phi, g=gstart, L=L) * (Phi+0.0001)
   
   links <- data.frame(which(G > 0,TRUE))
   names(links) <- c(paste('frame',2),paste('frame',1))

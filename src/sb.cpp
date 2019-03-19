@@ -19,7 +19,6 @@ NumericVector sb(NumericVector m1, NumericVector bg, IntegerVector d,
   int ncols = dim[1];
   int images = dim[2];
   
-  
  for (int j = 0; j < nrows; j++) {
     for (int i = 0; i < ncols; i++) {
       for (int k = 0; k < images; k++) {

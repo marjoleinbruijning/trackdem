@@ -20,7 +20,6 @@ NumericVector sdP(NumericVector m, NumericVector id,
 
   arma::mat y1(mat.begin(),dim[0],dim[1],false);
  
-  IntegerVector sz(i.size());
   NumericMatrix mu(i.size(),3);
   NumericMatrix sd(i.size(),3);
   
