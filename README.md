@@ -18,7 +18,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<p align="center"><img src="images/animation2.mp4" height="350"></p>
+<p align="center"><video src="images/animation2.mp4" controls preload></video></p>
 
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
