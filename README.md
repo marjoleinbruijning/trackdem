@@ -3,6 +3,10 @@
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
+<p align="center">
+<img src="images/animation2.gif" width="750">
+</p>
+
 ---
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
 densities and body size distributions, using video material or image 
@@ -19,7 +23,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 ---
 
 <p align="center">
-<img src="images/animation2.gif" width="550">
+<video src="images/animation2.mp4" width="750">
 </p>
 
 <!-- TABLE OF CONTENTS -->
@@ -32,6 +36,8 @@ that was published in <i>Methods in Ecology and Evolution</i>.
   * [Version 0.4.3](#version-0.4.3)
   * [Version 0.4.1](#version-0.4.1)
 * [Bugs](#bugs)
+
+---
 
 <!-- GETTING STARTED -->
 ## Getting started
