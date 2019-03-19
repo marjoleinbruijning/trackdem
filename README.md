@@ -22,10 +22,6 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 
 ---
 
-<p align="center">
-<video src="images/animation2.mp4" width="750">
-</p>
-
 <!-- TABLE OF CONTENTS -->
 ## Table of Contents
 
@@ -88,6 +84,8 @@ exiftool(-k).exe file in a chosen directory. For convenience, you can change the
 to exiftool.exe, as described in the installation instructions. 
 Finally, Python 2.7 can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the 
 instructions for installation.
+
+---
 
 <!-- TUTORIAL -->
 ### Tutorial
