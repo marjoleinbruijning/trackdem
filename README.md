@@ -1,16 +1,16 @@
+<p align="center">
 # trackdem (version 0.4.3)
 [![cran version](http://www.r-pkg.org/badges/version/trackdem)](http://cran.rstudio.com/web/packages/trackdem)
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/trackdem?color=E664A4)](https://github.com/metacran/cranlogs.app)
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
-<p align="center">
 <img src="images/animation.gif" width="850",height="395">
 </p>
 
 <p align="right" style="font-size:6px">
 Left: reconstructed trajectories of <i>Daphnia magna</i> individuals.<br>
 Top right: identified fish (movie obtained from: DOI: <a href="https://doi.org/10.1109/CVPR.2015.7298992">10.1109/CVPR.2015.7298992</a>).<br>
-Bottom right: **trackdem** contains functions to simulate moving particles.
+Bottom right: the package contains functions to simulate moving particles.
 <p>
 
 ---
