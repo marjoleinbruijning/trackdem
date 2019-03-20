@@ -7,7 +7,7 @@
 <img src="images/animation.gif" width="850">
 </p>
 
-<p align="right" style="font-size:10px">
+<p align="right" style="font-size:6px">
 Left: reconstructed trajectories of <i>Daphnia magna</i> individuals.<br>
 Top right: identified fish (movie obtained from: DOI: <a href="https://doi.org/10.1109/CVPR.2015.7298992">10.1109/CVPR.2015.7298992</a>).<br>
 Bottom right: **trackdem** contains functions to simulate moving particles.
