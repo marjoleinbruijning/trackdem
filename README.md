@@ -45,7 +45,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
 ## Getting started
 
 ### Installation
-**trackdem** can be installed from <a target="_blank" href="https://cran.r-project.org/web/packages/trackdem/index.html">CRAN</a> or from github.
+**trackdem** can be installed from [CRAN](https://cran.r-project.org/web/packages/trackdem/index.html) or from github.
 
 ```r
 ## Install from CRAN
