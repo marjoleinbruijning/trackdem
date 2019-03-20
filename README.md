@@ -4,7 +4,7 @@
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
 <p align="center">
-<img src="images/animation.gif" width="850">
+<img src="images/animation.gif" width="850",height="395">
 </p>
 
 <p align="right" style="font-size:6px">
