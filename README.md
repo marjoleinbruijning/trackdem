@@ -4,8 +4,14 @@
 [![rstudio mirror downloads](http://cranlogs.r-pkg.org/badges/grand-total/trackdem?color=333FFF)](https://github.com/metacran/cranlogs.app)
 
 <p align="center">
-<img src="images/animation.gif" width="750">
+<img src="images/animation.gif" width="850">
 </p>
+
+<p align="right"><font size="2"> 
+Left: reconstructed trajectories of <i>Daphnia magna</i> individuals.
+Top right: identified fish (movie obtained from: DOI: <a href="https://doi.org/10.1109/CVPR.2015.7298992">10.1109/CVPR.2015.7298992</a>)
+Bottom right: **trackdem** contains functions to simulate moving particles.
+</font><p>
 
 ---
 The aim of **trackdem** is to obtain unbiased automated estimates of population 
