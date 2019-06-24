@@ -13,19 +13,19 @@
 
 \item{frame}{Choose which frame to be plotted. By default, \code{frame=1}.}
 
-\item{type}{Only for 'tracked' objects. By default, both trajectories and 
+\item{type}{Only for 'tracked' objects. By default, both trajectories and
 size distribution are plotted. Choose
-\code{'trajectories'} to plot only trajectories on the original color image. 
-Choose \code{'sizes'} 
-to only plot the particle size distribution. Choose \code{'animation'} to 
+\code{'trajectories'} to plot only trajectories on the original color image.
+Choose \code{'sizes'}
+to only plot the particle size distribution. Choose \code{'animation'} to
 create an .mp4 animation.
-Here, images are temporarily saved in \code{path}. Set name of file with 
+Here, images are temporarily saved in \code{path}. Set name of file with
 argument \code{name}.}
 
 \item{incThres}{Minimum length of tracked segments for particles to be included.
 By default an automated threshold is calculated. Only for 'tracked' objects.}
 
-\item{colorimages}{Original color images. By default, original color images 
+\item{colorimages}{Original color images. By default, original color images
 are obtained from the global environment.}
 
 \item{cl}{When plotting a subtracted background image, choose which color layer
@@ -37,7 +37,7 @@ are saved temporarily, and where the animation should be saved.}
 \item{name}{of animation; by default \code{'animation'}.}
 
 \item{libavpath}{Path to location where the executable file for libav
-can be found (named 'avconv.exe'), in case it is not found automatically, 
+can be found (named 'avconv.exe'), in case it is not found automatically,
 e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}. Only required when creating
 an animation.}
 

@@ -1,9 +1,9 @@
 ##' Batch analysis
-##' 
+##'
 ##' \code{runBatch} analyzes all image sequences in a specified
-##' directory. Use this function when settings have been optimized 
+##' directory. Use this function when settings have been optimized
 ##' previously on a single or selection of movies/image sequences.
-##' @param path A character vector of path name that contains all directories 
+##' @param path A character vector of path name that contains all directories
 ##' with image sequences.
 ##' @param settings Object of class 'tracked' containing all optimized settings
 ##' in attributes,
@@ -24,11 +24,11 @@
 ##' @param L See \code{\link{trackParticles}}
 ##' @param R See \code{\link{trackParticles}}
 ##' @param plotOutput Default is \code{FALSE}. Set \code{TRUE} to plot results.
-##' @param plotType Default is 'trajectories'. Other options are 'sizes' and 
+##' @param plotType Default is 'trajectories'. Other options are 'sizes' and
 ##' 'animation'.
 ##' @param weight See \code{\link{trackParticles}}
 ##' @param methodBg See \code{\link{createBackground}}
-##' @param saveAll Logical. Set \code{TRUE} to save for each image sequence the 
+##' @param saveAll Logical. Set \code{TRUE} to save for each image sequence the
 ##' full object obtained from \code{\link{loadImages}}. Default is FALSE.
 ##' @param incThres Minimum number of frames that a particle must be
 ##' present. By default, automated estimate is used.
@@ -44,7 +44,7 @@
 ##' folders <- paste0(rep("images",3),1:3)
 ##' populations <- c(15,25,50)
 ##' dir.create("./batchTest")
-##' setwd("./batchTest")	
+##' setwd("./batchTest")
 ##' for(i in 1:length(folders)){
 ##'   dir.create(folders[i])
 ##'   traj <- simulTrajec(path=folders[i],
@@ -88,14 +88,14 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,
     L <- settings$L
     weight <- settings$weight
     methodBg <- settings$BgMethod
-  }  
+  }
   dat <- data.frame(Directory=rep(NA,length(allDirec)),
                     Count=NA)
-                    
+
   if (is.null(dirnames)) {
     dat$Directory <- list.dirs(path,recursive=FALSE,full.names=FALSE)
   } else {dat$Directory <- dirnames}
-  
+
   results <- vector('list',length(allDirec))
   cat("\n")
   for (i in seq_along(allDirec)) {
@@ -126,7 +126,7 @@ runBatch <- function(path,settings=NULL,dirnames=NULL,nImages=1:30,
                                                                 R=R,
                                                                 weight=weight)))
       if (saveAll) results[[i]] <- records
-      
+
       dat$Count[i] <- summary(records,incThres=incThres)$N
 
       if (plotOutput == TRUE) {
@@ -156,20 +156,20 @@ is.TrDm <- function(object) {
 
 
 ## Summary TrDm objects
-##' 
+##'
 ##' \code{summary} methods for class 'TrDm'.
 ##' @param object an object of class 'TrDm'.
-##' @param incThres Minimum length of tracked segments for particles to be 
-##' included. By default an automated threshold is calculated. Only for 
+##' @param incThres Minimum length of tracked segments for particles to be
+##' included. By default an automated threshold is calculated. Only for
 ##' 'tracked' objects.
-##' @param funSize Statistic to be calculated to obtain particle sizes. By 
+##' @param funSize Statistic to be calculated to obtain particle sizes. By
 ##' default \code{median} is used.
 ##' @param \dots further arguments passed to or from other methods.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @export
 summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
   if (inherits(object,"particles")) {
-    numbers <- tapply(object$patchID,object$frame,length)                     
+    numbers <- tapply(object$patchID,object$frame,length)
     mu <- mean(numbers)
     sdd <- stats::sd(numbers)
     cv <- sdd/mu
@@ -181,20 +181,20 @@ summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
     return(res)
   } else if (inherits(object,"tracked")) {
     if (is.null(incThres)) {
-      dist <- apply(object$trackRecord[,,1],1,function(x) 
+      dist <- apply(object$trackRecord[,,1],1,function(x)
                     sum(!is.na(x)))
       mod <- stats::kmeans(dist,2)
       incLabels <- mod$cluster == which.max(mod$centers)
       incThres <- max(dist[!incLabels])
     } else {
-      incLabels <- apply(object$trackRecord[,,1],1,function(x) 
+      incLabels <- apply(object$trackRecord[,,1],1,function(x)
                                                sum(!is.na(x))) > incThres
     }
     tr <- object$trackRecord[incLabels,,,drop=FALSE]
     sr <- object$sizeRecord[incLabels,,drop=FALSE]
     cr <- object$colorRecord[incLabels,,,drop=FALSE]
     # Distance
-    dr <- t(vapply(seq_len(nrow(tr)),function (x) 
+    dr <- t(vapply(seq_len(nrow(tr)),function (x)
                                sqrt(diff(tr[x,,1])^2 + diff(tr[x,,2])^2),
                    numeric(dim(tr)[2]-1)))
 
@@ -203,7 +203,7 @@ summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
     sdd <- apply(sr,1,stats::sd,na.rm=TRUE)
     muD <- apply(dr,1,sum,na.rm=TRUE) # total movement
     muC <- apply(cr,c(1,3),mean,na.rm=TRUE) # mean colors
-        
+
     tab <- cbind(ID=which(incLabels),Mean=perID,SD=sdd,movement=muD,
                  R=muC[,1],G=muC[,2],B=muC[,3])
     colnames(tab) <- c('ID','Size','SD size',
@@ -215,7 +215,7 @@ summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
                 distrecord=dr,
                 colorrecord=cr,
                 presence=incThres,
-                area=100 * sum(perID) / 
+                area=100 * sum(perID) /
                      (nrow(attributes(object)$images)*
                       ncol(attributes(object)$images))
                 )
@@ -229,7 +229,7 @@ summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
       class(object) <- c('summaryTrDm','neuralnet')
       return(object)
   } else {cat("\t No summary available for this object.\n\n")}
-} 
+}
 
 ## Print TrDm summary objects
 ##' \code{print} methods for class 'TrDm'.
@@ -250,14 +250,14 @@ print.summaryTrDm <- function(x,...) {
     cat("\n\t Threshold values:", round(x$thr,3),"\n")
     cat(ifelse(attributes(x)$nn==TRUE,'\t With neural network.\n',
         '\t Without neural network.\n'))
-    
+
   } else if (inherits(x,"tracked")) {
     cat("\t Summary of Linked particles: \n\n")
     print(x$particles)
     cat(paste("\t Total of",x$N,"Identified particles.\n"))
     cat(paste("\t Particles have a total area  of",round(x$area,4),"%\n"))
     cat(paste("\t Minimum presence is set at",x$presence,"frames \n",sep=' '))
-        
+
   } else if (inherits(x,"tfp")) {
     cat("\t Summary of manually identified false and true positives.\n")
     wrong <- unlist(lapply(x,function(i) i$wrong))
@@ -268,15 +268,15 @@ print.summaryTrDm <- function(x,...) {
     cat("\t Summary of trained neural network: \n")
     cat("\t Confusion table: \n")
     print.default(format(x$confusion,digits = 3)
-                 ,print.gap = 2L, 
+                 ,print.gap = 2L,
                   quote = FALSE)
-    
+
     cat("\t F-score:",round(x$fscore,2),'\n')
     cat("\t",x$bestNN$reps," repetitions.\n")
     cat("\t",x$bestNN$hidden," hidden layer(s).\n")
 
   } else {cat("\t No summary available for this object.\n\n")}
-} 
+}
 
 
 ## Print TrDm objects
@@ -316,34 +316,34 @@ print.TrDm <- function(x,...) {
   } else if (inherits(x,"batch")) {
       print.data.frame(x)
   } else if (inherits(x,"simtrajectory")) {
-    cat("\t Simulated trajectories of", max(unique(x$id)),"particles, for", 
-        max(unique(x$t)),"frames. \n \n")    
+    cat("\t Simulated trajectories of", max(unique(x$id)),"particles, for",
+        max(unique(x$t)),"frames. \n \n")
   }
-  else {} 
+  else {}
 }
 
 ## Plot TrDm objects
 ##' \code{plot} methods for class 'TrDm'.
 ##' @param x An object of class 'TrDm'.
 ##' @param frame Choose which frame to be plotted. By default, \code{frame=1}.
-##' @param type Only for 'tracked' objects. By default, both trajectories and 
+##' @param type Only for 'tracked' objects. By default, both trajectories and
 ##' size distribution are plotted. Choose
-##' \code{'trajectories'} to plot only trajectories on the original color image. 
-##' Choose \code{'sizes'} 
-##' to only plot the particle size distribution. Choose \code{'animation'} to 
+##' \code{'trajectories'} to plot only trajectories on the original color image.
+##' Choose \code{'sizes'}
+##' to only plot the particle size distribution. Choose \code{'animation'} to
 ##' create an .mp4 animation.
-##' Here, images are temporarily saved in \code{path}. Set name of file with 
+##' Here, images are temporarily saved in \code{path}. Set name of file with
 ##' argument \code{name}.
 ##' @param incThres Minimum length of tracked segments for particles to be included.
 ##' By default an automated threshold is calculated. Only for 'tracked' objects.
-##' @param colorimages Original color images. By default, original color images 
+##' @param colorimages Original color images. By default, original color images
 ##' are obtained from the global environment.
 ##' @param cl When plotting a subtracted background image, choose which color layer
 ##' is plotted. By default, \code{cl=1}.
 ##' @param path When creating an animation, choose directory in which images
 ##' are saved temporarily, and where the animation should be saved.
 ##' @param libavpath Path to location where the executable file for libav
-##' can be found (named 'avconv.exe'), in case it is not found automatically, 
+##' can be found (named 'avconv.exe'), in case it is not found automatically,
 ##' e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}. Only required when creating
 ##' an animation.
 ##' @param name of animation; by default \code{'animation'}.
@@ -353,13 +353,13 @@ print.TrDm <- function(x,...) {
 plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                       cl=1,path=NULL,name='animation',libavpath=NULL,...) {
 
-  jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF", 
+  jet.colors <- grDevices::colorRampPalette(c("#00007F", "blue", "#007FFF",
                                               "cyan","#7FFF7F", "yellow",
-                                              "#FF7F00", "red", "#7F0000")) 
-  
+                                              "#FF7F00", "red", "#7F0000"))
+
   oldPar <- graphics::par()
 
-   if (inherits(x, "colorimage")) {  
+   if (inherits(x, "colorimage")) {
     if (length(dim(x)) > 3) { ## multiple frames
       x <- x[,,,frame,drop=FALSE]
       x <- array(x,dim=c(dim(x)[1:3]))
@@ -372,13 +372,13 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
     raster::plotRGB(x,scale=1,asp=nrow(x)/ncol(x),...)
   } else if (inherits(x,"tracked")) {
     if (is.null(incThres)) {
-      dist <- apply(x$trackRecord[,,1],1,function(x) 
+      dist <- apply(x$trackRecord[,,1],1,function(x)
                     sum(!is.na(x)))
       mod <- stats::kmeans(dist,2)
       incLabels <- mod$cluster == which.max(mod$centers)
       incThres <- max(dist[!incLabels])
     } else {
-      incLabels <- apply(x$trackRecord[,,1],1,function(x) 
+      incLabels <- apply(x$trackRecord[,,1],1,function(x)
                                                sum(!is.na(x))) > incThres
     }
       if(is.null(colorimages)) { colorimages <- get(attributes(x)$originalImages,
@@ -392,7 +392,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                           1-tmp[i,,2]/nrow(colorimages),
                col=paste0(jet.colors(nrow(tmp))[i],'99'),lwd=1.5)
         }
-        
+
         tmp <- x$sizeRecord[incLabels,,drop=FALSE]
         perID <- apply(tmp,1,mean,na.rm=TRUE)
         sdperID <- apply(tmp,1,stats::sd,na.rm=TRUE)
@@ -427,20 +427,20 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
             # make sure file does not exist
             if('images' %in% list.files(path)) {
 			        stop(paste0('Directory "images" already exists in ',
-			             path,'.\n Please remove it or use a different path with ', 
+			             path,'.\n Please remove it or use a different path with ',
                         'argument "path".'))
 			      }
             if(paste0(name,'.mp4') %in% list.files(path)) {
 			        stop(paste0('Animation with name "',name,'" already exists in ',
-			             path,'.\n Please remove it or use a different name with ', 
+			             path,'.\n Please remove it or use a different name with ',
                          'argument "name".'))
 			      }
             y <- x$sizeRecord[incLabels,]
             x <- x$trackRecord[incLabels,,]
             dir.create(paste0(path,'/images'))
-            width <- ifelse(ncol(colorimages) %% 2 == 0, 
+            width <- ifelse(ncol(colorimages) %% 2 == 0,
                             ncol(colorimages),ncol(colorimages)+1)
-            height <- ifelse(nrow(colorimages) %% 2 == 0, 
+            height <- ifelse(nrow(colorimages) %% 2 == 0,
                             nrow(colorimages),nrow(colorimages)+1)
             rownames(x) <- 1:nrow(x)
             tot <- ncol(x)
@@ -457,8 +457,8 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
               graphics::text(x[,i,1]/width,
                      1-x[,i,2]/height,
                      col='black',
-                     cex=1,lwd=2,labels=seq_len(nrow(x)),pos=2)
-                     
+                     cex=1,lwd=2,labels=which(incLabels),pos=2)
+
               for (j in 1:nrow(x)) {
                 graphics::lines(x[j,1:i,1]/width,
                                 1-x[j,1:i,2]/height,
@@ -466,7 +466,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
                                                  alpha=0.5)[as.numeric(rownames(x))][j],
                                 lwd=4)
               }
-                     
+
               cat("\r \t Animation:",i,"out of",ncol(x))
               grDevices::dev.off()
            }
@@ -476,7 +476,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
            unlink(paste0(path,"/images"),TRUE)
            cat('\n')
         }
-     }  
+     }
   } else if (inherits(x,"sbg")) {
     graphics::image(x[,,cl,frame])
   } else if (inherits(x,"particles")) {
@@ -490,8 +490,7 @@ plot.TrDm <- function(x,frame=1,type=NULL,incThres=NULL,colorimages=NULL,
       warning("No valid plot plot method for created training data.")
   } else if (inherits(x,"neuralnet")) {
       warning("No valid plot plot method for trained neural net.")
-  } 
+  }
 
   graphics::par(oldPar[c('mar','oma','mfrow')])
 }
-

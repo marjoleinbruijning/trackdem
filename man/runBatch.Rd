@@ -12,7 +12,7 @@ runBatch(path, settings = NULL, dirnames = NULL, nImages = 1:30,
   frames = NULL, saveAll = FALSE)
 }
 \arguments{
-\item{path}{A character vector of path name that contains all directories 
+\item{path}{A character vector of path name that contains all directories
 with image sequences.}
 
 \item{settings}{Object of class 'tracked' containing all optimized settings
@@ -41,7 +41,7 @@ present. By default, automated estimate is used.}
 
 \item{plotOutput}{Default is \code{FALSE}. Set \code{TRUE} to plot results.}
 
-\item{plotType}{Default is 'trajectories'. Other options are 'sizes' and 
+\item{plotType}{Default is 'trajectories'. Other options are 'sizes' and
 'animation'.}
 
 \item{L}{See \code{\link{trackParticles}}}
@@ -58,7 +58,7 @@ present. By default, automated estimate is used.}
 
 \item{frames}{See \code{\link{identifyParticles}}}
 
-\item{saveAll}{Logical. Set \code{TRUE} to save for each image sequence the 
+\item{saveAll}{Logical. Set \code{TRUE} to save for each image sequence the
 full object obtained from \code{\link{loadImages}}. Default is FALSE.}
 }
 \value{
@@ -66,7 +66,7 @@ Dataframe with estimated population size for each image sequence.
 }
 \description{
 \code{runBatch} analyzes all image sequences in a specified
-directory. Use this function when settings have been optimized 
+directory. Use this function when settings have been optimized
 previously on a single or selection of movies/image sequences.
 }
 \examples{
@@ -76,7 +76,7 @@ wd <- getwd()
 folders <- paste0(rep("images",3),1:3)
 populations <- c(15,25,50)
 dir.create("./batchTest")
-setwd("./batchTest")	
+setwd("./batchTest")
 for(i in 1:length(folders)){
   dir.create(folders[i])
   traj <- simulTrajec(path=folders[i],
