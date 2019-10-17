@@ -38,7 +38,7 @@ that was published in <i>Methods in Ecology and Evolution</i>.
   * [Version 0.5](#version-0.5)
   * [Version 0.4.3](#version-0.4.3)
   * [Version 0.4.1](#version-0.4.1)
-* [FFmpeg vs Libav](#FFmpeg vs Libav)
+* [FFmpeg vs Libav](#ffmpeg-vs-libav)
 * [Bugs](#bugs)
 
 ---
@@ -224,7 +224,7 @@ summary(records)
 * Increased flexibility in function createImageSeq().
 
 
-<!-- FFmpeg vs Libav -->
+<!-- FFMPEG-VS-LIBAV -->
 ## FFmpeg vs Libav
 Note that we previously used Libav instead of FFmpeg. However, Ubuntu no longer uses Libav, and users therefore need to install FFmpeg as described above. See e.g. <a href='https://stackoverflow.com/questions/9477115/what-are-the-differences-and-similarities-between-ffmpeg-libav-and-avconv'>here</a> and <a href='https://en.wikipedia.org/wiki/Libav'>here</a> for more information on this confusing matter. 
 
