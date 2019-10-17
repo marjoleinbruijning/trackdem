@@ -59,7 +59,7 @@ require(devtools)
 install_github("marjoleinbruijning/trackdem")
 ```
 
-To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/downloads/'>Python >= 2.7</a>, <a target='_blank' href='https://www.ffmpeg.org/'>FFmpeg</a> (or Libav, as explained <a href="##FFmpeg vs Libav">below</a>) and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
+To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/downloads/'>Python</a>>=2.7, <a target='_blank' href='https://www.ffmpeg.org/'>FFmpeg</a> (or Libav, as explained <a href="#ffmpeg-vs-libav">below</a>) and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
 
 Ubuntu users can paste the following commands in a terminal to install FFmpeg and ExifTool (Python should be included by default):
 
@@ -83,7 +83,7 @@ ExifTool can be downloaded from <a href='http://www.sno.phy.queensu.ca/~phil/exi
 the installation instructions for the OS X Package. The newest  
 Python release, if not installed yet, can be downloaded <a href='https://www.python.org/downloads/mac-osx/'>here</a>. 
 
-Windows users can download Libav <a href='http://builds.libav.org/windows/'>here</a> (instead of FFmpeg, see <a href="##ffmpeg-vs-libav">below</a>). Download the latest nightly-gpl 
+Windows users can download Libav <a href='http://builds.libav.org/windows/'>here</a> (instead of FFmpeg, see <a href="#ffmpeg-vs-libav">below</a>). Download the latest nightly-gpl 
 release, and extract all files to a chosen location. Next, download the file 
 named libgcc_s_sjlj-1.dll, and place it within the libav directory, 
 in '/usr/bin'. ExifTool can be downloaded <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. For 
