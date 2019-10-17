@@ -83,7 +83,7 @@ ExifTool can be downloaded from <a href='http://www.sno.phy.queensu.ca/~phil/exi
 the installation instructions for the OS X Package. The newest  
 Python release, if not installed yet, can be downloaded <a href='https://www.python.org/downloads/mac-osx/'>here</a>. 
 
-Windows users can download Libav <a href='http://builds.libav.org/windows/'>here</a> (instead of FFmpeg, see <a href="##FFmpeg vs Libav">here</a>). Download the latest nightly-gpl 
+Windows users can download Libav <a href='http://builds.libav.org/windows/'>here</a> (instead of FFmpeg, see <a href="##ffmpeg-vs-libav">below</a>). Download the latest nightly-gpl 
 release, and extract all files to a chosen location. Next, download the file 
 named libgcc_s_sjlj-1.dll, and place it within the libav directory, 
 in '/usr/bin'. ExifTool can be downloaded <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. For 
