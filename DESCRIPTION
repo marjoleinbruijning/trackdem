@@ -1,8 +1,8 @@
 Package: trackdem
 Type: Package
 Title: Particle Tracking and Demography
-Version: 0.4.4
-Date: 2019-06-24
+Version: 0.5
+Date: 2019-10-17
 Author: Marjolein Bruijning, Marco D. Visser, Caspar A. Hallmann, Eelke Jongejans
 Maintainer: Marjolein Bruijning <mbruijning@princeton.edu>
 Description: Obtain population density and body size structure, using video material or image sequences as input. Functions assist in the creation of image sequences from videos, background detection and subtraction, particle identification and tracking. An artificial neural network can be trained for noise filtering. The goal is to supply accurate estimates of population size, structure and/or individual behavior, for use in  evolutionary and ecological studies. 
@@ -27,7 +27,7 @@ LinkingTo:
     RcppArmadillo,
 RoxygenNote: 6.1.1
 SystemRequirements:
-    Python 2.7,
+    Python (>=2.7),
     Libav,
     ExifTool
 Suggests: knitr,

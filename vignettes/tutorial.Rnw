@@ -362,8 +362,8 @@ choose which frame should be plotted (by default, the first frame is
 used, showing the start location for each path). Finally, an AVI animation can be 
 created (\emph{type="animation"}). When doing so, a temporary 
 directory (called 'images') is made to save .png plots of each image. 
-Using $libav$, these are combined into an AVI file and saved in 
-\emph{path}. To use this option, as with using $createImageSeq$, libav 
+Using FFmpeg/Libav, these are combined into an AVI file and saved in 
+\emph{path}. To use this option, as with using $createImageSeq$, FFmpeg/Libav 
 is required (see Section \ref{app:imageseq}).
 
 The following code compares the simulated trajectories with the estimated 
@@ -735,47 +735,47 @@ is based on movement detection, it is crucial that particles of
 interest move. Furthermore, it is recommended to
 use a stable background, and strong (background) illumination. A video 
 of approximately four seconds will generally suffice, and can be of any 
-extension supported by libav (e.g. .MTS, .MP4 or .AVI; see below).
+extension supported by FFmpeg/Libav (e.g. .MTS, .MP4 or .AVI; see below).
 
 Second, the movie must be converted into an image sequence. This can be 
 done using the function $createImageSeq$, as explained below. This 
-requires the installation of Python 2.7 (not 3.6), libav and ExifTool. 
-Note that installing Python 2.7 and ExifTool are required \emph{only} 
-if you want to use \emph{trackdem} to create image sequences. Libav, in 
+requires the installation of Python >= 2.7, FFmpeg or Libav, and ExifTool. 
+Note that installing Python and ExifTool are required \emph{only} 
+if you want to use \emph{trackdem} to create image sequences. FFmpeg or Libav, in 
 constrast, is also required to create animations, as explained in 
 Section \ref{sec:track}. All other functions run without the need to download 
-additional software.
+additional software. See e.g. this \href{https://en.wikipedia.org/wiki/Libav}{\underline{Wikipedia page}} for some information on Libav vs. FFmpeg.
 
 \paragraph{Ubuntu} users can paste the following commands in a 
-terminal to install libav and ExifTool (Python 2.7 should be included 
+terminal to install FFmpeg (Ubuntu no longer uses Libav) and ExifTool (Python should be included 
 by default):
 
 <<libav, eval=FALSE>>=
 # sudo apt-get update
-# sudo apt-get install libav-tools
+# sudo apt install FFmpeg
 # sudo apt-get install libimage-exiftool-perl
 @
 
-This has been tested on Ubuntu 16.04.
+This has been tested on Ubuntu 18.04.
 
 \paragraph{Mac} users can paste the following commands in a terminal 
-to install libav:
+to install FFmpeg:
 
 <<libavMac, eval=FALSE>>=
 ## Make sure that homebrew is installed, see: https://brew.sh/
 
-## Install libav
-# brew install libav
+## Install FFmpeg
+# brew install ffmpeg
 @
 
 ExifTool can be downloaded from 
 \url{http://www.sno.phy.queensu.ca/~phil/exiftool/install.html}; follow 
 the installation instructions for the OS X Package. The newest  
-Python 2.7 release, if not installed yet, can be downloaded from 
+Python release, if not installed yet, can be downloaded from 
 \url{https://www.python.org/downloads/mac-osx/}. This has been tested 
 on MacOS 10.12.5 Sierra. 
 
-\paragraph{Windows} users can download libav from 
+\paragraph{Windows} users can download Libav from 
 \url{http://builds.libav.org/windows/}. Download the latest nightly-gpl 
 release (\url{http://builds.libav.org/windows/nightly-gpl/?C=M&amp;O=D}), and extract all files to a chosen location. Next, download the file 
 named \detokenize{libgcc_s_sjlj-1.dll} from 
@@ -785,7 +785,7 @@ in '/usr/bin'. ExifTool can be downloaded from
 ExifTool, download the stand-alone executable and place the 
 exiftool(-k).exe file in a chosen directory. For convenience, you can change the name 
 to exiftool.exe, as described in the installation instructions. 
-Finally, Python 2.7 can be downloaded from 
+Finally, Python can be downloaded from 
 \url{https://www.python.org/downloads/windows/}. Follow the 
 instructions for installation. This procedure was tested on Windows 7 
 and Windows 10.
@@ -798,9 +798,7 @@ which the image sequences should be saved. By default, directory names
 'Movies' and 'ImageSequences' are used, and can be set with arguments 
 \emph{moviepath} and \emph{imagepath}. If the directories containing 
 the movies and image sequences are not located in the working 
-directory (which can be set with \emph{setwd()}), provide the full path to the locations. The function creates a 
-temporary Python file (tmp.py) in \emph{path} (which is by default set to the working 
-directory). Per video, a directory within \emph{imagepath} is created, containing  
+directory (which can be set with \emph{setwd()}), provide the full path to the locations. Per video, a directory within \emph{imagepath} is created, containing  
 .png images. The 
 function will create directories that contain both the movie name and 
 the recording date (if stored in the raw movie file). Videos that are already converted and saved in 
@@ -823,11 +821,14 @@ matches the extension of the videos (e.g. AVI or MP4).
 
 With arguments \emph{libavpath}, \emph{exiftoolpath} 
 and \emph{pythonpath} users can set the location of the required executable 
-files. Linux and Mac users can leave these arguments empty. Windows 
+files. Linux and Mac users can probably leave these arguments empty. If executables cannot be found, 
+type e.g. 'which ffmpeg' in the terminal to find the correct path.
+
+Windows 
 users will need to specify the location, or add the path variables to the 
 Environmental Variables. For example, use 
 \emph{libavpath='C:/Users/USERNAME/libav/usr/bin/avconv.exe'}, where 
-USERNAME is your username, or if libav is located elsewhere, supply the 
+USERNAME is your username, or if Libav (or FFmpeg) is located elsewhere, supply the 
 directory where you placed it. For ExifTool, use for instance
 \emph{exiftoolpath='exiftool(-k).exe'} (if saved in the working 
 directory), and for Python use \emph{pythonpath='C:/Python27/python.exe'}. 

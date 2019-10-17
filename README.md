@@ -35,8 +35,10 @@ that was published in <i>Methods in Ecology and Evolution</i>.
   * [Installation](#installation)
   * [Tutorial](#tutorial)
 * [Updates](#updates)
+  * [Version 0.5](#version-0.5)
   * [Version 0.4.3](#version-0.4.3)
   * [Version 0.4.1](#version-0.4.1)
+* [FFmpeg vs Libav](#FFmpeg vs Libav)
 * [Bugs](#bugs)
 
 ---
@@ -57,39 +59,38 @@ require(devtools)
 install_github("marjoleinbruijning/trackdem")
 ```
 
-To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/download/releases/2.7/'>Python 2.7</a>,  <a target='_blank' href='http://www.libav.org'>Libav</a> and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
+To use the automated video to image and metadata creation function from **trackdem** users need <a target='_blank' href='https://www.python.org/downloads/'>Python >= 2.7</a>, <a target='_blank' href='https://www.ffmpeg.org/'>FFmpeg</a> (or Libav, as explained <a href="##FFmpeg vs Libav">below</a>) and <a target="_blank" href="http://www.sno.phy.queensu.ca/~phil/exiftool/install.html">ExifTool</a>.
 
-Ubuntu users can paste the following commands in a terminal to install libav and ExifTool (Python 2.7 should be included 
-by default):
+Ubuntu users can paste the following commands in a terminal to install FFmpeg and ExifTool (Python should be included by default):
 
 ```
 sudo apt-get update
-sudo apt-get install libav-tools
 sudo apt-get install libimage-exiftool-perl
+sudo apt install ffmpeg
+
 ``` 
 
 Mac users can paste the following commands in a terminal 
-to install libav:
+to install FFmpeg:
 
 ```
 ## Make sure that homebrew is installed, see: https://brew.sh/
-## Install libav
-brew install libav
+## Install FFmpeg
+brew install ffmpeg
 ```
 
 ExifTool can be downloaded from <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. Follow 
 the installation instructions for the OS X Package. The newest  
-Python 2.7 release, if not installed yet, can be downloaded <a href='https://www.python.org/downloads/mac-osx/'>here</a>. 
+Python release, if not installed yet, can be downloaded <a href='https://www.python.org/downloads/mac-osx/'>here</a>. 
 
-Windows users can download libav <a href='http://builds.libav.org/windows/'>here</a>. Download the latest nightly-gpl 
+Windows users can download Libav <a href='http://builds.libav.org/windows/'>here</a> (instead of FFmpeg, see <a href="##FFmpeg vs Libav">here</a>). Download the latest nightly-gpl 
 release, and extract all files to a chosen location. Next, download the file 
 named libgcc_s_sjlj-1.dll, and place it within the libav directory, 
 in '/usr/bin'. ExifTool can be downloaded <a href='http://www.sno.phy.queensu.ca/~phil/exiftool/install.html'>here</a>. For 
 ExifTool, download the stand-alone executable and place the 
 exiftool(-k).exe file in a chosen directory. For convenience, you can change the name 
 to exiftool.exe, as described in the installation instructions. 
-Finally, Python 2.7 can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the 
-instructions for installation.
+Finally, Python can be downloaded <a href='https://www.python.org/downloads/windows/'>here</a>. Follow the instructions for installation.
 
 ---
 
@@ -210,6 +211,9 @@ summary(records)
 <!-- UPDATES -->
 ## Updates
 
+### Version 0.5
+* Package is now compatible with Python 3
+
 ### Version 0.4.3
 * Create log file for function createImageSeq().
 * Optimize functions to analyze greyscale images.
@@ -218,6 +222,19 @@ summary(records)
 * Enable greyscale image sequences.
 * Optimized identification and tracking functions to work with longer image sequences.
 * Increased flexibility in function createImageSeq().
+
+
+<!-- FFmpeg vs Libav -->
+## FFmpeg vs Libav
+Note that we previously used Libav instead of FFmpeg. However, Ubuntu no longer uses Libav, and users therefore need to install FFmpeg as described above. See e.g. <a href='https://stackoverflow.com/questions/9477115/what-are-the-differences-and-similarities-between-ffmpeg-libav-and-avconv'>here</a> and <a href='https://en.wikipedia.org/wiki/Libav'>here</a> for more information on this confusing matter. 
+
+Ubuntu/Mac users might need to provide the path to the FFmpeg executable, which can be obtained with the following terminal command:
+
+```r
+which ffmpeg
+```
+
+Use argument 'libavpath' in createImageSeq() and plot() to specify the correct path. On Windows, the provided instructions should still work.
 
 
 <!-- BUGS -->
