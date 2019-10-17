@@ -752,7 +752,7 @@ by default):
 
 <<libav, eval=FALSE>>=
 # sudo apt-get update
-# sudo apt install FFmpeg
+# sudo apt install ffmpeg
 # sudo apt-get install libimage-exiftool-perl
 @
 
