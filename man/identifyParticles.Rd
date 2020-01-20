@@ -55,6 +55,7 @@ particle statistics with identified particles for each frame
 \description{
 \code{identifyParticles} identifies moving particles using the
 subtracted images obtained from \code{\link{subtractBackground}}. Function
+uses Connected Component Labeling and obtains particle statistics based on
 code developed for the orphaned
 package SDMTools (written by Jeremy VanDerWal).
 }
