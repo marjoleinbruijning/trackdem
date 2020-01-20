@@ -1,45 +1,45 @@
 ##' Create image sequence
 ##'
 ##' \code{createImageSeq} creates an image sequences (.png) using
-##'  video files as input. All movies within a directory will  
+##'  video files as input. All movies within a directory will
 ##' be converted into an image sequence.
-##' For each movie, a new directory is created containing the recorded date and 
+##' For each movie, a new directory is created containing the recorded date and
 ##' name of the movie.
 ##' @param moviepath Path to existing directory containing the video files.
 ##' By default, 'Movies' is used.
-##' @param imagepath Path to location of a directory in which image 
+##' @param imagepath Path to location of a directory in which image
 ##' sequences should
 ##' be saved. By default, 'ImageSequences' is used (and created if not existing).
 ##' @param x Number of pixels in horizontal direction; default is 1920 (HD).
 ##' @param y Number of pixels in vertical direction; default is 1080 (HD).
 ##' @param fps Frames per second, default is 15.
 ##' @param nsec Duration of movie that is exported, default is 2 seconds.
-##' When movie length is greater than \code{nsec}, the \code{nsec} seconds 
-##' in the exact middle of the movie are exported.  
-##' @param start Start time (in seconds) from where the video is converted (optional). By 
-##' default, the \code{nsec} middle second of the video are used. If a a start 
-##' time is specified and no stop time, \code{nsec} seconds starting from \code{start} 
+##' When movie length is greater than \code{nsec}, the \code{nsec} seconds
+##' in the exact middle of the movie are exported.
+##' @param start Start time (in seconds) from where the video is converted (optional). By
+##' default, the \code{nsec} middle second of the video are used. If a a start
+##' time is specified and no stop time, \code{nsec} seconds starting from \code{start}
 ##' are converted.
-##' @param stop End time (in seconds) from where the video is converted (optional). By 
-##' default, the \code{nsec} middle second of the video are used. When an end time 
-##' but no start time are specified, conversion starts at \code{nsec} seconds before 
+##' @param stop End time (in seconds) from where the video is converted (optional). By
+##' default, the \code{nsec} middle second of the video are used. When an end time
+##' but no start time are specified, conversion starts at \code{nsec} seconds before
 ##' \code{end}.
 ##' @param ext The extension of the video. Default is \code{'MTS'}. All
-##' formats supported by libav are accepted. To convert videos with different 
+##' formats supported by libav are accepted. To convert videos with different
 ##' extensions, use for example \code{c('MTS','mp4')}.
 ##' @param libavpath Path to location where the executable file for libav
-##' can be found (named 'avconv.exe'), in case it is not found automatically, 
+##' can be found (named 'avconv.exe'), in case it is not found automatically,
 ##' e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}.
-##' @param exiftoolpath Path to location where the executable file for 
-##' ExifTool can be found, in case it is not found automatically. 
-##' For instance, use \code{'exiftool(-k).exe'}, if located in the working 
-##' directory. 
-##' @param pythonpath Path to location where the executable file for 
-##' Python 2.7 can be found, in case it is not found automatically. For 
+##' @param exiftoolpath Path to location where the executable file for
+##' ExifTool can be found, in case it is not found automatically.
+##' For instance, use \code{'exiftool(-k).exe'}, if located in the working
+##' directory.
+##' @param pythonpath Path to location where the executable file for
+##' Python 2.7 can be found, in case it is not found automatically. For
 ##' instance, use \code{'C:/Python27/python.exe'}.
-##' @param verbose Logical. By default FALSE. Set to TRUE will print additional information. 
+##' @param verbose Logical. By default FALSE. Set to TRUE will print additional information.
 ##' @param logfile Logical. By default FALSE. Set to TRUE will create a log file in the
-##' working directory. 
+##' working directory.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -119,13 +119,13 @@ createImageSeq <- function (moviepath='Movies',
 ##' \code{loadImages} loads png images as three dimensional arrays.
 ##' The objects created through the function can be used for image analysis.
 ##' @param dirPictures The path of the folder where the images can be found.
-##' @param filenames Default is \code{NULL}, or all files. If all files should 
+##' @param filenames Default is \code{NULL}, or all files. If all files should
 ##' NOT be loaded, here specify which files to use, as a character string.
-##' @param nImages Numeric vector specifying which images in the directory 
+##' @param nImages Numeric vector specifying which images in the directory
 ##' should be loaded; default is \code{1:30}.
-##' @param xranges By default the full image is loaded; specify to subset the 
+##' @param xranges By default the full image is loaded; specify to subset the
 ##' number of columns.
-##' @param yranges By default the full image is loaded; specify to subset the 
+##' @param yranges By default the full image is loaded; specify to subset the
 ##' number of rows.
 ##' @examples
 ##' \dontrun{
@@ -150,12 +150,12 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     if (is.null(dirPictures)) {
 		dirPictures <- getwd()
 	}
-	
+
     if (is.null(filenames)) {
       allFiles <- list.files(path=dirPictures) # List all files in folder
       allFiles <- allFiles[nImages]
     }
-    else {filenames <- filenames[nImages]}	
+    else {filenames <- filenames[nImages]}
     # First load one to get dimensions
     im1 <- png::readPNG(file.path(dirPictures,allFiles[1]))
 
@@ -163,13 +163,13 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     if (length(dim(im1)) == 2) {
       im1 <- array(im1,dim=c(nrow(im1),ncol(im1),1))
     }
-    
+
     nc <- dim(im1)[3] ## number of color channels
-    
+
     # Subset
     if (is.null(xranges)) xranges <- 1:dim(im1)[2]
     if (is.null(yranges)) yranges <- 1:dim(im1)[1]
-    im1 <- im1[yranges,xranges,,drop=FALSE]	
+    im1 <- im1[yranges,xranges,,drop=FALSE]
 
     # Then load all images
     allFullImages <- structure(vapply(seq_along(nImages),
@@ -185,7 +185,7 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
     if (dim(allFullImages)[3] == 3) {
     } else if (dim(allFullImages)[3] == 4) {
       if (all(allFullImages[,,4,] == 1)) {
-        warning("Color channel 4 (for transparency) is safely ignored as all 
+        warning("Color channel 4 (for transparency) is safely ignored as all
                  values equaled 1.")
       } else {
         warning("Color channel 4 (for transparency) is ignored. Note that
@@ -209,17 +209,17 @@ loadImages <- function (dirPictures,filenames=NULL,nImages=1:30,
 ##' Background detection
 ##'
 ##' \code{createBackground} detects the still background,
-##' containing all motionless pixels (non particles). Three different methods 
+##' containing all motionless pixels (non particles). Three different methods
 ##' to detect the background can be used.
-##' @param colorimages Array of class 'TrDm' containing all images, obtained by 
+##' @param colorimages Array of class 'TrDm' containing all images, obtained by
 ##' \code{\link{loadImages}}.
 ##' @param method Use \code{method='mean'} to calculate the mean value for each
 ##' pixel and color.
-##' Use \code{method='powerroot'} to deflate dark values (note, this can only be 
-##' used for dark particles on a light background). Use \code{method='filter'} to 
-##' replace pixels in which movement has occurred with the mode of neighboring 
+##' Use \code{method='powerroot'} to deflate dark values (note, this can only be
+##' used for dark particles on a light background). Use \code{method='filter'} to
+##' replace pixels in which movement has occurred with the mode of neighboring
 ##' values.
-##' Note that \code{method='filter'} is computationally more intensive. 
+##' Note that \code{method='filter'} is computationally more intensive.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -272,26 +272,26 @@ createBackground <- function(colorimages,method='mean') {
                      dim(colorimages[,,1,]),
                      array(0,dim=dim(colorimages[,,,1])))
         }
-      
+
         class(rst) <- class(colorimages)
         subs <- aperm(subtractBackground(bg=rst,colorimages),c(1,2,4,3))
         class(subs) <- class(colorimages)
         attributes(subs) <- attributes(colorimages)
-        
+
         if (dim(colorimages)[3] == 3) {
           SDs <- cb(subs[,,1,]^2,
                    subs[,,2,]^2,
                    subs[,,3,]^2,
-                   dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
+                   dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) *
                       dim(colorimages)[4]/(dim(colorimages)[4]-1)
           SD <- sqrt(SDs[,,1]^2+SDs[,,2]^2+SDs[,,3]^2)
         } else if (dim(colorimages)[3] == 1) {
           SDs <- cb1(subs[,,1,]^2,
-                     dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) * 
+                     dim(subs[,,1,]),array(0,dim=dim(colorimages[,,1,]))) *
                        dim(colorimages)[4]/(dim(colorimages)[4]-1)
           SD <- sqrt(SDs[,,1]^2)
         }
-                
+
 
         Threshold <-
          {
@@ -300,15 +300,15 @@ createBackground <- function(colorimages,method='mean') {
 	     sum((i1[t1]-mean(i1[t1]))^2)+
 	     sum((i1[!t1]-mean(i1[!t1]))^2)
 	     }
-	     ,c(0,max(SD)),i1=c(SD))$min	
+	     ,c(0,max(SD)),i1=c(SD))$min
 	     }
-  
+
          rst[(SD>Threshold)] <- NA
 
          A <- array(0,c(dim(colorimages)[1:3]))
 
          for (i in 1:dim(colorimages)[3]) {
-           r <- raster::raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))	
+           r <- raster::raster(rst[,,i],xmx=ncol(rst),ymx=nrow(rst))
 
            f1 <- raster::focal(r,w=matrix(1,31,31),
                                fun=function(x){ raster::modal(x,na.rm=TRUE) },
@@ -322,7 +322,7 @@ createBackground <- function(colorimages,method='mean') {
            A[,,i] <- matrix(f1[,,1],ncol=ncol(colorimages),
                             nrow=nrow(colorimages),byrow=TRUE)
          }
-        
+
     } else {stop('No valid method for creating background')}
 
     class(A) <- c('TrDm','colorimage','array')
@@ -343,7 +343,7 @@ createBackground <- function(colorimages,method='mean') {
 ##' pixels (i.e. movement).
 ##' @param bg Array containing still background, as returned from
 ##' \code{\link{createBackground}}.
-##' @param colorimages Array containing all frames, obtained by 
+##' @param colorimages Array containing all frames, obtained by
 ##' \code{\link{loadImages}}. Default is \code{NULL}, in this case the original
 ##' images are used from the global environment.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
@@ -362,7 +362,7 @@ createBackground <- function(colorimages,method='mean') {
 ##' allImages <- subtractBackground(stillBack)
 ##' plot(allImages)
 ##'	}
-##' @return Returns array of class 'TrDm' and 'sbg' with same size as images, 
+##' @return Returns array of class 'TrDm' and 'sbg' with same size as images,
 ##' subtracted from background.
 ##' @export
 
@@ -380,11 +380,11 @@ subtractBackground <- function (bg,colorimages=NULL) {
         stop(paste("Input does not appear to be of the class \"TrDm\"",
               "and has wrong dimensions."))
       } else {
-          message(paste("Input does not appear to be of the class \"TrDm\" but", 
+          message(paste("Input does not appear to be of the class \"TrDm\" but",
                   "has the correct dimensions and is therefore used."))
       }
     }
-    
+
     if (length(dim(bg)) == 3) { # one background
       sbg <- array(NA,dim=dim(colorimages))
       for (i in 1:(dim(colorimages)[3])) {
@@ -401,51 +401,54 @@ subtractBackground <- function (bg,colorimages=NULL) {
                         dim(colorimages[,,i,]),
                         array(0,dim=dim(colorimages)))
       }
-    } else {stop("Wrong dimensions for background image.")} 
-            
+    } else {stop("Wrong dimensions for background image.")}
+
     attr(sbg,"background") <- deparse(substitute(bg))
     attr(sbg,"originalImages") <- attributes(bg)$originalImages
     attr(sbg,"originalDirec") <- attributes(bg)$originalDirec
     attr(sbg,"settings") <- attributes(bg)$settings
-    
+
     class(sbg) <- c('TrDm','sbg','array')
     return(sbg)
 }
 
 ##' Identify moving particles
 ##'
-##' \code{identifyParticles} identifies moving particles using the 
-##' subtracted images obtained from \code{\link{subtractBackground}}.
+##' \code{identifyParticles} identifies moving particles using the
+##' subtracted images obtained from \code{\link{subtractBackground}}. Function
+## 'uses Connected Component Labeling and obtains particle statistics based on
+##' code developed for the orphaned
+##' package SDMTools (written by Jeremy VanDerWal).
 ##' @param sbg Array containing images containing all moving particles,
 ##' as obtained from \code{\link{subtractBackground}}.
 ##' @param threshold Thresholds for including particles. A numeric vector
-##' containing three values; one for each color. Otherwise, supply one value 
+##' containing three values; one for each color. Otherwise, supply one value
 ##' which is to be used for all three colors. For a chosen quantile
-##' for each frame, use \code{qthreshold}. Default is \code{threshold=-0.1}, 
+##' for each frame, use \code{qthreshold}. Default is \code{threshold=-0.1},
 ##'  which works for dark particles on a light background. Alternatively,
-##' set \code{autoThres} below for an automatic threshold.  
-##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and 
+##' set \code{autoThres} below for an automatic threshold.
+##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and
 ##' maximum particle size, used as a
-##' first filter to identify particles. Use if particle of interest are of a 
+##' first filter to identify particles. Use if particle of interest are of a
 ##' known size range (in pixels).
-##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding 
+##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding
 ##' based on quantile. Quantile is calculated for each
 ##' frame separately.
-##' @param select Select dark particles (\code{'dark'}), light particles 
-##' (\code{'light'}), or both (\code{'both'}), compared to background. 
+##' @param select Select dark particles (\code{'dark'}), light particles
+##' (\code{'light'}), or both (\code{'both'}), compared to background.
 ##' Default is \code{'dark'}.
-##' @param colorimages Array containing original color images. By default, the 
+##' @param colorimages Array containing original color images. By default, the
 ##' original color images are obtained from global environment.
-##' @param autoThres Logical. \code{TRUE} to get an automated threshold for each 
+##' @param autoThres Logical. \code{TRUE} to get an automated threshold for each
 ##' color layer. Default is \code{FALSE}.
 ##' @param perFrame Logical. If \code{autoThres=TRUE}, set at \code{TRUE}
-##'  to calculate a threshold for 
-##' each frame separately. Default is \code{FALSE}. Note that is can be 
+##'  to calculate a threshold for
+##' each frame separately. Default is \code{FALSE}. Note that is can be
 ##' computationally intensive to calculate a threshold for each frame.
 ##' @param frames When \code{autoThres=TRUE} and \code{allFrames=FALSE}, supply a
-##' numeric vector specifying over which frames the automated threshold 
-##' should be calculated on (e.g. \code{c(1,3,5,7,9,11)} for all odd frames 
-##' from 1 to 11). 
+##' numeric vector specifying over which frames the automated threshold
+##' should be calculated on (e.g. \code{c(1,3,5,7,9,11)} for all odd frames
+##' from 1 to 11).
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -468,6 +471,8 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##' @return Returns a dataframe of class 'TrDm' and 'particles', containing
 ##' particle statistics with identified particles for each frame
 ##' @export
+##' @useDynLib trackdem ccl projectedPS
+
 
 identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
                                qthreshold=NULL,select='dark',
@@ -486,7 +491,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     attributes(sbg)$originalImages <- tmp$originalImages
     attributes(sbg)$originalDirec <- tmp$originalDirec
     attributes(sbg)$settings <- tmp$settings
-        
+
     cat("\t Particle Identification:  ")
     n <- 1:dim(sbg)[3]
     nc <- dim(sbg)[4]
@@ -503,7 +508,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 	  if (is.null(frames)) { frames <- n }
       threshold <- calcAutoThres(sbg[,,frames,,drop=FALSE],perFrame=perFrame)
 	}
-    
+
     if (!is.null(qthreshold)) {
         A <- array(NA,dim=dim(sbg))
         for (i in 1:nc) { # over color layers
@@ -513,19 +518,19 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         }
     } else {
         if (select == 'dark') {
-	        A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold),
                                 function(x) sbg[,,,x] < threshold[x],
 	                            numeric(prod(dim(sbg[,,,1])))),
 	                     dim=dim(sbg))
 		}
         else if (select == 'light') {
-	        A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold),
                                 function(x) sbg[,,,x] > threshold[x],
 	                            numeric(prod(dim(sbg[,,,1])))),
 	                     dim=dim(sbg))
         }
         else if (select == 'both') {
-	        A <- structure(vapply(seq_along(threshold), 
+	        A <- structure(vapply(seq_along(threshold),
                                 function(x) sbg[,,,x] > threshold[x] |
                                                        sbg[,,,x] < -threshold[x],
 	                             numeric(prod(dim(sbg[,,,1])))),
@@ -534,7 +539,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         }
         else {stop("Invalid selection, choose 'dark', 'light' or 'both' ")}
     }
-    
+
     # 1 if 1 in at least one color layer
     sumRGB <- apply(A,c(2,3),rowSums)
     sumRGB <- sumRGB > 0
@@ -543,9 +548,9 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
         "     ")
     A <- array(NA,dim=dim(sumRGB))
     for (i in n) {
-      A[,,i] <- SDMTools::ConnCompLabel(sumRGB[,,i])
+      A[,,i] <- .Call('ccl',sumRGB[,,i],PACKAGE='trackdem')
     }
-        
+
     cat("\r \t Particle Identification: Size filtering (3 out of 5)           ",
        "    ")
     if (!is.null(pixelRange)) {
@@ -564,43 +569,76 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     dA <- dim(A[,,1]) ## get dim
     ## get total number of particles
     totalPart <- apply(A,3,function(x) length(unique(c(x)))-1)
-    
+
     if (all(totalPart == 0)) {
        cat("\n")
        stop(c("\n \t No particle detected in any of the frames. ",
               "Try different thresholds? \n"))
     }
-    
-    psDim <- SDMTools::PatchStat(A[,,1])[-1,]
-    
-    particleStats <- matrix(NA,nrow=sum(totalPart),ncol=18)
-    colnames(particleStats) <- c(colnames(psDim),
-                                 paste0('mu',c('R','G','B')),'x','y','frame')
-    
+
+    ##method to calculate shape index or aggregation indexes
+  	#a = area of the patch in number of cells
+  	#p is the perimeter in number of edges
+    # function from: Jeremy VanDerWal (package SDMTools V1.1-221.2)
+    shape.index <- function(a,p) {
+  		n <- trunc(sqrt(a))
+  		m <- a - n^2
+  		minp <- rep(0,length(m))
+  		for (ii in 1:length(m)){
+  			if (m[ii]==0) minp[ii] <-  4*n[ii]
+  			if (n[ii]^2<a[ii] & a[ii]<=n[ii]*(1+n[ii])) minp[ii] <- 4 * n[ii] + 2
+  			if (a[ii] > n[ii]*(1+n[ii])) minp[ii] <- 4 * n[ii] + 4
+  		}
+  		return(p/minp)
+  	}
+
+    particleStats <- matrix(NA,nrow=sum(totalPart),ncol=15)
+    colnames(particleStats) <- c('patchID','n.cell','n.core.cell',
+                                 'n.edges.perimeter',
+                                 'n.edges.internal','perim.area.ratio',
+                                 'shape.index',
+                                 'frac.dim.index','core.area.index',
+                                  paste0('mu',c('R','G','B')),'x','y','frame')
     for (i in n) {
        if (i == 1) loc <- 1:totalPart[i]
        if (i > 1) {
          cum <- sum(totalPart[1:(i-1)])+1
          loc <- cum:(cum+totalPart[i]-1)
        }
-       particleStats[loc,1:12] <- as.matrix(SDMTools::PatchStat(A[,,i])[-1,])
-       
-       particleStats[loc,13:15] <- as.matrix(
-                              extractMean(particleStats[loc,'patchID'],
-                              colorimages=colorimages[,,,i],
-                              images=A[,,i],ncolors=nc))
-                              
-	     coords <- getCoords(m=A[,,i],d=dA)
+
+       IDs <- sort(as.numeric(stats::na.omit(unique(c(A[,,i])))))[-1]
+       particleStats[loc,1:5] <- .Call('projectedPS',A[,,i],IDs,
+                                       PACKAGE='trackdem')
+
+       particleStats[loc,paste0('mu',c('R','G','B'))] <-
+                                                  as.matrix(extractMean(
+                                                  particleStats[loc,'patchID'],
+                                                  colorimages=colorimages[,,,i],
+                                                  images=A[,,i],ncolors=nc))
+
+       coords <- getCoords(m=A[,,i],d=dA)
        ind <- A[,,i] > 0
-       particleStats[loc,'y'] <- tapply(coords[,1],A[,,i][ind],mean)
        particleStats[loc,'x'] <- tapply(coords[,2],A[,,i][ind],mean)
+       particleStats[loc,'y'] <- tapply(coords[,1],A[,,i][ind],mean)
        particleStats[loc,'frame'] <- i
-    }    
+    }
+
+    particleStats[,'perim.area.ratio'] <- particleStats[,'n.edges.perimeter'] /
+                                             particleStats[,'n.cell']
+    particleStats[,'shape.index'] <- shape.index(particleStats[,'n.cell'],
+                                        particleStats[,'n.edges.perimeter'])
+    particleStats[,'frac.dim.index'] <- (2 * log(0.25 *
+                                     particleStats[,'n.edges.perimeter'])) /
+                                     log(particleStats[,'n.cell'])
+    particleStats[,'core.area.index'] <- particleStats[,'n.core.cell'] /
+                                            particleStats[,'n.cell']
+
+
     particleStats <- as.data.frame(particleStats)
-    
+
     cat("\r \t Particle Identification: Finalizing (5 out of 5)               ",
         "        \n ")
-    
+
     attr(particleStats,"images") <- A
     attr(particleStats, "class") <- c("TrDm","particles","data.frame")
     attr(particleStats,"threshold") <- threshold
@@ -608,7 +646,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
     attr(particleStats,"originalImages") <- attributes(sbg)$originalImages
     attr(particleStats,"originalDirec") <- attributes(sbg)$originalDirec
     attr(particleStats,"subtractedImages") <- namesbg
-    
+
     attr(particleStats,"settings") <- c(attributes(sbg)$settings,
                                         list(threshold=threshold,
                                              pixelRange=pixelRange,
@@ -618,7 +656,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
                                              perFrame=perFrame,
                                              frames=frames))
     attr(particleStats,"nn") <- FALSE
-    
+
     return(particleStats)
 }
 
@@ -626,7 +664,7 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
 ##
 ## @param sbg Array of class 'TrDm' containing subtracted images.
 ## @param perFrame If TRUE, threshold is calculated for each frame. Default is
-## FALSE. 
+## FALSE.
 
 calcAutoThres <- function(sbg,perFrame=FALSE){
 
@@ -664,11 +702,11 @@ calcAutoThres <- function(sbg,perFrame=FALSE){
 
 ##' Find threshold
 ##'
-##' This function can help to find a threshold value to distinguish noise from 
+##' This function can help to find a threshold value to distinguish noise from
 ##' particles of interest.
 ##' @param images Array containing images containing all moving particles,
 ##' as obtained from \code{\link{subtractBackground}}.
-##' @param colorimages Array containing original color images. By default, 
+##' @param colorimages Array containing original color images. By default,
 ##' the original color images are obtained from the global environment.
 ##' @param frame Number specifying which frame to use. Default is frame 1.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
@@ -687,14 +725,14 @@ calcAutoThres <- function(sbg,perFrame=FALSE){
 ##' allImages <- subtractBackground(stillBack)
 ##' thr <- findThreshold(allImages,frame=10)
 ##'	}
-##' @return Returns the number that is interactively chosen by the user. Use 
+##' @return Returns the number that is interactively chosen by the user. Use
 ##' this threshold value in \code{identifyParticles}.
 ##' @export
 findThreshold <- function (images,frame=1,colorimages=NULL) {
 
   if(is.null(colorimages)) {
     colorimages <- get(attributes(images)$originalImages,
-                       envir=.GlobalEnv) 
+                       envir=.GlobalEnv)
   }
 
   thr <- runThreshold(frame,images,colorimages)
@@ -707,23 +745,23 @@ shiny::runApp(
   shiny::titlePanel(paste0("Find threshold for particle detection")),
   shiny::fluidRow(
      shiny::column(3,
-     'The graph on the right shows the original image that can be used to zoom, by 
-     drawing a polygon. Bottom graphs show the original image (left) and 
-      a binary image (right) in which all particles are either labeled as zero (white), 
-      or as one (black). Set whether particles are light or dark compared to the 
-      background. Use the slider to find the best threshold, that results in all 
-      focal particles being labeled as one, and all background pixels labeld as 
+     'The graph on the right shows the original image that can be used to zoom, by
+     drawing a polygon. Bottom graphs show the original image (left) and
+      a binary image (right) in which all particles are either labeled as zero (white),
+      or as one (black). Set whether particles are light or dark compared to the
+      background. Use the slider to find the best threshold, that results in all
+      focal particles being labeled as one, and all background pixels labeld as
       zero. When finished, click on "Done".',
       align='left',offset=0),
       shiny::column(2,
        shiny::actionButton("stop", "Done"),
        shiny::br(),shiny::br(),
        shiny::radioButtons("select", shiny::h5("Select:"),
-                   choices = list("Dark particles" = 1, 
+                   choices = list("Dark particles" = 1,
                                    "Light particles" = 2,
-                                   "Both" = 3),selected = 1),   
+                                   "Both" = 3),selected = 1),
        shiny::radioButtons("ch", shiny::h5("Color channel:"),
-                   choices = list("Red" = 1, 
+                   choices = list("Red" = 1,
                                    "Green" = 2,
                                    "Blue" = 3),selected = 1)),
       shiny::column(5,
@@ -745,7 +783,7 @@ shiny::runApp(
 
 ),
   server=function(input, output) {
-   
+
    ranges <- shiny::reactiveValues(x=NULL,y=NULL)
    coords <- shiny::reactiveValues(x=NULL,y=NULL)
 
@@ -756,11 +794,11 @@ shiny::runApp(
      brush <- input$plot3_brush
      if (!is.null(brush)) {
        ranges$x <- floor(c(brush$xmin, brush$xmax) * ncol(colorimages))
-       ranges$y <- nrow(colorimages) - floor(c(brush$ymin, brush$ymax) * 
+       ranges$y <- nrow(colorimages) - floor(c(brush$ymin, brush$ymax) *
                    nrow(colorimages))
-      
+
      } else {
-       ranges$x <- c(1,ncol(colorimages)) 
+       ranges$x <- c(1,ncol(colorimages))
        ranges$y <- c(nrow(colorimages),1)
      }
 
@@ -774,14 +812,14 @@ shiny::runApp(
                         c(min(ranges$x):max(ranges$x)),,frame,drop=FALSE]
       im <- array(im,dim=c(dim(im)[1:3]))
       im <- raster::brick(im)
-      
+
      suppressWarnings(raster::plotRGB(im,scale=1,asp=nrow(im)/ncol(im)))
    })
 
 
    shiny::observe({
- 
-       if (input$select == 1) {  
+
+       if (input$select == 1) {
          if (input$ch == 1) {
            m <- t(apply(images[,,1,frame] < input$obs,2,rev))
          }
@@ -792,7 +830,7 @@ shiny::runApp(
            m <- t(apply(images[,,3,frame] < input$obs,2,rev))
          }
 
-       } else if (input$select == 2) {  
+       } else if (input$select == 2) {
          if (input$ch == 1) {
            m <- t(apply(images[,,1,frame] > input$obs,2,rev))
          }
@@ -803,26 +841,26 @@ shiny::runApp(
            m <- t(apply(images[,,3,frame] > input$obs,2,rev))
          }
 
-       } else if (input$select == 3) {  
+       } else if (input$select == 3) {
          if (input$ch == 1) {
-           m <- t(apply((images[,,1,frame] > input$obs) | 
+           m <- t(apply((images[,,1,frame] > input$obs) |
                         (images[,,1,frame] < -input$obs),2,rev))
          }
          if (input$ch == 2) {
-           m <- t(apply((images[,,2,frame] > input$obs) | 
+           m <- t(apply((images[,,2,frame] > input$obs) |
                         (images[,,2,frame] < -input$obs),2,rev))
          }
          if (input$ch == 3) {
-           m <- t(apply((images[,,3,frame] > input$obs) | 
+           m <- t(apply((images[,,3,frame] > input$obs) |
                         (images[,,3,frame] < -input$obs),2,rev))
          }
-       }    
-          
+       }
+
        output$plot1 <- shiny::renderPlot(graphics::image(m,
                                          xlab='',ylab='',xaxt='n',yaxt='n',
                                          col=c('white','black'),
                                          xlim=coords$x,
-                                         ylim=coords$y))      
+                                         ylim=coords$y))
    })
 
     shiny::observeEvent(input$stop, shiny::stopApp({
@@ -831,5 +869,3 @@ shiny::runApp(
   }
  ))
 }
-
-

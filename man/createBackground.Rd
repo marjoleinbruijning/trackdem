@@ -7,14 +7,14 @@
 createBackground(colorimages, method = "mean")
 }
 \arguments{
-\item{colorimages}{Array of class 'TrDm' containing all images, obtained by 
+\item{colorimages}{Array of class 'TrDm' containing all images, obtained by
 \code{\link{loadImages}}.}
 
 \item{method}{Use \code{method='mean'} to calculate the mean value for each
 pixel and color.
-Use \code{method='powerroot'} to deflate dark values (note, this can only be 
-used for dark particles on a light background). Use \code{method='filter'} to 
-replace pixels in which movement has occurred with the mode of neighboring 
+Use \code{method='powerroot'} to deflate dark values (note, this can only be
+used for dark particles on a light background). Use \code{method='filter'} to
+replace pixels in which movement has occurred with the mode of neighboring
 values.
 Note that \code{method='filter'} is computationally more intensive.}
 }
@@ -23,7 +23,7 @@ Array of class 'TrDm' and 'colorimage' containing detected background.
 }
 \description{
 \code{createBackground} detects the still background,
-containing all motionless pixels (non particles). Three different methods 
+containing all motionless pixels (non particles). Three different methods
 to detect the background can be used.
 }
 \examples{

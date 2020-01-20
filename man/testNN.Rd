@@ -9,7 +9,7 @@ testNN(dat, stat = "F", maxH = 5, repetitions = 3, prop = c(8, 1,
   1), predictors = NULL, pca = TRUE, thr = 0.95, ...)
 }
 \arguments{
-\item{dat}{a previously constructed dataset obtained from 
+\item{dat}{a previously constructed dataset obtained from
 \code{manuallySelect}.}
 
 \item{stat}{Fit statistic. May be \code{"precision"}, \code{"recall"}, or
@@ -27,10 +27,10 @@ c(training, validation,test).}
 \item{predictors}{Optional. A set of custom predictors
 for the neural network. Default uses all columns in \code{dat}.}
 
-\item{pca}{Logical. \code{TRUE} by default. Should the 
-set of predictors be compressed to the most informative? In short, 
+\item{pca}{Logical. \code{TRUE} by default. Should the
+set of predictors be compressed to the most informative? In short,
 should a principal component analysis be conducted to select axis that
-explain at least a fraction \code{thr} (see below) 
+explain at least a fraction \code{thr} (see below)
 of the variance in the full set of predictors?}
 
 \item{thr}{Threshold for pca (above).}

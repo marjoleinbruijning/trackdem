@@ -7,15 +7,15 @@
 manuallySelect(particles, colorimages = NULL, frames = NULL)
 }
 \arguments{
-\item{particles}{A data frame of class 'TrDm' with particle statistics for 
+\item{particles}{A data frame of class 'TrDm' with particle statistics for
 each frame, obtained by \code{\link{identifyParticles}}.}
 
-\item{colorimages}{An array with the original full color images, in order 
-to plot on the original images. If \code{NULL}, the original color images 
+\item{colorimages}{An array with the original full color images, in order
+to plot on the original images. If \code{NULL}, the original color images
 are used, obtained from the global environment.}
 
 \item{frames}{A vector defining the frame(s) that should be used. Default
-is \code{NULL}; in that case the frame with the maximum number of identified 
+is \code{NULL}; in that case the frame with the maximum number of identified
 particles is used.}
 }
 \value{

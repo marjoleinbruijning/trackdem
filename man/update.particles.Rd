@@ -12,22 +12,22 @@
 
 \item{neuralnet}{Trained neural net obtained from \code{\link{testNN}}}
 
-\item{pca}{Logical. By default \code{TRUE}, indicating that a principal 
+\item{pca}{Logical. By default \code{TRUE}, indicating that a principal
 component analysis is performed on the predictors.}
 
-\item{colorimages}{An array with the original full color images, in order 
-to plot on the original images, obtained by \code{\link{loadImages}}. 
+\item{colorimages}{An array with the original full color images, in order
+to plot on the original images, obtained by \code{\link{loadImages}}.
 By default the original color images are used.}
 
-\item{sbg}{Images subtracted from background, as obtained by 
-\code{\link{subtractBackground}}. By default, the original subtracted images 
+\item{sbg}{Images subtracted from background, as obtained by
+\code{\link{subtractBackground}}. By default, the original subtracted images
 are used.}
 
 \item{\dots}{further arguments passed to or from other methods.}
 }
 \value{
-Data frame class 'particles', containing updated 
-particle statistics (excluding 
+Data frame class 'particles', containing updated
+particle statistics (excluding
 particles that have been filtered out by the neural net).
 }
 \description{

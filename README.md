@@ -211,6 +211,9 @@ summary(records)
 <!-- UPDATES -->
 ## Updates
 
+### Version 0.5.1
+* No longer requires R-package SDMTools
+
 ### Version 0.5
 * Package is now compatible with Python 3
 

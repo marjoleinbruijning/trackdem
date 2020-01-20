@@ -12,15 +12,15 @@ as obtained from \code{\link{subtractBackground}}.}
 
 \item{frame}{Number specifying which frame to use. Default is frame 1.}
 
-\item{colorimages}{Array containing original color images. By default, 
+\item{colorimages}{Array containing original color images. By default,
 the original color images are obtained from the global environment.}
 }
 \value{
-Returns the number that is interactively chosen by the user. Use 
+Returns the number that is interactively chosen by the user. Use
 this threshold value in \code{identifyParticles}.
 }
 \description{
-This function can help to find a threshold value to distinguish noise from 
+This function can help to find a threshold value to distinguish noise from
 particles of interest.
 }
 \examples{

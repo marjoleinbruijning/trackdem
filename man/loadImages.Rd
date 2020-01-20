@@ -10,16 +10,16 @@ loadImages(dirPictures, filenames = NULL, nImages = 1:30,
 \arguments{
 \item{dirPictures}{The path of the folder where the images can be found.}
 
-\item{filenames}{Default is \code{NULL}, or all files. If all files should 
+\item{filenames}{Default is \code{NULL}, or all files. If all files should
 NOT be loaded, here specify which files to use, as a character string.}
 
-\item{nImages}{Numeric vector specifying which images in the directory 
+\item{nImages}{Numeric vector specifying which images in the directory
 should be loaded; default is \code{1:30}.}
 
-\item{xranges}{By default the full image is loaded; specify to subset the 
+\item{xranges}{By default the full image is loaded; specify to subset the
 number of columns.}
 
-\item{yranges}{By default the full image is loaded; specify to subset the 
+\item{yranges}{By default the full image is loaded; specify to subset the
 number of rows.}
 }
 \value{

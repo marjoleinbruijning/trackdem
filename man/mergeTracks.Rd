@@ -11,30 +11,30 @@ mergeTracks(records1, records2, L = NULL, weight = NULL)
 obtained using \code{\link{trackParticles}}.}
 
 \item{records2}{Object of class 'tracked',
-obtained using \code{\link{trackParticles}} that should be linked to 
+obtained using \code{\link{trackParticles}} that should be linked to
 \code{records1}.}
 
-\item{L}{Numeric. Maximum cost for linking a particle to another particle. 
-When the cost is larger, 
+\item{L}{Numeric. Maximum cost for linking a particle to another particle.
+When the cost is larger,
 particles will be not be linked (resulting in the begin or end of a segment).
-If \code{NULL}, the same \code{L} as used to create 
+If \code{NULL}, the same \code{L} as used to create
 \code{records2} is used.}
 
-\item{weight}{Vector containing 3 weights to calculate costs. Depending 
+\item{weight}{Vector containing 3 weights to calculate costs. Depending
 on the study system user may want to value certain elements over others.
-Weights are ordered as follows; 
+Weights are ordered as follows;
 first number gives the weight for differences in x and y coordinates;
-second number 
-gives the weight for particle size differences. Note that the 
-difference between the predicted location and the observed location is 
-not taken into account in this function. If \code{NULL}, the same weights as 
+second number
+gives the weight for particle size differences. Note that the
+difference between the predicted location and the observed location is
+not taken into account in this function. If \code{NULL}, the same weights as
 used to create \code{records2} is used.}
 }
 \value{
 A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 }
 \description{
-\code{mergeTracks} attempts to merge to two track objects as obtained by 
+\code{mergeTracks} attempts to merge to two track objects as obtained by
 \code{\link{trackParticles}}.
 }
 \examples{

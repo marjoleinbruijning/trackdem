@@ -14,7 +14,7 @@ createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
 \item{moviepath}{Path to existing directory containing the video files.
 By default, 'Movies' is used.}
 
-\item{imagepath}{Path to location of a directory in which image 
+\item{imagepath}{Path to location of a directory in which image
 sequences should
 be saved. By default, 'ImageSequences' is used (and created if not existing).}
 
@@ -25,34 +25,34 @@ be saved. By default, 'ImageSequences' is used (and created if not existing).}
 \item{fps}{Frames per second, default is 15.}
 
 \item{nsec}{Duration of movie that is exported, default is 2 seconds.
-When movie length is greater than \code{nsec}, the \code{nsec} seconds 
+When movie length is greater than \code{nsec}, the \code{nsec} seconds
 in the exact middle of the movie are exported.}
 
-\item{start}{Start time (in seconds) from where the video is converted (optional). By 
-default, the \code{nsec} middle second of the video are used. If a a start 
-time is specified and no stop time, \code{nsec} seconds starting from \code{start} 
+\item{start}{Start time (in seconds) from where the video is converted (optional). By
+default, the \code{nsec} middle second of the video are used. If a a start
+time is specified and no stop time, \code{nsec} seconds starting from \code{start}
 are converted.}
 
-\item{stop}{End time (in seconds) from where the video is converted (optional). By 
-default, the \code{nsec} middle second of the video are used. When an end time 
-but no start time are specified, conversion starts at \code{nsec} seconds before 
+\item{stop}{End time (in seconds) from where the video is converted (optional). By
+default, the \code{nsec} middle second of the video are used. When an end time
+but no start time are specified, conversion starts at \code{nsec} seconds before
 \code{end}.}
 
 \item{ext}{The extension of the video. Default is \code{'MTS'}. All
-formats supported by libav are accepted. To convert videos with different 
+formats supported by libav are accepted. To convert videos with different
 extensions, use for example \code{c('MTS','mp4')}.}
 
 \item{libavpath}{Path to location where the executable file for libav
-can be found (named 'avconv.exe'), in case it is not found automatically, 
+can be found (named 'avconv.exe'), in case it is not found automatically,
 e.g. \code{'C:/Users/libav/usr/bin/avconv.exe'}.}
 
-\item{exiftoolpath}{Path to location where the executable file for 
-ExifTool can be found, in case it is not found automatically. 
-For instance, use \code{'exiftool(-k).exe'}, if located in the working 
+\item{exiftoolpath}{Path to location where the executable file for
+ExifTool can be found, in case it is not found automatically.
+For instance, use \code{'exiftool(-k).exe'}, if located in the working
 directory.}
 
-\item{pythonpath}{Path to location where the executable file for 
-Python 2.7 can be found, in case it is not found automatically. For 
+\item{pythonpath}{Path to location where the executable file for
+Python 2.7 can be found, in case it is not found automatically. For
 instance, use \code{'C:/Python27/python.exe'}.}
 
 \item{verbose}{Logical. By default FALSE. Set to TRUE will print additional information.}
@@ -62,9 +62,9 @@ working directory.}
 }
 \description{
 \code{createImageSeq} creates an image sequences (.png) using
- video files as input. All movies within a directory will  
+ video files as input. All movies within a directory will
 be converted into an image sequence.
-For each movie, a new directory is created containing the recorded date and 
+For each movie, a new directory is created containing the recorded date and
 name of the movie.
 }
 \examples{

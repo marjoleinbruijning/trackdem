@@ -135,6 +135,9 @@ BEGIN_RCPP
 END_RCPP
 }
 
+RcppExport SEXP ccl(SEXP);
+RcppExport SEXP projectedPS(SEXP, SEXP);
+
 static const R_CallMethodDef CallEntries[] = {
     {"_trackdem_cb", (DL_FUNC) &_trackdem_cb, 5},
     {"_trackdem_cb1", (DL_FUNC) &_trackdem_cb1, 3},
@@ -145,6 +148,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_trackdem_sb2", (DL_FUNC) &_trackdem_sb2, 4},
     {"_trackdem_sdP", (DL_FUNC) &_trackdem_sdP, 6},
     {"_trackdem_sdP1", (DL_FUNC) &_trackdem_sdP1, 4},
+    {"ccl",         (DL_FUNC) &ccl,         1},
+    {"projectedPS", (DL_FUNC) &projectedPS, 2},
     {NULL, NULL, 0}
 };
 

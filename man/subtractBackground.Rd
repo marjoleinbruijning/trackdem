@@ -10,12 +10,12 @@ subtractBackground(bg, colorimages = NULL)
 \item{bg}{Array containing still background, as returned from
 \code{\link{createBackground}}.}
 
-\item{colorimages}{Array containing all frames, obtained by 
+\item{colorimages}{Array containing all frames, obtained by
 \code{\link{loadImages}}. Default is \code{NULL}, in this case the original
 images are used from the global environment.}
 }
 \value{
-Returns array of class 'TrDm' and 'sbg' with same size as images, 
+Returns array of class 'TrDm' and 'sbg' with same size as images,
 subtracted from background.
 }
 \description{
