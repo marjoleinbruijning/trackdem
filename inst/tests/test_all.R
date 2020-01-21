@@ -133,7 +133,7 @@ testthat::test_that("Particle identification", {
                         testthat::equals('mean'))
 
   ## Test number of columns and rows
-  testthat::expect_that(ncol(partIden),testthat::equals(18))
+  testthat::expect_that(ncol(partIden),testthat::equals(15))
   testthat::expect_that(nrow(partIden),testthat::equals(300))  
   
   ## Test number of particles detected
@@ -226,14 +226,6 @@ testthat::test_that("Output", {
   dev.off()
   testthat::expect_true(file.exists(name))
   testthat::expect_true(file.info(name)$size > 0)
-
-  name <- tempdir()
-  invisible(utils::capture.output(plot(records,path=name,
-                                  type='animation',
-                                  colorimages=allFullImages,incThres=10)))
-  testthat::expect_true(file.exists(paste0(name,'/animation.mp4')))
-  testthat::expect_true(file.info(paste0(name,'/animation.mp4'))$size > 0)
-  unlink(paste0(name,'/animation.mp4'))
   
 })
 
