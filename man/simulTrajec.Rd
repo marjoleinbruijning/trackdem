@@ -26,7 +26,7 @@ simulTrajec(nframes = 20, nIndividuals = 10, h = 0.02, rho = 0,
 rectangle domain, or a circular domain of radius 1, respectively.
 correct boundary ensure individual trajectories do not cross the domain}
 
-\item{correctBoundary}{Logical. \code{TRUE} to make sure that individuals 
+\item{correctBoundary}{Logical. \code{TRUE} to make sure that individuals
 cannot leave the image.}
 
 \item{sizes}{Vector of sizes for each simulated particle of length
@@ -43,13 +43,13 @@ the working directory is used.}
 
 \item{parsMoving}{List of parameters used to generate moving noise
 these include the density of noise particles (\code{density}), their duration
-(in n frames; \code{duration}), their size (\code{size=1}), 
-their speed (\code{speed=10}) and the range or colors they are randomly 
+(in n frames; \code{duration}), their size (\code{size=1}),
+their speed (\code{speed=10}) and the range or colors they are randomly
 drawn from (\code{colRange=c(0,1)}).}
 
 \item{parsStatic}{List of parameters used to generate static noise.
-These include the density (per image) of noise particles (\code{density}), 
-whether spots 
+These include the density (per image) of noise particles (\code{density}),
+whether spots
 look blurry (\code{blur=TRUE} or \code{blur=FALSE}), a blurring coefficient
 (\code{blurCoef=0.025}), and the size of the spots (with \code{sizes}).}
 
@@ -58,10 +58,10 @@ look blurry (\code{blur=TRUE} or \code{blur=FALSE}), a blurring coefficient
 \item{height}{of create png image. If \code{NULL}, \code{width} is used.}
 }
 \description{
-\code{simulTrajec} simulates movement trajectories within a 
+\code{simulTrajec} simulates movement trajectories within a
 bounded space, movements are set with speed (\code{h}) and may be correlated
-in direction (\code{rho}). Function simulates movement of particles in a video 
-sequence of certain number of frames (\code{nframes}) in length. Images 
+in direction (\code{rho}). Function simulates movement of particles in a video
+sequence of certain number of frames (\code{nframes}) in length. Images
 are saved as png files.
 }
 \examples{

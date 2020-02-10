@@ -416,7 +416,7 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##'
 ##' \code{identifyParticles} identifies moving particles using the
 ##' subtracted images obtained from \code{\link{subtractBackground}}. Function
-## 'uses Connected Component Labeling and obtains particle statistics based on
+##' uses Connected Component Labeling and obtains particle statistics based on
 ##' code developed for the orphaned
 ##' package SDMTools (written by Jeremy VanDerWal).
 ##' @param sbg Array containing images containing all moving particles,
@@ -428,7 +428,7 @@ subtractBackground <- function (bg,colorimages=NULL) {
 ##'  which works for dark particles on a light background. Alternatively,
 ##' set \code{autoThres} below for an automatic threshold.
 ##' @param pixelRange Default is \code{NULL}. Numeric vector with minimum and
-##' maximum particle size, used as a
+##' maximum particle size (area), used as a
 ##' first filter to identify particles. Use if particle of interest are of a
 ##' known size range (in pixels).
 ##' @param qthreshold Default is \code{NULL}. Supply a value, to do thresholding

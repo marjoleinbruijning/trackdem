@@ -4,7 +4,8 @@
 \alias{trackParticles}
 \title{Track particles}
 \usage{
-trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1))
+trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1),
+  costconstant = FALSE, logsizes = FALSE)
 }
 \arguments{
 \item{particles}{Object of class 'particles',
@@ -29,6 +30,13 @@ gives the weight for particle size differences; third number gives the
 difference between the predicted location and the observed location. The
 latter is calculated using the location of the identified particle in the
 previous frame.}
+
+\item{costconstant}{Logical. Default is \code{FALSE}. This increases the maximum
+cost L proportional to the number of images in between two frames (when R > 1).
+Set to \code{TRUE} keeps maximum cost L constant for all 1:R frames.}
+
+\item{logsizes}{Logical. Default is \code{FALSE}. Set to \code{TRUE} to take the
+natural logarithm of body sizes, when calculating the cost of linking two particles.}
 }
 \value{
 A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.

@@ -4,7 +4,8 @@
 \alias{mergeTracks}
 \title{Merge track records}
 \usage{
-mergeTracks(records1, records2, L = NULL, weight = NULL)
+mergeTracks(records1, records2, L = NULL, weight = NULL,
+  logsizes = FALSE)
 }
 \arguments{
 \item{records1}{Object of class 'tracked',
@@ -29,6 +30,9 @@ gives the weight for particle size differences. Note that the
 difference between the predicted location and the observed location is
 not taken into account in this function. If \code{NULL}, the same weights as
 used to create \code{records2} is used.}
+
+\item{logsizes}{Logical. Default is \code{FALSE}. Set to \code{TRUE} to take the
+natural logarithm of body sizes, when calculating the cost of linking two particles.}
 }
 \value{
 A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.

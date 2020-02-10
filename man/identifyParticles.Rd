@@ -20,7 +20,7 @@ for each frame, use \code{qthreshold}. Default is \code{threshold=-0.1},
 set \code{autoThres} below for an automatic threshold.}
 
 \item{pixelRange}{Default is \code{NULL}. Numeric vector with minimum and
-maximum particle size, used as a
+maximum particle size (area), used as a
 first filter to identify particles. Use if particle of interest are of a
 known size range (in pixels).}
 

@@ -1,17 +1,17 @@
 ## Create a simulated set of movement trajectories
 ##
-## \code{createTrajec} simulates movement trajectories within a 
+## \code{createTrajec} simulates movement trajectories within a
 ## bounded space, movements are set with speed (\code{h}) and may be correlated
-## in direction (\code{rho}). Function simulates movement of particles in a video 
-## sequence of certain number of frames (\code{nframes}) in length. 
+## in direction (\code{rho}). Function simulates movement of particles in a video
+## sequence of certain number of frames (\code{nframes}) in length.
 ## @param nframes Number of time frames(steps).
 ## @param nIndividuals	Number of individual trajectories.
 ## @param h Displacement speed in pixels.
 ## @param rho Correlation parameter for angle of displacement.
-## @param domain One of \code{"square"} or \code{"circle"}, imposing a 
+## @param domain One of \code{"square"} or \code{"circle"}, imposing a
 ## [0-1,0-1] rectangle domain, or a circular domain of radius 1, respectively.
 ## correct boundary ensure individual trajectories do not cross the domain
-## @param correct.boundary Logical. \code{TRUE} to make sure that individuals
+## @param correctBoundary Logical. \code{TRUE} to make sure that individuals
 ## cannot leave the image.
 ## @param sizes Vector of sizes for each simulated particle of length
 ## nIndividuals.
@@ -32,7 +32,7 @@ createTrajec <- function(nframes=20,nIndividuals=10,
   res <- do.call(rbind,lapply(seq_len(nIndividuals),function(j) {
            init <- NULL
            if (domain=="square") {
-             init <- stats::runif(2,0,1) 
+             init <- stats::runif(2,0,1)
            }
            if (domain=="circle") {
              phi <- stats::runif(1,0,2*pi)
@@ -55,11 +55,11 @@ createTrajec <- function(nframes=20,nIndividuals=10,
                }
              }
            }
-                     
+
            if (correctBoundary & domain=="circle") {
              for (i in 2:nframes) {
                ##This ensures they stay in the circle with radius 1 domain
-               if (sqrt(sum(xy[i,1:2]^2))>1) {	
+               if (sqrt(sum(xy[i,1:2]^2))>1) {
                  cond <- TRUE
                  while (cond) {
                    news <- samplePolar(2,h,rho)
@@ -74,10 +74,10 @@ createTrajec <- function(nframes=20,nIndividuals=10,
            if (correctBoundary & !domain%in%c("square","circle")) {
              stop("domain not recognized")
            }
-           
+
            cbind(id=j,frame=1:nframes,xy)
           }))
-    
+
   colnames(res) <- c("id","t","x","y","r","phi")
   res <- as.data.frame(res)
   res$size <- sizes[res$id]
@@ -89,7 +89,7 @@ createTrajec <- function(nframes=20,nIndividuals=10,
 ## Polar sampler used in \code{simulateTracjectories}
 ##
 ## helper function for \code{simulateTracjectories} to simulates corrected
-## polar coordinates. See source of \code{simulateTracjectories} for details. 
+## polar coordinates. See source of \code{simulateTracjectories} for details.
 ## @param n number of movements
 ## @param h displacement speed in pixels.
 ## @param rho correlation parameter for angle of displacement
@@ -117,8 +117,8 @@ samplePolar <- function(n=10,h=.05,rho=0,init=NULL) {
 
 ## add.orgamisms
 ##
-## Add organic looking polygons to a plot of simulated trajectories 
-## @param traj simulated trajectories from \code{simulateTracjectories} 
+## Add organic looking polygons to a plot of simulated trajectories
+## @param traj simulated trajectories from \code{simulateTracjectories}
 ## @param col Color of particles; default is 'red'
 add.organisms <- function(traj,col="red") {
   n.orgs <- max(traj$id)
@@ -154,10 +154,10 @@ makeOrg <- function(length=30,size=.05,phi=0,x=0,y=0) {
 
 ##' Simulate trajectories and save as png files.
 ##'
-##' \code{simulTrajec} simulates movement trajectories within a 
+##' \code{simulTrajec} simulates movement trajectories within a
 ##' bounded space, movements are set with speed (\code{h}) and may be correlated
-##' in direction (\code{rho}). Function simulates movement of particles in a video 
-##' sequence of certain number of frames (\code{nframes}) in length. Images 
+##' in direction (\code{rho}). Function simulates movement of particles in a video
+##' sequence of certain number of frames (\code{nframes}) in length. Images
 ##' are saved as png files.
 ##' @param nframes Number of time frames(steps).
 ##' @param nIndividuals	Number of individual trajectories.
@@ -166,7 +166,7 @@ makeOrg <- function(length=30,size=.05,phi=0,x=0,y=0) {
 ##' @param domain One of \code{"square"} or \code{"circle"}, imposing a [0-1,0-1]
 ##' rectangle domain, or a circular domain of radius 1, respectively.
 ##' correct boundary ensure individual trajectories do not cross the domain
-##' @param correctBoundary Logical. \code{TRUE} to make sure that individuals 
+##' @param correctBoundary Logical. \code{TRUE} to make sure that individuals
 ##' cannot leave the image.
 ##' @param sizes Vector of sizes for each simulated particle of length
 ##' nIndividuals.
@@ -176,14 +176,14 @@ makeOrg <- function(length=30,size=.05,phi=0,x=0,y=0) {
 ##' @param movingNoise Logical. If \code{TRUE}, moving noise is added.
 ##' @param name Stem of the filename.
 ##' @param parsStatic List of parameters used to generate static noise.
-##' These include the density (per image) of noise particles (\code{density}), 
-##' whether spots 
+##' These include the density (per image) of noise particles (\code{density}),
+##' whether spots
 ##' look blurry (\code{blur=TRUE} or \code{blur=FALSE}), a blurring coefficient
 ##' (\code{blurCoef=0.025}), and the size of the spots (with \code{sizes}).
 ##' @param parsMoving List of parameters used to generate moving noise
 ##' these include the density of noise particles (\code{density}), their duration
-##' (in n frames; \code{duration}), their size (\code{size=1}), 
-##' their speed (\code{speed=10}) and the range or colors they are randomly 
+##' (in n frames; \code{duration}), their size (\code{size=1}),
+##' their speed (\code{speed=10}) and the range or colors they are randomly
 ##' drawn from (\code{colRange=c(0,1)}).
 ##' @param width of created png image. By default 480.
 ##' @param height of create png image. If \code{NULL}, \code{width} is used.
@@ -217,7 +217,7 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                                h=h,rho=rho,domain=domain,
                                correctBoundary=correctBoundary,
                                sizes=sizes)
-    
+
   z <- max(traj$t)
   lim <- ifelse(domain=="circle",-1,0)
 
@@ -229,7 +229,7 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
                                     sizes=parsStatic$sizes)
     xx <- background$blurred.x
   }
-    
+
   if (movingNoise) {
     noisep <- addMovingNoiseBg(nframe=nframes,density=parsMoving$density,
                                size=parsMoving$size,
@@ -239,7 +239,7 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
     loc <- noisep[[2]]
     part <- noisep[[1]]
   }
-    
+
   for (i in 1:z) {
     Name <- paste(name,formatC(i,width=nchar(z),flag="0"),sep="_")
     if (is.null(height)) height <- width
@@ -249,28 +249,28 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
     graphics::par(mar=c(0,0,0,0))
     graphics::plot(0,type="n",xlim=c(lim,1),ylim=c(lim,1),xlab="",
                    ylab="",asp=1,xaxs="i", yaxs="i")
-        
+
     ## add static noise
     if (staticNoise) {
       graphics::image(xx,xx,background$blurred,add=TRUE,
                       col=grDevices::colorRampPalette(c("transparent","grey"),
                                                       alpha=TRUE)(64))
     }
-        
-    ## add dynamic noise	
+
+    ## add dynamic noise
     if (movingNoise) {
       for (mb in 1:nrow(loc)) {
         if (!is.na(loc[mb,i,2])) {
           graphics::points(loc[mb,i,2],loc[mb,i,1],pch=16,cex=part$size[mb],
                            col=part$color[mb])
         }
-      }	
+      }
     }
-        
+
     if (lim == -1) {
       graphics::lines(cos(seq(0,2*pi,l=300)),sin(seq(0,2*pi,l=300)),lty=3)
     }
-        
+
     ## add particles
     ii <- which(traj$t==i)
     for (j in ii) {
@@ -284,13 +284,13 @@ simulTrajec <- function(nframes=20,nIndividuals=10,h=0.02,rho=0,
     grDevices::dev.off()
   }
   return (traj)
-} 
+}
 
-## Generate a background 
+## Generate a background
 ##
 ## Simulates a background which can contain noise, after generating the trajectories
 ## using \code{\link{simulateTrajectories}}.
-## @param background previously loaded or generated background. 
+## @param background previously loaded or generated background.
 ## @param spotsDensity density of non-moving spots.
 ## @param clustering spot clustering parameter.
 ## @param blur do the spots look blurry? (\code{TRUE} or \code{FALSE}).
@@ -316,12 +316,12 @@ generateBackground <- function(spotsDensity=10,
       while (cond) {
         xysp[toofar,] <- stats::runif(sum(toofar)*2,lim,1)
         cond <- any(toofar <- sqrt(xysp[,1]^2+xysp[,2]^2)>1)
-      }	
+      }
     }
     if (is.null(sizes)) sizes <- stats::runif(n,.1,1.5)
       if (blur) {
         xx <- seq(lim,1,l=512)
-        xtsp <- stats::xtabs(sizes~cut(xysp[,1],c(xx[1]-diff(xx[1:2]),xx)) + 
+        xtsp <- stats::xtabs(sizes~cut(xysp[,1],c(xx[1]-diff(xx[1:2]),xx)) +
                              cut(xysp[,2],c(xx[1]-diff(xx[1:2]),xx)))
         ffk <- outer(xx,xx,function(x,y) { stats::dnorm(x,offset,blurCoef) *
 			                               stats::dnorm(y,offset,blurCoef) }
@@ -348,8 +348,8 @@ generateBackground <- function(spotsDensity=10,
 ## @param density number of noise particles (over all frames)
 ## @param size maximum size of noise in pixels
 ## @param duration the maximum number of frames any single generated noise
-## particle is visible 
-## @param bg previously generated background 
+## particle is visible
+## @param bg previously generated background
 ## @param speed the maximum speed of the moving noise
 ## @param col.range color intensity range of noise
 addMovingNoiseBg <- function(nframe=30,density=40,size=1,duration=10,speed=10,
@@ -363,7 +363,7 @@ addMovingNoiseBg <- function(nframe=30,density=40,size=1,duration=10,speed=10,
                                   alpha=stats::runif(density,colRange[1],
                                                      colRange[2])),
                           x=sample(1:512,density,replace=TRUE),
-                          y=sample(1:512,density,replace=TRUE))  
+                          y=sample(1:512,density,replace=TRUE))
 
   particles$color <- as.character(particles$color)
   locations <- array(dim=c(density,nframe,2))
@@ -385,4 +385,3 @@ addMovingNoiseBg <- function(nframe=30,density=40,size=1,duration=10,speed=10,
 
   return(list(particles,locations))
 }
-

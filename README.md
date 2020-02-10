@@ -211,6 +211,9 @@ summary(records)
 <!-- UPDATES -->
 ## Updates
 
+### Version 0.5.2
+* Add optional arguments 'logsizes' and 'costconstant' to trackParticles().
+
 ### Version 0.5.1
 * No longer requires R-package SDMTools
 

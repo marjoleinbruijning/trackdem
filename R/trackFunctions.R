@@ -85,7 +85,14 @@ track <- function (Phi, g, L=50) {
 ## @seealso \code{\link{doTrack}}, \code{\link{linkTrajec}},
 ##
 calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
-                     x0=NULL,y0=NULL) {
+                     x0=NULL,y0=NULL,logsizes=logsizes) {
+
+
+  if (logsizes) {
+    s1 <- log(s1)
+    s2 <- log(s2)
+  }
+
   if (predLoc) {
     predx <- x1-x0 + x1
     predy <- y1-y0 + y1
@@ -114,7 +121,7 @@ calcCost <- function(x1,x2,y1,y2,s1,s2,weight=c(1,1,1),predLoc=FALSE,
 ## @return Cost matrix linking particles.
 ##
 phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
-                    coords0=NULL) {
+                    coords0=NULL,logsizes=logsizes) {
 
   Phi <- vapply(seq_len(nrow(coords1)),function(x) {
 	  if (length(coords0[rownames(coords0) == x,]) > 0) {
@@ -125,13 +132,14 @@ phiMat <- function (coords1,coords2,sizes1,sizes2,r=1,L=50,weight=weight,
 	  calcCost(x1=coords1[x,1],
 	           x2=coords2[,1],
 	           y1=coords1[x,2],
-               y2=coords2[,2],
-		       s1=sizes1[x],
-		       s2=sizes2,
-		       weight=weight,
-		       predLoc=predLoc,
-		       x0=coords0[rownames(coords0) == x,1],
-		       y0=coords0[rownames(coords0) == x,2])
+             y2=coords2[,2],
+		         s1=sizes1[x],
+		         s2=sizes2,
+		         weight=weight,
+		         predLoc=predLoc,
+		         x0=coords0[rownames(coords0) == x,1],
+		         y0=coords0[rownames(coords0) == x,2],
+             logsizes=logsizes)
    }, numeric(length(coords2[,1])))
 
   Phi <- matrix(Phi,ncol=dim(coords1)[1],nrow=dim(coords2)[1])
@@ -170,7 +178,8 @@ gMat <- function (Phi) {
 ## @export
 ##
 linkTrajec <- function (recordsObject,particles,
-                        L=50,R=1,weight=weight) {
+                        L=50,R=1,weight=weight,costconstant=costconstant,
+                        logsizes=logsizes) {
 
   trackRecord <- recordsObject$trackRecord
   sizeRecord <- recordsObject$sizeRecord
@@ -223,13 +232,19 @@ linkTrajec <- function (recordsObject,particles,
                    particles[inc2,]$y[beginTrajec]),ncol=2,byrow=FALSE)
         sizes2 <- particles[inc2,]$n.cell[beginTrajec]
 
+        if (costconstant) {
+          Lnew <- L
+        } else {Lnew <- L*r}
+
+
         Phi <- phiMat(coords1,coords2,
 	                  sizes1=sizes1,
 	                  sizes2=sizes2,
-	                  L=L*r,r=1,weight=weight,coords0=NULL)
+	                  L=Lnew,r=1,weight=weight,coords0=NULL,
+                    logsizes=logsizes)
         gstart <- gMat(Phi)
 
-        A <- track(Phi=Phi, g=gstart, L=L*r) * Phi
+        A <- track(Phi=Phi, g=gstart, L=Lnew) * Phi
 
         tmp <- data.frame(which(A > 0,TRUE))
         tmp <- tmp[tmp[,1] != 1,]
@@ -290,7 +305,8 @@ linkTrajec <- function (recordsObject,particles,
 ## @return A list of class 'records'. Use 'summary' and 'plot'.
 ##
 
-doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
+doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight,
+                    logsizes=logsizes) {
 
   n <- unique(particles$frame)
 
@@ -330,7 +346,8 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 	              sizes1=sizes1,
 	              sizes2=sizes2,
 	              L=L,r=1,weight=weight,
-	              coords0=coords0)
+	              coords0=coords0,
+                logsizes=logsizes)
 
     gstart <- gMat(Phi)
 
@@ -418,6 +435,8 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 ##' difference between the predicted location and the observed location is
 ##' not taken into account in this function. If \code{NULL}, the same weights as
 ##' used to create \code{records2} is used.
+##' @param logsizes Logical. Default is \code{FALSE}. Set to \code{TRUE} to take the
+##' natural logarithm of body sizes, when calculating the cost of linking two particles.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -450,7 +469,8 @@ doTrack <- function(particles,L=50,sizeMeasure='n.cell',weight=weight) {
 ##' @return A list of class 'TrDm' and 'records'. Use 'summary' and 'plot'.
 ##' @export
 ##
-mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
+mergeTracks <- function(records1,records2,L=NULL,weight=NULL,
+                        logsizes=FALSE) {
 
   if (is.null(L)) L <- attributes(records2)$settings$L
   if (is.null(weight)) weight <- attributes(records2)$settings$weight
@@ -463,7 +483,6 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
   label2 <- records2$label[,1]
 
 
-  ## TMP
   saveNA1 <- is.na(label1)
   saveNA2 <- is.na(label2)
 
@@ -471,7 +490,7 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
 	            sizes1=sizes1[!saveNA1],
 	            sizes2=sizes2[!saveNA2],
 	            L=L,r=1,weight=weight,
-	            coords0=NULL)
+	            coords0=NULL,logsizes=logsizes)
 
   gstart <- gMat(Phi)
 
@@ -565,6 +584,11 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
 ##' difference between the predicted location and the observed location. The
 ##' latter is calculated using the location of the identified particle in the
 ##' previous frame.
+##' @param costconstant Logical. Default is \code{FALSE}. This increases the maximum
+##' cost L proportional to the number of images in between two frames (when R > 1).
+##' Set to \code{TRUE} keeps maximum cost L constant for all 1:R frames.
+##' @param logsizes Logical. Default is \code{FALSE}. Set to \code{TRUE} to take the
+##' natural logarithm of body sizes, when calculating the cost of linking two particles.
 ##' @author Marjolein Bruijning, Caspar A. Hallmann & Marco D. Visser
 ##' @examples
 ##' \dontrun{
@@ -589,12 +613,13 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL) {
 ##' @export
 ##
 trackParticles <- function (particles,L=50,R=2,
-                            weight=c(1,1,1)) {
-  records <- doTrack(particles=particles,L=L,weight=weight)
+                            weight=c(1,1,1),costconstant=FALSE,logsizes=FALSE) {
+  records <- doTrack(particles=particles,L=L,weight=weight,logsizes=logsizes)
   cat("\n")
   rec <- linkTrajec (recordsObject=records,
                         particles=particles,
-                        R=R,L=L,weight=weight)
+                        R=R,L=L,weight=weight,costconstant=costconstant,
+                        logsizes=logsizes)
   cat("\n")
   class(rec) <- c('TrDm','tracked')
   attr(rec,"background") <- attributes(particles)$background
