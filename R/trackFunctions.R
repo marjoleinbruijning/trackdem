@@ -185,44 +185,24 @@ linkTrajec <- function (recordsObject,particles,
   sizeRecord <- recordsObject$sizeRecord
   colorRecord <- recordsObject$colorRecord
   label <- recordsObject$label
-  trackRecord[is.na(trackRecord)] <- 0
-  label[is.na(label)] <- 0
-  sizeRecord[is.na(sizeRecord)] <- 0
-
-  colorRecord[colorRecord == 0 & !is.na(colorRecord)] <-
-         colorRecord[colorRecord == 0 & !is.na(colorRecord)] + 0.000001
-  colorRecord[is.na(colorRecord)] <- 0
 
   n <- unique(particles$frame)
 
   cat("\t Link track segments: 0 %            ")
 
   for (r in 1:R) {
-    links <- list()
-
     for (i in 1:(length(n)-1-r)) {
       inc <- particles$frame == i
       inc2 <- particles$frame == (i + r)
-      endTrajec <- as.vector(stats::na.omit(label[apply(
+      endTrajec <- as.vector(label[apply(
                              trackRecord[,i:(i+1),1],1,function(x)
-                                             x[1] != 0 & x[2] == 0),i]))
-      beginTrajec <- as.vector(stats::na.omit(label[apply(
+                                             !is.na(x[1]) & is.na(x[2])),i])
+      beginTrajec <- as.vector(label[apply(
                              trackRecord[,(i+r-1):(i+r),1],1,function(x)
-                                                x[1]==0 & x[2]>0),i+r]))
+                                                is.na(x[1]) & !is.na(x[2])),i+r])
       beginTrajec <- beginTrajec[beginTrajec != 0]
 
       if (length(endTrajec)>0 & length(beginTrajec)>0) {
-
-        if (i > 1) {
-          tmp <- as.vector(stats::na.omit(label[apply(
-                               trackRecord[,i:(i+1),1],1,function(x)
-                                               x[1] != 0 & x[2] == 0),i-1]))
-          tmp <- tmp[tmp > 1] - 1
-          coords0 <- matrix(c(particles[particles$frame == (i-1),]$x[tmp],
-                            particles[particles$frame == (i-1),]$y[tmp]),ncol=2,
-                            byrow=FALSE)
-          rownames(coords0) <- tmp
-        }
 
         coords1 <- matrix(c(particles[inc,]$x[endTrajec],
                    particles[inc,]$y[endTrajec]),ncol=2,byrow=FALSE)
@@ -238,30 +218,39 @@ linkTrajec <- function (recordsObject,particles,
 
 
         Phi <- phiMat(coords1,coords2,
-	                  sizes1=sizes1,
-	                  sizes2=sizes2,
-	                  L=Lnew,r=1,weight=weight,coords0=NULL,
+                    sizes1=sizes1,
+                    sizes2=sizes2,
+                    L=Lnew,r=1,weight=weight,coords0=NULL,
                     logsizes=logsizes)
-        gstart <- gMat(Phi)
-
+        gstart <- matrix(0,nrow=nrow(Phi),ncol=ncol(Phi))
+        gstart[1,] <- 1
+        gstart[,1] <- 1
         A <- track(Phi=Phi, g=gstart, L=Lnew) * Phi
 
         tmp <- data.frame(which(A > 0,TRUE))
         tmp <- tmp[tmp[,1] != 1,]
         tmp <- tmp[tmp[,2] != 1,]
 
+        # if any successful links
         if (dim(tmp)[1] > 0) {
           for (k in 1:(dim(tmp)[1])) {
            ind1 <- which(label[,i] ==  endTrajec[tmp[k,2]-1])
            ind2 <- which(label[,i+r] ==  beginTrajec[tmp[k,1]-1])
 
-            trackRecord[ind1,,1] <- trackRecord[ind1,,1] + trackRecord[ind2,,1]
-            trackRecord[ind1,,2] <- trackRecord[ind1,,2] + trackRecord[ind2,,2]
-            label[ind1,] <- label[ind1,] + label[ind2,]
-            sizeRecord[ind1,] <- sizeRecord[ind1,] + sizeRecord[ind2,]
-            colorRecord[ind1,,1] <- colorRecord[ind1,,1] + colorRecord[ind2,,1]
-            colorRecord[ind1,,2] <- colorRecord[ind1,,2] + colorRecord[ind2,,2]
-            colorRecord[ind1,,3] <- colorRecord[ind1,,3] + colorRecord[ind2,,3]
+            # combine trajectories
+            trackRecord[ind1,,1] <- pmin(trackRecord[ind1,,1],trackRecord[ind2,,1],
+                                         na.rm=TRUE)
+            trackRecord[ind1,,2] <- pmin(trackRecord[ind1,,2],trackRecord[ind2,,2],
+                                         na.rm=TRUE)
+            label[ind1,] <- pmin(label[ind1,],label[ind2,],na.rm=TRUE)
+            sizeRecord[ind1,] <- pmin(sizeRecord[ind1,],sizeRecord[ind2,],
+                                      na.rm=TRUE)
+            colorRecord[ind1,,1] <- pmin(colorRecord[ind1,,1],colorRecord[ind2,,1],
+                                         na.rm=TRUE)
+            colorRecord[ind1,,2] <- pmin(colorRecord[ind1,,2],colorRecord[ind2,,2],
+                                         na.rm=TRUE)
+            colorRecord[ind1,,3] <- pmin(colorRecord[ind1,,3],colorRecord[ind2,,3],
+                                         na.rm=TRUE)
 
             # Take mean values for coordinates in between
             if (r > 1) {
@@ -283,14 +272,11 @@ linkTrajec <- function (recordsObject,particles,
     }
   }
 
-  trackRecord[trackRecord == 0] <- NA
-  label[label == 0] <- NA
-  sizeRecord[sizeRecord == 0] <- NA
-  colorRecord[colorRecord == 0] <- NA
   inc <- apply(trackRecord[,,1],1,function(x) !all(is.na(x)))
   res <- list(trackRecord=trackRecord[inc,,],
               label=label[inc,],
               sizeRecord=sizeRecord[inc,],colorRecord=colorRecord[inc,,])
+
   return(res)
 }
 
