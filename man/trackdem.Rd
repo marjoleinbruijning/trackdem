@@ -3,11 +3,7 @@
 \docType{package}
 \name{trackdem}
 \alias{trackdem}
-\alias{trackdem-package}
 \title{trackdem - Particle Tracking and Demography}
-\description{
-trackdem - Particle Tracking and Demography
-}
 \author{
 Marjolein Bruijning, Caspar A. Hallmann, Marco D. Visser, Eelke Jongejans
 }

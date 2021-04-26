@@ -4,9 +4,18 @@
 \alias{plot.TrDm}
 \title{\code{plot} methods for class 'TrDm'.}
 \usage{
-\method{plot}{TrDm}(x, frame = 1, type = NULL, incThres = NULL,
-  colorimages = NULL, cl = 1, path = NULL, name = "animation",
-  libavpath = NULL, ...)
+\method{plot}{TrDm}(
+  x,
+  frame = 1,
+  type = NULL,
+  incThres = NULL,
+  colorimages = NULL,
+  cl = 1,
+  path = NULL,
+  name = "animation",
+  libavpath = NULL,
+  ...
+)
 }
 \arguments{
 \item{x}{An object of class 'TrDm'.}

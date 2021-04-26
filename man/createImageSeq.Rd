@@ -4,11 +4,22 @@
 \alias{createImageSeq}
 \title{Create image sequence}
 \usage{
-createImageSeq(moviepath = "Movies", imagepath = "ImageSequences",
-  x = 1920, y = 1080, fps = 15, nsec = 2, start = NULL,
-  stop = NULL, ext = "MTS", libavpath = "avconv",
-  exiftoolpath = "exiftool", pythonpath = "python", verbose = FALSE,
-  logfile = FALSE)
+createImageSeq(
+  moviepath = "Movies",
+  imagepath = "ImageSequences",
+  x = 1920,
+  y = 1080,
+  fps = 15,
+  nsec = 2,
+  start = NULL,
+  stop = NULL,
+  ext = "MTS",
+  libavpath = "avconv",
+  exiftoolpath = "exiftool",
+  pythonpath = "python",
+  verbose = FALSE,
+  logfile = FALSE
+)
 }
 \arguments{
 \item{moviepath}{Path to existing directory containing the video files.

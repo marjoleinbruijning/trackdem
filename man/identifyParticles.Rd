@@ -4,9 +4,17 @@
 \alias{identifyParticles}
 \title{Identify moving particles}
 \usage{
-identifyParticles(sbg, threshold = -0.1, pixelRange = NULL,
-  qthreshold = NULL, select = "dark", colorimages = NULL,
-  autoThres = FALSE, perFrame = FALSE, frames = NULL)
+identifyParticles(
+  sbg,
+  threshold = -0.1,
+  pixelRange = NULL,
+  qthreshold = NULL,
+  select = "dark",
+  colorimages = NULL,
+  autoThres = FALSE,
+  perFrame = FALSE,
+  frames = NULL
+)
 }
 \arguments{
 \item{sbg}{Array containing images containing all moving particles,

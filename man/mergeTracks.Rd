@@ -4,8 +4,7 @@
 \alias{mergeTracks}
 \title{Merge track records}
 \usage{
-mergeTracks(records1, records2, L = NULL, weight = NULL,
-  logsizes = FALSE)
+mergeTracks(records1, records2, L = NULL, weight = NULL, logsizes = FALSE)
 }
 \arguments{
 \item{records1}{Object of class 'tracked',

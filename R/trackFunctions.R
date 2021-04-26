@@ -502,11 +502,11 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL,
       A[i,] <- c(mat1[l[i,2],],mat2[l[i,1],])
     }
     todo1 <- !seq_len(nrow(mat1)) %in% l[,2]
-    m <- mat1[todo1,]
+    m <- mat1[todo1,,drop=FALSE]
     m <- cbind(m,matrix(NA,ncol=ncol(mat2),nrow=nrow(m)))
 
     todo2 <- !seq_len(nrow(mat2)) %in% l[,1]
-    m2 <- mat2[todo2,]
+    m2 <- mat2[todo2,,drop=FALSE]
     m2 <- cbind(matrix(NA,ncol=ncol(mat1),nrow=nrow(m2)),m2)
 
     return(rbind(A,m,m2))

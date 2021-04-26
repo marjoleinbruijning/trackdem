@@ -4,8 +4,13 @@
 \alias{loadImages}
 \title{Load .png images}
 \usage{
-loadImages(dirPictures, filenames = NULL, nImages = 1:30,
-  xranges = NULL, yranges = NULL)
+loadImages(
+  dirPictures,
+  filenames = NULL,
+  nImages = 1:30,
+  xranges = NULL,
+  yranges = NULL
+)
 }
 \arguments{
 \item{dirPictures}{The path of the folder where the images can be found.}

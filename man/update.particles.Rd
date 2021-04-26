@@ -4,8 +4,7 @@
 \alias{update.particles}
 \title{Update identified particles.}
 \usage{
-\method{update}{particles}(object, neuralnet, pca = TRUE,
-  colorimages = NULL, sbg = NULL, ...)
+\method{update}{particles}(object, neuralnet, pca = TRUE, colorimages = NULL, sbg = NULL, ...)
 }
 \arguments{
 \item{object}{Object of class 'nnTrackdemObject'.}

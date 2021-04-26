@@ -4,8 +4,14 @@
 \alias{trackParticles}
 \title{Track particles}
 \usage{
-trackParticles(particles, L = 50, R = 2, weight = c(1, 1, 1),
-  costconstant = FALSE, logsizes = FALSE)
+trackParticles(
+  particles,
+  L = 50,
+  R = 2,
+  weight = c(1, 1, 1),
+  costconstant = FALSE,
+  logsizes = FALSE
+)
 }
 \arguments{
 \item{particles}{Object of class 'particles',
