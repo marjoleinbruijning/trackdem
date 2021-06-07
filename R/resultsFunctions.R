@@ -169,7 +169,7 @@ is.TrDm <- function(object) {
 ##' @export
 summary.TrDm <- function(object,incThres=NULL,funSize=stats::median,...) {
   if (inherits(object,"particles")) {
-    numbers <- tapply(object$patchID,object$frame,length)
+    numbers <- table(factor(object$frame, levels = 1:dim(attributes(object)$images)[3]))
     mu <- mean(numbers)
     sdd <- stats::sd(numbers)
     cv <- sdd/mu

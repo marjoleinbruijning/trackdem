@@ -575,6 +575,11 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
        stop(c("\n \t No particle detected in any of the frames. ",
               "Try different thresholds? \n"))
     }
+    if (any(totalPart == 0)) {
+      warning(c("\n \t No particle detected in at least one of the frames.
+             You will run into problems with particle tracking.
+             Try different thresholds? \n"))
+    }
 
     ##method to calculate shape index or aggregation indexes
   	#a = area of the patch in number of cells
@@ -600,27 +605,29 @@ identifyParticles <- function (sbg,threshold=-0.1,pixelRange=NULL,
                                  'frac.dim.index','core.area.index',
                                   paste0('mu',c('R','G','B')),'x','y','frame')
     for (i in n) {
-       if (i == 1) loc <- 1:totalPart[i]
-       if (i > 1) {
-         cum <- sum(totalPart[1:(i-1)])+1
-         loc <- cum:(cum+totalPart[i]-1)
-       }
+      if (totalPart[i] > 0) {
+        if (i == 1) loc <- 1:totalPart[i]
+        if (i > 1) {
+          cum <- sum(totalPart[1:(i-1)])+1
+          loc <- cum:(cum+totalPart[i]-1)
+        }
 
-       IDs <- sort(as.numeric(stats::na.omit(unique(c(A[,,i])))))[-1]
-       particleStats[loc,1:5] <- .Call('projectedPS',A[,,i],IDs,
-                                       PACKAGE='trackdem')
+        IDs <- sort(as.numeric(stats::na.omit(unique(c(A[,,i])))))[-1]
+        particleStats[loc,1:5] <- .Call('projectedPS',A[,,i],IDs,
+                                        PACKAGE='trackdem')
 
-       particleStats[loc,paste0('mu',c('R','G','B'))] <-
-                                                  as.matrix(extractMean(
-                                                  particleStats[loc,'patchID'],
-                                                  colorimages=colorimages[,,,i],
-                                                  images=A[,,i],ncolors=nc))
+        particleStats[loc,paste0('mu',c('R','G','B'))] <-
+                                                   as.matrix(extractMean(
+                                                   particleStats[loc,'patchID'],
+                                                   colorimages=colorimages[,,,i],
+                                                   images=A[,,i],ncolors=nc))
 
-       coords <- getCoords(m=A[,,i],d=dA)
-       ind <- A[,,i] > 0
-       particleStats[loc,'x'] <- tapply(coords[,2],A[,,i][ind],mean)
-       particleStats[loc,'y'] <- tapply(coords[,1],A[,,i][ind],mean)
-       particleStats[loc,'frame'] <- i
+        coords <- getCoords(m=A[,,i],d=dA)
+        ind <- A[,,i] > 0
+        particleStats[loc,'x'] <- tapply(coords[,2],A[,,i][ind],mean)
+        particleStats[loc,'y'] <- tapply(coords[,1],A[,,i][ind],mean)
+        particleStats[loc,'frame'] <- i
+      }
     }
 
     particleStats[,'perim.area.ratio'] <- particleStats[,'n.edges.perimeter'] /

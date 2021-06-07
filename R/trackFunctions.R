@@ -600,6 +600,12 @@ mergeTracks <- function(records1,records2,L=NULL,weight=NULL,
 ##
 trackParticles <- function (particles,L=50,R=2,
                             weight=c(1,1,1),costconstant=FALSE,logsizes=FALSE) {
+
+  if (any(summary(particles)$n == 0)) {
+    stop(c("\n \t No particle detected in one or more of the frames, ",
+           "tracking cannot be performed. \n",
+           "Try different thresholds? \n"))
+  }
   records <- doTrack(particles=particles,L=L,weight=weight,logsizes=logsizes)
   cat("\n")
   rec <- linkTrajec (recordsObject=records,
