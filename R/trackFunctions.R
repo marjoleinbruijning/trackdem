@@ -622,3 +622,151 @@ trackParticles <- function (particles,L=50,R=2,
                             list(R=R,L=L,weight=weight))
   return(rec)
 }
+
+
+
+##' Find maximum tracking cost
+##'
+##' This function can help to find a appropriate maximum value for linking
+##' a particle to another particle (parameter L in function \code{trackParticles})
+##' @param particles Object of class 'particles', obtained using \code{identifyParticles}.
+##' @param colorimages Array containing original color images. By default,
+##' the original color images are obtained from the global environment.
+##' @param frame Number specifying which frame to use. Default is frame 1.
+##' @author Marjolein Bruijning
+##' @examples
+##' \dontrun{
+##' partIden <- identifyParticles(sbg=allImages,
+##'                               threshold=-0.05)
+##' maxcost <- findMaxCost(partIden,frame=1)
+##' records <- trackParticles(partIden,L=maxcost,R=1)
+##'	}
+##' @return Returns the number that is interactively chosen by the user. Use
+##' this value in \code{trackParticles}.
+##' @export
+findMaxCost <- function (particles,frame=1,colorimages=NULL) {
+
+  if(is.null(colorimages)) {
+    colorimages <- get(attributes(particles)$originalImages,
+                       envir=.GlobalEnv)
+  }
+
+  cost <- runMaxCost(frame,colorimages,particles)
+  return(cost)
+}
+
+runMaxCost <- function(frame,colorimages,ps,ui,server) {
+shiny::runApp(
+  list(ui=shiny::fluidPage(
+  shiny::titlePanel(paste0("Find appropriate maximum 'cost' for linking two particles")),
+  shiny::fluidRow(
+     shiny::column(3,
+     'The graph on the left shows the focal frame. Click on a particle to select it.
+      Graph on the right shows the next frame. Use the slider to set the maximum cost value,
+      and assign a weight to the distance and size difference (see ?trackParticles for
+      more information). In the right image, all links that can be made are shown in orange.
+      Ideally, you choose a value so that all true links are being made, but not too many
+      wrong links. Try this for different particles to find good values. When finished, click on "Done".',
+      align='left',offset=0),
+
+      shiny::column(2,
+       shiny::actionButton("stop", "Done"),
+       shiny::br(),shiny::br()),
+
+      shiny::column(6,
+        shiny::sliderInput("cost", "Maximum cost L:",
+                    min=0,max=200,value=200,step=1,width='1000px'),
+        shiny::numericInput("weight1", "Weight distance:",value=1),
+        shiny::numericInput("weight2", "Weight size difference:",value=1)
+        )
+      ),
+  shiny::hr(),
+  shiny::fluidRow(
+    shiny::column(6,
+    shiny::h3('Focal frame'),
+    shiny::plotOutput("plot1",click = "plot_click")),
+    shiny::column(6,
+      shiny::h3('Next frame'),
+      shiny::plotOutput("plot2"))
+  )
+
+),
+  server=function(input, output) {
+
+
+   xrange <- ncol(colorimages)
+   yrange <- nrow(colorimages)
+
+
+  click_saved <- shiny::reactiveValues(singleclick = NULL)
+  shiny::observeEvent(eventExpr = input$plot_click, handlerExpr = {click_saved$singleclick <- input$plot_click})
+
+   updateParticle <- shiny::reactive({
+     inc <- ps$frame == frame
+     conv <- ps[inc,]
+     conv$x <- conv$x/xrange
+     conv$y <- 1-conv$y/yrange
+     getpoint <- shiny::nearPoints(conv,click_saved$singleclick,xvar='x',yvar='y',
+       maxpoints=1,threshold=1E6)
+   })
+
+
+   output$plot1 <- shiny::renderPlot({
+     suppressWarnings(graphics::plot(colorimages,frame=frame))
+     inc <- ps$frame == frame
+     graphics::points(ps[inc,]$x/ncol(colorimages),1-ps[inc,]$y/nrow(colorimages),
+            cex=1.2)
+     xy <- updateParticle()
+     graphics::points(xy$x,xy$y,
+                     col='green',lwd=3)
+   })
+
+   output$plot2 <- shiny::renderPlot({
+     suppressWarnings(graphics::plot(colorimages,frame=frame+1))
+
+     inc1 <- ps$frame == frame
+     inc2 <- ps$frame == frame + 1
+
+     fp <- updateParticle()
+     focalpart <- which(fp$patchID == ps$patchID[inc1])
+
+     coords1 <- ps[inc1,c('x','y')]
+     coords2 <- ps[inc2,c('x','y')]
+
+
+     costs <- phiMat(
+                coords1=coords1,
+                coords2=coords2,
+                sizes1=ps[inc1,'n.cell'],
+                sizes2=ps[inc2,'n.cell'],
+                L=input$cost,
+                r=1,
+                weight=c(input$weight1,input$weight2,0),
+                coords0=NULL,
+                logsizes=FALSE)
+
+    add <- costs[-1,-1][,focalpart] < input$cost # columns: current frame
+    xy <- coords2[add,]
+
+    if (nrow(xy) > 0) {
+      graphics::segments(
+        x0=coords1[focalpart,'x']/xrange,
+        x1=xy[,'x']/xrange,
+        y0=1-coords1[focalpart,'y']/yrange,
+        y1=1-xy[,'y']/yrange,
+        lwd=4,col='#e3730250')
+
+      graphics::points(coords1[focalpart,'x']/xrange,
+        1-coords1[focalpart,'y']/yrange,
+        pch=16,col='green')
+
+      graphics::points(xy[,'x']/xrange,
+        1-xy[,'y']/yrange,
+        col='blue')
+    }
+   })
+
+   shiny::observeEvent(input$stop, shiny::stopApp({input$cost}))
+  }
+ ))
+}

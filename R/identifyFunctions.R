@@ -876,3 +876,105 @@ shiny::runApp(
   }
  ))
 }
+
+
+##' Find pixel range
+##'
+##' This function can help to find the minimum and maximum particle size
+##' in pixels, to use in \code{identifyParticles}.
+##' @param colorimages Array containing original color images.
+##' @param frame Number specifying which frame to use. Default is frame 1.
+##' @author Marjolein Bruijning
+##' @examples
+##' \dontrun{
+##' dir <- "images"
+##' allFullImages <- loadImages (dirPictures=dir,nImages=1:30)
+##' stillBack <- createBackground(allFullImages)
+##' allImages <- subtractBackground(stillBack)
+##' findPixelRange(allFullImages,frame=10)
+##'	}
+##' @export
+findPixelRange <- function (colorimages,frame=1) {
+
+  invisible(runPixelRange(frame,colorimages))
+
+}
+
+runPixelRange <- function(frame,colorimages,ui,server) {
+shiny::runApp(
+  list(ui=shiny::fluidPage(
+  shiny::titlePanel(paste0("Find particle size range for particle detection")),
+  shiny::fluidRow(
+     shiny::column(3,
+     'The graph on the right shows the original image that can be used to zoom, by
+     drawing a polygon. Bottom graph shows the zoomed image. Draw a polygon
+     on this image and see its size in pixels. By drawing polygons over both the
+     smallest and largest particles of interest, an appropriate range can be found.
+     When finished, click on "Done".',
+      align='left',offset=0),
+      shiny::column(2,
+       shiny::actionButton("stop", "Done"),
+       shiny::br(),shiny::br()),
+      shiny::column(5,
+       shiny::h5('Choose region of interest to zoom (slower for larger images).'),
+       shiny::plotOutput("plot3",brush = shiny::brushOpts(id="plot3_brush",
+                        resetOnNew = TRUE,clip=TRUE)))
+      ),
+  shiny::hr(),
+  shiny::fluidRow(
+    shiny::column(6,
+    shiny::h3('Zoomed image'),
+    shiny::plotOutput("plot2",brush = shiny::brushOpts(id="plot2_brush",
+                     resetOnNew = TRUE,clip=TRUE))),
+    shiny::column(6,
+      shiny::verbatimTextOutput("info"))
+  )
+
+),
+  server=function(input, output) {
+
+   ranges <- shiny::reactiveValues(x=NULL,y=NULL)
+   coords <- shiny::reactiveValues(x=NULL,y=NULL)
+
+   output$plot3 <- shiny::renderPlot(suppressWarnings(graphics::plot(colorimages,frame=frame)))
+
+   # update plot range and coordinates
+   shiny::observe({
+     brush <- input$plot3_brush
+     if (!is.null(brush)) {
+       ranges$x <- floor(c(brush$xmin, brush$xmax) * ncol(colorimages))
+       ranges$y <- nrow(colorimages) - floor(c(brush$ymin, brush$ymax) *
+                   nrow(colorimages))
+
+     } else {
+       ranges$x <- c(1,ncol(colorimages))
+       ranges$y <- c(nrow(colorimages),1)
+     }
+
+     coords$x <- ranges$x / ncol(colorimages)
+     coords$y <- 1 - (ranges$y / nrow(colorimages))
+
+   })
+
+   output$plot2 <- shiny::renderPlot({
+      im <- colorimages[c(min(ranges$y):max(ranges$y)),
+                        c(min(ranges$x):max(ranges$x)),,frame,drop=FALSE]
+      im <- array(im,dim=c(dim(im)[1:3]))
+      im <- raster::brick(im)
+
+     suppressWarnings(raster::plotRGB(im,scale=1,asp=nrow(im)/ncol(im)))
+   })
+
+   output$info <- shiny::renderText({
+    x <- abs(diff(ranges$x)) * abs(input$plot2_brush$xmin-input$plot2_brush$xmax)
+    y <- abs(diff(ranges$y)) * abs(input$plot2_brush$ymin-input$plot2_brush$ymax)
+
+    paste0("Area: \n", round(x), ' by ',round(y),' = ',round(y*x),' pixels.')
+  })
+
+
+    shiny::observeEvent(input$stop, shiny::stopApp({
+     }))
+  }
+ ))
+}

@@ -210,8 +210,7 @@ model can be used, that is different for each frame. When using short videos
 with a stable background, one of the three available background detection 
 methods in \emph{createBackground} will suffice.
 
-Next, we identify particles, where the first step is 
-thresholding. All pixel values larger than a threshold (or smaller, depending on the particle 
+Next, we identify particles, where the first step is thresholding. All pixel values larger than a threshold (or smaller, depending on the particle 
 color compared to the background color) will be labeled as particles. To find an appropriate threshold value, use the function 
 \emph{findThreshold} (e.g. \emph{findThreshold(allImages)}). This function opens an interactive interface, making use 
 of the R-package \emph{shiny} (Fig. \ref{fig:thr}). The graph on the left shows the original image. The 
@@ -244,7 +243,7 @@ Subsequently, all connecting pixels are labeled. Finally, pixels larger of
 smaller than user-defined values are 
 removed (set with argument \emph{pixelRange}). This can be used as a 
 first noise filter when users know the size range of their study 
-organisms (in pixels).
+organisms (in pixels). Use function \emph{findPixelRange} for a graphical user interface that helps finding appropriate size ranges (e.g. \emph{findPixelRange(allFullImages)}).
 
 <<identifyParticles, eval=FALSE>>=
 ## Identify moving particles
@@ -292,7 +291,9 @@ and returns the cost for linking particle $i$ to particle $j$.
 If costs are 
 lager than used-specified $L$, a particle is not linked to a particle, 
 but to a dummy particle. This results in the start or 
-end of a track segment. With argument $R$, the maximum number of frames 
+end of a track segment. Use function \emph{findMaxCost()} for a graphical user interface to help finding an appropriate value for $L$ (e.g. \emph{findMaxCost(partIden)}).
+
+With argument $R$, the maximum number of frames 
 is set to which particles after frame $N$ can be linked. This means 
 that if a particle cannot be linked to a particle in frame $N+1$ 
 (because there are no particles, or costs are to high), algorithm tries 

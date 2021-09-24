@@ -4,6 +4,9 @@
 \name{trackdem}
 \alias{trackdem}
 \title{trackdem - Particle Tracking and Demography}
+\description{
+trackdem - Particle Tracking and Demography
+}
 \author{
 Marjolein Bruijning, Caspar A. Hallmann, Marco D. Visser, Eelke Jongejans
 }

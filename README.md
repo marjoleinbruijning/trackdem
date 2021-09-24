@@ -137,7 +137,8 @@ allImages <- subtractBackground(bg=stillBack)
 allImages
 
 ## Identify moving particles
-findThreshold(allImages)
+findThreshold(allImages) # find appropriate threshold
+findPixelRange(allFullImages) # find appropriate pixel range
 partIden <- identifyParticles(sbg=allImages,
                               pixelRange=c(1,500),
                               autoThres=FALSE,threshold=-0.1)
@@ -153,6 +154,7 @@ plot(partIden,frame=10)
 ## Reconstruct trajectories
 ########################################################################
 
+findMaxCost(partIden) # find appropriate L value
 records <- trackParticles(partIden,L=60,R=3)
 z <- 1 # minimum presence
 summary(records,incThres=z)
@@ -210,6 +212,9 @@ summary(records)
 
 <!-- UPDATES -->
 ## Updates
+
+### Version 0.6
+* Add functions findPixelRange() and findMaxCost().
 
 ### Version 0.5.2
 * Add optional arguments 'logsizes' and 'costconstant' to trackParticles().
